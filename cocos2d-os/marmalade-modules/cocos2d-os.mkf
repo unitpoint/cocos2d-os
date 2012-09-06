@@ -1,0 +1,15 @@
+includepaths
+{
+    "../source"
+}
+
+files
+{
+	[Cocos2d-os/src]
+    ("../source")
+	"*.cpp"
+	
+	[Cocos2d-os/h]
+    ("../source")
+	"*.h"
+}

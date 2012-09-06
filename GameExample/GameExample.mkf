@@ -1,0 +1,53 @@
+options
+{
+	s3e-data-dir="assets"
+
+	# module_path="c:/Marmalade/6.0/examples/SoundEngine"
+	module_path="../cocos2d-os/marmalade-modules"
+	module_path="modules/objectscript"
+}
+
+includepaths
+{
+	src
+	src/ext
+}
+
+subprojects
+{
+#	derbh
+	iwgl
+#	iwgeom
+#	iwgx
+#	iwgraphics
+#	zlib
+	libpng
+#	libxml2
+#	freetype
+	libjpeg
+	cocos2d-os
+	objectscript
+}
+
+files
+{
+	[Game/src]
+	(src)
+	"*.cpp"
+	
+	[Game/h]
+	(src)
+	"*.h"
+}
+
+deployments
+{
+#	auto-derbh=1
+}
+
+debug_defines {
+	IW_USE_CALLSTACK
+}
+
+defines { 
+}
