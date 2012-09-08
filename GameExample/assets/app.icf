@@ -1,6 +1,6 @@
 [S3E]
 MemSize=12000000
-SysStackSize = 262144
+SysStackSize = 1048576
 #MemFlags0=USE_STACK_ALLOCATOR
 #SysStackSwitch=1
 #landscape

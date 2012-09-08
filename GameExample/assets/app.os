@@ -1,25 +1,9 @@
-// Application module
-_E = extends _G {}
-_G.app = _E
+// require("core")
+// require("type")
 
-require("core")
-require("types")
+_E = _G.app // extends C++ namespace
 
-__get@orientation = function(){
-	// native function
-}
-__set@orientation = function(a){
-	// native function
-}
-
-__get@screenWidth = function(){
-	// native function
-} 
-__get@screenHeight = function(){
-	// native function
-}
-
-__get@screenSize = function(){
+function get screenSize(){
 	return Size(this.screenWidth this.screenHeight)
 }
 
@@ -29,3 +13,4 @@ ORIENTATION_LANDSCAPE_LEFT = 2
 ORIENTATION_LANDSCAPE_RIGHT = 3
 
 orientation = ORIENTATION_PORTRAIT
+

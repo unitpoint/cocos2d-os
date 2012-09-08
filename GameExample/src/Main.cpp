@@ -2,21 +2,17 @@
 
 #include "Main.h"
 #include "objectscript.h"
+#include "OpenGLOS.h"
 
 #include "s3eOSExec.h"
 #include "s3eSurface.h"
 #include "s3eKeyboard.h"
 #include "s3ePointer.h"
-#include "IwGL.h"
 #include "s3eAccelerometer.h"
 
 #include "IwMemBucket.h"
 
 using namespace ObjectScript;
-
-void initOpenGLModule(OS * os)
-{
-}
 
 OS_NUMBER getGlobalNumber(OS * os, const OS::String& name)
 {
@@ -116,6 +112,7 @@ public:
 		IwGLInit();
 
 		s3eSurfaceSetInt(S3E_SURFACE_DEVICE_ORIENTATION_LOCK, 4);
+		orientation = 0;
 
 		is_multi_touch = s3ePointerGetInt(S3E_POINTER_MULTI_TOUCH_AVAILABLE) ? true : false;
 		if(is_multi_touch){
@@ -150,16 +147,21 @@ public:
 		 s3eDeviceRequestQuit();
 	}
 
-	bool init()
+	bool init(MemoryManager * mem)
 	{
-		if(!OS::init()){
+		if(!OS::init(mem)){
 			return false;
 		}
 
+		initOpenGL(this);
+		initOpenGL2(this);
+		initOpenGLExt(this);
 		initAppModule();
 
 		return true;
 	}
+
+	int orientation;
 
 	void initAppModule()
 	{
@@ -220,8 +222,18 @@ public:
 				s3eAccelerometerStop();
 				return 0;
 			}
+			static int getOrientation(OS * os, int params, int, int, void*)
+			{
+				os->pushNumber(((MarmaladeOS*)os)->orientation);
+				return 1;
+			}
+			static int setOrientation(OS * os, int params, int, int, void*)
+			{
+				((MarmaladeOS*)os)->orientation = os->toInt();
+				return 0;
+			}
 		};
-		Func list[] = {
+		FuncDef list[] = {
 			// {OS_TEXT("getScreenWidth"), App::getScreenWidth},
 			{OS_TEXT("__get@screenWidth"), App::getScreenWidth},
 			// {OS_TEXT("getScreenHeight"), App::getScreenHeight},
@@ -236,9 +248,11 @@ public:
 			{OS_TEXT("__get@hasAccelerometer"), App::getHasAccelerometer},
 			{OS_TEXT("startAccelerometer"), App::startAccelerometer},
 			{OS_TEXT("stopAccelerometer"), App::stopAccelerometer},
+			{OS_TEXT("__get@orientation"), App::getOrientation},
+			{OS_TEXT("__set@orientation"), App::setOrientation},
 			{}
 		};
-		getGlobalObject(OS_TEXT("app"));
+		getModule(OS_TEXT("app"));
 		setFuncs(list);
 		pop();
 
@@ -348,6 +362,7 @@ int main()
 	// int32 checkpoint = IwMemBucketCheckpoint();
 
 	OS * os = OS::create(new MarmaladeOS()); //, new MarmaladeOSMemoryManager());
+	// os->setMemBreakpointId(9075);
 	// os->setSetting(OS_SETTING_CREATE_DEBUG_OPCODES, false);
 	{
 		OS::String enterFrame(os, "enterFrame");
@@ -356,7 +371,7 @@ int main()
 		OS::String animationIntervalSec(os, "animationIntervalSec");
 
 		// os->require("core");
-		os->require("main");
+		os->require("main.os");
 	
 		uint64 updateTimeMS = 0;
 		for(int i = 0; i < 10; i++){ 
@@ -381,7 +396,7 @@ int main()
 
 			os->getGlobal(director);
 			os->getProperty(animationIntervalSec);
-			double animationIntervalSec = popNumber(os);
+			double animationIntervalSec = os->popNumber();
 			if(animationIntervalSec < 0.01){
 				animationIntervalSec = 0.01;
 			}else if(animationIntervalSec > 0.2){
@@ -398,8 +413,6 @@ int main()
 		}
 	}
 	os->release();
-
-	// CCSharedFinalizer::finalizeAll();
 
 	// IwMemBucketDebugCheck(0, checkpoint, "check-app-leak.txt");
 	// IwMemBucketTerminate();

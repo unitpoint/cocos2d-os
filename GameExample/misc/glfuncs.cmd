@@ -1,0 +1,1 @@
+c:\WebServers\usr\bin\php5.exe glfuncs.php
