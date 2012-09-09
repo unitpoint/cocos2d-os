@@ -2,6 +2,7 @@ var core = require("core")
 var app = require("app")
 require("constants")
 require("node")
+require("utils")
 
 _E = extends app {}
 _G.director = _E
@@ -123,6 +124,7 @@ app.__set@orientation = function(a){
 }
 
 // app.orientation = ORIENTATION_LANDSCAPE_LEFT
+// app.orientation = ORIENTATION_LANDSCAPE_RIGHT
 // app.orientation = ORIENTATION_PORTRAIT
 app.orientation = ORIENTATION_PORTRAIT_UPSIDE_DOWN
 
@@ -164,10 +166,10 @@ var function setNextScene(){
 }
 
 var function updateScene(deltaTimeSec){
-	if(runningScene && runningScene.enabled){
+	if(runningScene){
 		runningScene.handleUpdate(deltaTimeSec)
 	}
-	if(notificationNode && notificationNode.enabled){ 
+	if(notificationNode){ 
 		notificationNode.handleUpdate(deltaTimeSec)
 	}
 }
@@ -185,11 +187,11 @@ var function drawScene(){
 	enableDefaultGlStates()
 	
 	// draw the scene
-    if(runningScene && runningScene.enabled && runningScene.visible){ 
+    if(runningScene && runningScene.visible){ 
 		runningScene.handlePaint()
 	}
 
-	if(notificationNode && notificationNode.enabled && notificationNode.visible){ 
+	if(notificationNode && notificationNode.visible){ 
 		notificationNode.handlePaint()
 	}
 
@@ -218,6 +220,46 @@ function core.triggerEvent(eventName, params){
 	}
 }
 
+function triggerTouches(){
+	var timeSec, orientation, width, height = app.timeSec, app.orientation, _E.width, _E.height
+	for(var id, touch in app.touches){
+		if(!touch.processed){
+			if(orientation === ORIENTATION_PORTRAIT){
+				touch.y = height - touch.y
+			}else if(orientation === ORIENTATION_PORTRAIT_UPSIDE_DOWN){
+				touch.x = width - touch.x
+			}else if(orientation === ORIENTATION_LANDSCAPE_LEFT){
+				touch.x, touch.y = touch.y, touch.x
+			}else if(orientation === ORIENTATION_LANDSCAPE_RIGHT){
+				touch.x, touch.y = height - touch.y, width - touch.x
+			}
+			touch.processed = timeSec
+			if(touch.captured && touch.phase !== "began"){
+				var cur = touch.captured
+				for(;cur !== runningScene && cur.__parent;){
+					cur = cur.__parent
+				}
+				if(cur === runningScene){
+					var cur = touch.captured
+					delete touch.captured
+					cur.triggerEvent(touch)
+					if(touch.captured){
+						print "captured node is alive "..touch.." and captured again"
+						continue
+					}
+					print "captured node is alive "..touch.." but didn't capture touch, so run generic step"
+				}else{
+					print "captured node is not alive "..touch.." so run generic step"
+				}
+			}
+			runningScene.triggerEvent("touch" touch)
+		}else if(timeSec - touch.processed > 5){
+			print "delete old touch "..app.touches[id]
+			delete app.touches[id]
+		}
+	}
+}
+
 addEventListener("touch", function(event){
 
 })
@@ -237,6 +279,7 @@ addEventListener("enterFrame", function(){
 	deltaTimeSec = (timeSec - prevTimeSec) * timeSpeed
 	prevTimeSec = timeSec
 	if(deltaTimeSec > 0.2) deltaTimeSec = 0.2
+	triggerTouches()
 	updateScene(deltaTimeSec)
 	drawScene()
 })

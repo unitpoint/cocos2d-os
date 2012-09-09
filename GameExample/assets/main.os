@@ -5,10 +5,14 @@ var director = require("director")
 
 print "Hello World!"
 
+addEventListener("enterFrame", function(){
+	// print "touches "..app.touches
+}, true)
+
 MyColorNode = extends ColorNode {
 	__object = {
 		speed: 0.5
-		dd: [1 1] // math.random()
+		dd: [1 1]
 	}
 	
 	__construct = function(){
@@ -54,18 +58,36 @@ MyScene = extends Scene {
 			return [math.random() math.random() math.random() 1]
 		}
 		
-		var rect = ColorNode()
-		rect.speed = math.random(0.2 0.5)
-		rect.setRect(
-			this.width * 0.75
-			this.height * 0.75
-			200
-			100
-			)
-		rect.color = color()
-		this.addChild(rect)
+		function(){
+			var rect = ColorNode()
+			rect.speed = math.random(0.2 0.5)
+			rect.setRect(
+				this.width * 0.7
+				this.height * 0.7
+				200
+				100
+				)
+			rect.color = color()
+			
+			var tx, ty, sx, sy
+			
+			rect.addEventListener("touch", function(touch){
+				var local = rect.pointToNodeSpace(touch)
+				print "listener touch"..touch.." local "..local
+				if(touch.phase == "began"){
+					tx, ty = touch.x, touch.y
+					sx, sy = rect.x, rect.y
+					touch.captured = rect
+				}else if(touch.phase == "moved"){ // && touch.captured === rect){
+					rect.x, rect.y = sx + touch.x - tx, sy + touch.y - ty
+				}else if(touch.phase == "ended"&& touch.captured === rect){
+					delete touch.captured
+				}
+			})
+			this.addChild(rect)
+		}.call(this)
 		
-		for(var i = 0; i < 0; i++){
+		for(var i = 0; i < 2; i++){
 			var rect = MyColorNode()
 			rect.speed = math.random(0.2 0.5)
 			rect.setRect(

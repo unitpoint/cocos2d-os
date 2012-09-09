@@ -99,8 +99,21 @@ public:
 	const OS_CHAR * output_filename;
 	bool is_multi_touch;
 
+	struct Strings
+	{
+		String app;
+		String touches;
+		Strings(OS * os): 
+			app(os, OS_TEXT("app")), 
+			touches(os, OS_TEXT("touches"))
+		{
+		}
+	} * strings;
+
 	MarmaladeOS()
 	{
+		strings = NULL;
+
 		output_filename = "output.txt";
 		s3eFileDelete(output_filename);
 
@@ -148,12 +161,21 @@ public:
 			return false;
 		}
 
+		strings = new Strings(this);
+
 		initOpenGL(this);
 		initOpenGL2(this);
 		initOpenGLExt(this);
 		initAppModule();
 
 		return true;
+	}
+
+	void shutdown()
+	{
+		OS::shutdown();
+		delete strings;
+		strings = NULL;
 	}
 
 	int orientation;
@@ -254,23 +276,135 @@ public:
 		require("app"); // add some additional
 	}
 
+	enum ETouchPhase
+	{
+		TOUCH_PHASE_BEGAN,
+		TOUCH_PHASE_MOVED,
+		TOUCH_PHASE_ENDED,
+		TOUCH_PHASE_CANCELED,
+	};
+
+	void setTouchEvent(int x, int y, ETouchPhase phase, int id)
+	{
+		// printf("setTouchEvent: %d %d %d %d\n", x, y, (int)phase, id);
+
+		getGlobal(OS_TEXT("app"), false, false);
+		OS_ASSERT(!isNull());
+		getProperty(OS_TEXT("touches"), false, false);
+		if(isNull()){
+			pop();
+			newObject();
+			getGlobal(OS_TEXT("app"), false, false);
+			pushString(OS_TEXT("touches"));
+			pushStackValue(-3);
+			setProperty(false);
+		}
+		pushStackValue(-1);
+		pushNumber(id);
+		getProperty(false, false);
+		if(isNull()){
+			if(phase != TOUCH_PHASE_BEGAN){
+				pop(2);
+				return;
+			}
+			pop();
+			newObject();
+			pushStackValue(-2);
+			pushNumber(id);
+			pushStackValue(-3);
+			setProperty(false);
+		}
+		remove(-2);	
+
+		pushStackValue(-1);
+		pushString(OS_TEXT("id"));
+		pushNumber(id);
+		setProperty(false);
+
+		pushStackValue(-1);
+		pushString(OS_TEXT("x"));
+		pushNumber(x);
+		setProperty(false);
+
+		pushStackValue(-1);
+		pushString(OS_TEXT("y"));
+		pushNumber(y);
+		setProperty(false);
+
+		pushStackValue(-1);
+		pushString(OS_TEXT("processed"));
+		pushBool(false);
+		setProperty(false);
+
+		pushStackValue(-1);
+		pushString(OS_TEXT("phase"));
+		switch(phase){
+		case TOUCH_PHASE_BEGAN:
+			pushString(OS_TEXT("began"));
+			break;
+
+		case TOUCH_PHASE_MOVED:
+			pushString(OS_TEXT("moved"));
+			break;
+
+		case TOUCH_PHASE_ENDED:
+			pushString(OS_TEXT("ended"));
+			break;
+
+		default:
+		case TOUCH_PHASE_CANCELED:
+			pushString(OS_TEXT("canceled"));
+			break;
+		}
+		setProperty(false);
+		pop();
+	}
+
 	static int32 touchEventHandler(void* system_data, void* user_data)
 	{
+		MarmaladeOS * os = (MarmaladeOS*)user_data;
+		s3ePointerEvent * ev = (s3ePointerEvent*)system_data;
+		switch(ev->m_Pressed){
+		case S3E_POINTER_STATE_DOWN:
+			os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_BEGAN, 0);
+			break;
+
+		case S3E_POINTER_STATE_UP:
+			os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_ENDED, 0);
+			break;
+		}
 		return 0;
 	}
 
 	static int32 motionEventHandler(void* system_data, void* user_data)
 	{
+		MarmaladeOS * os = (MarmaladeOS*)user_data;
+		s3ePointerMotionEvent * ev = (s3ePointerMotionEvent*)system_data;
+		os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_MOVED, 0);
 		return 0;
 	}
 
 	static int32 multiTouchEventHandler(void* system_data, void* user_data)
 	{
+		MarmaladeOS * os = (MarmaladeOS*)user_data;
+		s3ePointerTouchEvent * ev = (s3ePointerTouchEvent*)system_data;
+		switch(ev->m_Pressed){
+		case S3E_POINTER_STATE_DOWN:
+			os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_BEGAN, ev->m_TouchID);
+			break;
+
+		case S3E_POINTER_STATE_UP:
+			os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_ENDED, ev->m_TouchID);
+			break;
+		}
 		return 0;
 	}
 
 	static int32 multiMotionEventHandler(void* system_data, void* user_data)
 	{
+		MarmaladeOS * os = (MarmaladeOS*)user_data;
+		s3ePointerTouchMotionEvent * ev = (s3ePointerTouchMotionEvent*)system_data;
+		os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_MOVED, ev->m_TouchID);
 		return 0;
 	}
 

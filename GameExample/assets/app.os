@@ -10,3 +10,4 @@ function get screenSize(){
 
 orientation = ORIENTATION_PORTRAIT
 
+touches = {}

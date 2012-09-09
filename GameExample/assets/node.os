@@ -23,7 +23,6 @@ Node = {
 		__timers = {}
 		timeSec = 0
 		timeSpeed = 1
-		enabled = true
 		visible = true
 		
 		/*
@@ -54,49 +53,51 @@ Node = {
 		__anchorY = 0.5
 		__rotation = 0
 		
-		__dirty = true
-		__transform = null
-		__transformGL = null
+		__transformDirty = true
+		__transform = null // node to parent
+		__inverseDirty = true
+		__inverseTransform = null // parent to node
+		__transformGL = null // node to parent (GL)
 		
 		__parent = null
 		__parentChildren = null
 	}
 	
 	__get@x = function(){return this.__x}
-	__set@x = function(a){if(this.__x !== a){ this.__x = a; this.__dirty = true }}
+	__set@x = function(a){if(this.__x !== a){ this.__x = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@y = function(){return this.__y}
-	__set@y = function(a){if(this.__y !== a){ this.__y = a; this.__dirty = true }}
+	__set@y = function(a){if(this.__y !== a){ this.__y = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@width = function(){return this.__width}
-	__set@width = function(a){if(this.__width !== a){ this.__width = a; this.__dirty = true }}
+	__set@width = function(a){if(this.__width !== a){ this.__width = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@height = function(){return this.__height}
-	__set@height = function(a){if(this.__height !== a){ this.__height = a; this.__dirty = true }}
+	__set@height = function(a){if(this.__height !== a){ this.__height = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@scaleX = function(){return this.__scaleX}
-	__set@scaleX = function(a){if(this.__scaleX !== a){ this.__scaleX = a; this.__dirty = true }}
+	__set@scaleX = function(a){if(this.__scaleX !== a){ this.__scaleX = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@scaleY = function(){return this.__scaleY}
-	__set@scaleY = function(a){if(this.__scaleY !== a){ this.__scaleY = a; this.__dirty = true }}
+	__set@scaleY = function(a){if(this.__scaleY !== a){ this.__scaleY = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@skewX = function(){return this.__skewX}
-	__set@skewX = function(a){if(this.__skewX !== a){ this.__skewX = a; this.__dirty = true }}
+	__set@skewX = function(a){if(this.__skewX !== a){ this.__skewX = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@skewY = function(){return this.__skewY}
-	__set@skewY = function(a){if(this.__skewY !== a){ this.__skewY = a; this.__dirty = true }}
+	__set@skewY = function(a){if(this.__skewY !== a){ this.__skewY = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@anchorX = function(){return this.__anchorX}
-	__set@anchorX = function(a){if(this.__anchorX !== a){ this.__anchorX = a; this.__dirty = true }}
+	__set@anchorX = function(a){if(this.__anchorX !== a){ this.__anchorX = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@anchorY = function(){return this.__anchorY}
-	__set@anchorY = function(a){if(this.__anchorY !== a){ this.__anchorY = a; this.__dirty = true }}
+	__set@anchorY = function(a){if(this.__anchorY !== a){ this.__anchorY = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@rotation = function(){return this.__rotation}
-	__set@rotation = function(a){if(this.__rotation !== a){ this.__rotation = a; this.__dirty = true }}
+	__set@rotation = function(a){if(this.__rotation !== a){ this.__rotation = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@isRelativeAnchor = function(){return this.__isRelativeAnchor}
-	__set@isRelativeAnchor = function(a){if(this.__isRelativeAnchor !== a){ this.__isRelativeAnchor = a; this.__dirty = true }}
+	__set@isRelativeAnchor = function(a){if(this.__isRelativeAnchor !== a){ this.__isRelativeAnchor = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__construct = function(){
 		this.width = director.width
@@ -138,8 +139,8 @@ Node = {
 		}
 	}
 	
-	toParentTransform = function(){
-		if(this.__dirty 
+	nodeToParentTransform = function(){
+		if(this.__transformDirty 
 			/*
 			|| this.__x !== this.x 
 			|| this.__y !== this.y
@@ -197,13 +198,38 @@ Node = {
 			}
 			this.__transform = t
 			this.__transformGL = t.toGL()
-			this.__dirty = false
+			this.__transformDirty = false
 		}
 		return this.__transform
 	}
 	
+	parentToNodeTransform = function(){
+		if(this.__inverseDirty){
+			this.__inverseTransform = (clone this.nodeToParentTransform()).inverse()
+			this.__inverseDirty = false
+		}
+	}
+	
+	nodeToWorldTransform = function(){
+		var t = clone this.nodeToParentTransform()
+		for(var p = this.__parent; p;){
+			t = t.mult( p.nodeToParentTransform() )
+			p = p.__parent
+		}
+		print "nodeToWorldTransform"..t
+		return t
+	}
+	
+	worldToNodeTransform = function(){
+		return this.nodeToWorldTransform().inverse()
+	}
+	
+	pointToNodeSpace = function(point){
+		return this.worldToNodeTransform().transform(point)
+	}
+	
 	transform = function(){
-		this.toParentTransform()
+		this.nodeToParentTransform()
 		glMultMatrix(this.__transformGL)
 	}
 	
@@ -212,7 +238,7 @@ Node = {
 		this.transform()
 		
 		for(var child in this.__childrenNeg.reverseIter()){
-			if(child.enabled && child.visible){
+			if(child.visible){
 				child.handlePaint()
 			}
 		}
@@ -220,7 +246,7 @@ Node = {
 		this.paint()
 		
 		for(var child in this.__childrenPos.reverseIter()){
-			if(child.enabled && child.visible){
+			if(child.visible){
 				child.handlePaint()
 			}
 		}
@@ -231,15 +257,11 @@ Node = {
 	handleUpdate = function(deltaTimeSec){
 		this.updateTime(deltaTimeSec)
 		for(var child in this.__childrenPos){
-			if(child.enabled){
-				child.handleUpdate(deltaTimeSec)
-			}
+			child.handleUpdate(deltaTimeSec)
 		}
 		this.update(deltaTimeSec)
 		for(var child in this.__childrenNeg){
-			if(child.enabled){
-				child.handleUpdate(deltaTimeSec)
-			}
+			child.handleUpdate(deltaTimeSec)
 		}
 	}
 	
@@ -254,17 +276,13 @@ Node = {
 
 	triggerEvent = function(eventName, params){
 		for(var child in this.__childrenPos){
-			if(child.enabled){
-				child.triggerEvent(eventName, params)
-			}
+			child.triggerEvent(eventName, params)
 		}
 		for(var func in this.__events[eventName]){
 			func(params)
 		}
 		for(var child in this.__childrenNeg){
-			if(child.enabled){
-				child.triggerEvent(eventName, params)
-			}
+			child.triggerEvent(eventName, params)
 		}
 	}
 	
@@ -309,7 +327,7 @@ Node = {
 		}
 	}
 	
-	setRect = function(x y  width height){
+	setRect = function(x y width height){
 		this.x = x
 		this.y = y
 		this.width = width

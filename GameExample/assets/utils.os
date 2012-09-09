@@ -103,7 +103,7 @@ Matrix = {
 			t1.tx * t2.b + t1.ty * t2.d + t2.ty)				  //ty
 	}
 
-	invert = function(){
+	inverse = function(){
 		var determinant = 1 / (this.a * this.d - this.b * this.c)
 		return this.set(determinant * this.d, -determinant * this.b, -determinant * this.c, determinant * this.a,
 			determinant * (this.c * this.ty - this.d * this.tx), determinant * (this.b * this.tx - this.a * this.ty) )
