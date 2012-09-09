@@ -2600,6 +2600,48 @@ void initOpenGLExt(OS * os)
 			return 0;
 		}
 
+		static int glVertexPointer(OS * os, int params, int, int, void*)
+		{
+			if(params >= 4 && os->isArray(-params+3) && (GLenum)os->toNumber(-params+1) == GL_FLOAT){
+				params = os->getAbsoluteOffs(-params);
+				int count = os->getLen(params+3) & ~1;
+				int size = os->toInt(params+0);
+				float * points = (float*)os->pushUserData(sizeof(float)*count*size);
+				for(int i = 0; i < count; i++){
+					os->pushStackValue(params+3);
+					os->pushNumber(i);
+					os->getProperty();
+					if(os->isArray()){
+						for(int j = 0; j < size; j++){
+							os->pushStackValue(-1);
+							os->pushNumber(j);
+							os->getProperty();
+							points[i*size + j] = os->popFloat();
+						}
+					}else if(os->isObject()){
+						static OS_CHAR * xyz[] = {
+							OS_TEXT("x"), OS_TEXT("y"), OS_TEXT("z")
+						};
+						for(int j = 0; j < size; j++){
+							os->pushStackValue(-1);
+							os->pushString(xyz[j%3]);
+							os->getProperty();
+							if(os->isNull()){
+								os->pop();
+								os->pushStackValue(-1);
+								os->pushNumber(j);
+								os->getProperty();
+							}
+							points[i*size + j] = os->popFloat();
+						}
+					}
+				}
+				::glVertexPointer((GLint)os->toNumber(params+0), GL_FLOAT, (GLsizei)os->toNumber(params+2), points);
+				return 1;
+			}
+			return 0;
+		}
+
 		static int gluPerspective(OS * os, int params, int, int, void*)
 		{
 			::gluPerspective(
@@ -2624,12 +2666,71 @@ void initOpenGLExt(OS * os)
 				os->toFloat(-params+8));
 			return 0;
 		}
+
+		static int glMultMatrix(OS * os, int params, int, int, void*)
+		{
+			float mat[16];
+			if(params == 1 && os->isArray(-params)){
+				for(int i = 0; i < 16; i++){
+					os->pushStackValue(-params);
+					os->pushNumber(i);
+					os->getProperty();
+					mat[i] = os->popFloat();
+				}
+				::glMultMatrixf(mat);
+			}else if(params == 16){
+				for(int i = 0; i < 16; i++){
+					mat[i] = os->toFloat(-params+i);
+				}
+				::glMultMatrixf(mat);
+			}
+			return 0;
+		}
+
+		static float clampColor(float f)
+		{
+			if(f < 0.0f) return 0.0f;
+			if(f > 1.0f) return 1.0f;
+			return f;
+		}
+
+		static int glColor(OS * os, int params, int, int, void*)
+		{
+			float color[4];
+			if(params == 1 && os->isArray(-params)){
+				for(int i = 0; i < 4; i++){
+					os->pushStackValue(-params);
+					os->pushNumber(i);
+					os->getProperty();
+					color[i] = os->isNull() ? (i < 3 ? 0.0f : 1.0f) : clampColor(os->popFloat());
+				}
+			}else if(params == 1 && os->isObject(-params)){
+				static const OS_CHAR * rgba[] = {
+					OS_TEXT("r"), OS_TEXT("g"), OS_TEXT("b"), OS_TEXT("a") 
+				};
+				for(int i = 0; i < 4; i++){
+					os->pushStackValue(-params);
+					os->pushString(rgba[i]);
+					os->getProperty();
+					color[i] = os->isNull() ? (i < 3 ? 0.0f : 1.0f) : clampColor(os->popFloat());
+				}
+			}else{ // if(os->isNumber(-params)){
+				for(int i = 0; i < 4; i++){
+					color[i] = os->isNull(-params+i) ? (i < 3 ? 0.0f : 1.0f) : clampColor(os->toFloat(-params+i));
+				}
+			}
+			::glColor4f(color[0], color[1], color[2], color[3]);
+			return 0;
+		}
 	};
 
 	OS::FuncDef funcs[] = {
 		{OS_TEXT("glSwapBuffers"), OpenGL::glSwapBuffers},
 		{OS_TEXT("gluPerspective"), OpenGL::gluPerspective},
 		{OS_TEXT("gluLookAt"), OpenGL::gluLookAt},
+		{OS_TEXT("glVertexPointer"), OpenGL::glVertexPointer},
+		{OS_TEXT("glMultMatrix"), OpenGL::glMultMatrix},
+		{OS_TEXT("glColor"), OpenGL::glColor},
 		{}
 	};
 

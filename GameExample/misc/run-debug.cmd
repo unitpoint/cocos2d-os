@@ -1,0 +1,1 @@
+start c:/marmalade/6.0/s3e\win32\s3e_simulator_debug.exe -via:"C:\Sources\cocos2d-os\GameExample\build_gameexample_vc10\GameExample_vc10_debug.via"

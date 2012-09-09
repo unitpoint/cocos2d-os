@@ -46,8 +46,6 @@ function set depthTest(a){
 	}
 }
 
-PROJECTION_2D = 0
-PROJECTION_3D = 1
 var projection
 function get projection(){ return projection }
 function set projection(a){
@@ -76,9 +74,11 @@ var function updateProjection(){
 		glLoadIdentity()
 		gluLookAt(size.width/2, size.height/2, zeye,
 				 size.width/2, size.height/2, 0,
-				 0.0f, 1.0f, 0.0f)
+				 0.0, 1.0, 0.0)
 	}
 }
+
+print "screen size "..app.screenSize
 
 var function applyOrientation()
 {
@@ -87,7 +87,10 @@ var function applyOrientation()
 
 	var orientation = app.orientation
 	if(orientation == ORIENTATION_PORTRAIT){
-		// nothing
+		/* glTranslatef(w,h,0)
+		// glRotatef(180,0,0,1)
+		glScalef(-1 1 1)
+		glTranslatef(-w,-h,0) */
 	}else if(orientation == ORIENTATION_PORTRAIT_UPSIDE_DOWN){
 		// upside down
 		glTranslatef(w,h,0)
@@ -119,7 +122,9 @@ app.__set@orientation = function(a){
 	updateProjection()
 }
 
-app.orientation = app.ORIENTATION_LANDSCAPE_LEFT
+// app.orientation = ORIENTATION_LANDSCAPE_LEFT
+// app.orientation = ORIENTATION_PORTRAIT
+app.orientation = ORIENTATION_PORTRAIT_UPSIDE_DOWN
 
 var runningScene
 function get scene(){ return runningScene }
@@ -154,10 +159,21 @@ function disableDefaultGlStates(){
 }
 
 var function setNextScene(){
+	runningScene = nextScene
 	nextScene = null
 }
 
+var function updateScene(deltaTimeSec){
+	if(runningScene && runningScene.enabled){
+		runningScene.handleUpdate(deltaTimeSec)
+	}
+	if(notificationNode && notificationNode.enabled){ 
+		notificationNode.handleUpdate(deltaTimeSec)
+	}
+}
+
 var function drawScene(){
+	// glClearColor(1 0 0 1)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	
 	if(nextScene) setNextScene()
@@ -167,12 +183,15 @@ var function drawScene(){
 
 	// By default enable VertexArray, ColorArray, TextureCoordArray and Texture2D
 	enableDefaultGlStates()
-
+	
 	// draw the scene
-    if(runningScene) runningScene.visit()
+    if(runningScene && runningScene.enabled && runningScene.visible){ 
+		runningScene.handlePaint()
+	}
 
-	// draw the notifications node
-	if(notificationNode) notificationNode.visit()
+	if(notificationNode && notificationNode.enabled && notificationNode.visible){ 
+		notificationNode.handlePaint()
+	}
 
 	if(displayFPS) showFPS()
 	if(displayProfilers) showProfilers()
@@ -218,10 +237,6 @@ addEventListener("enterFrame", function(){
 	deltaTimeSec = (timeSec - prevTimeSec) * timeSpeed
 	prevTimeSec = timeSec
 	if(deltaTimeSec > 0.2) deltaTimeSec = 0.2
-	
-	if(runningScene){
-		runningScene.triggerEvent("enterFrame", deltaTimeSec)
-	}
-	
+	updateScene(deltaTimeSec)
 	drawScene()
 })

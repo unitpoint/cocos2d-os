@@ -37,11 +37,6 @@ bool getGlobalBool(OS * os, const OS::String& name)
 	return val;
 }
 
-bool getOSTerminated(OS*)
-{
-	return false;
-}
-
 class MarmaladeOSMemoryManager: public OS::MemoryManager
 {
 public:
@@ -373,9 +368,13 @@ int main()
 		// os->require("core");
 		os->require("main.os");
 	
+		// uint64 startTimeMS = s3eTimerGetMs();
 		uint64 updateTimeMS = 0;
-		for(int i = 0; i < 10; i++){ 
+		for(;;){ 
 			updateTimeMS = s3eTimerGetMs();
+			/* if(updateTimeMS - startTimeMS > 10 * 1000){
+				break;
+			} */
 			
 			// s3eDeviceYield(0);
 			s3eKeyboardUpdate();
@@ -383,7 +382,7 @@ int main()
 			
 			// ccAccelerationUpdate();
 
-			if(s3eDeviceCheckQuitRequest() || getOSTerminated(os)){
+			if(s3eDeviceCheckQuitRequest() || os->isTerminated()){
 				break;
 			}
 
@@ -392,7 +391,7 @@ int main()
 			os->pushString(enterFrame);
 			os->call(1);
 
-			s3eDeviceYield(0);
+			// s3eDeviceYield(0);
 
 			os->getGlobal(director);
 			os->getProperty(animationIntervalSec);
@@ -412,9 +411,10 @@ int main()
 			}
 		}
 	}
+	int code = os->getTerminatedCode();
 	os->release();
 
 	// IwMemBucketDebugCheck(0, checkpoint, "check-app-leak.txt");
 	// IwMemBucketTerminate();
-	return 0;
+	return code;
 }
