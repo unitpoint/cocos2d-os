@@ -73,15 +73,17 @@ MyScene = extends Scene {
 			
 			rect.addEventListener("touch", function(touch){
 				var local = rect.pointToNodeSpace(touch)
-				print "listener touch"..touch.." local "..local
-				if(touch.phase == "began"){
+				// if(touch.phase == "end")
+					// print "listener touch"..touch.." local "..local
+				if(touch.phase == "start" && !touch.captured){
 					tx, ty = touch.x, touch.y
 					sx, sy = rect.x, rect.y
 					touch.captured = rect
-				}else if(touch.phase == "moved"){ // && touch.captured === rect){
+				}else if(touch.phase == "move" && touch.captured === rect){
 					rect.x, rect.y = sx + touch.x - tx, sy + touch.y - ty
-				}else if(touch.phase == "ended"&& touch.captured === rect){
-					delete touch.captured
+					// touch.captured = rect
+				}else{ // if(touch.phase == "end"&& touch.captured === rect){
+					// delete touch.captured
 				}
 			})
 			this.addChild(rect)
@@ -103,4 +105,3 @@ MyScene = extends Scene {
 }
 
 director.scene = MyScene()
-

@@ -99,21 +99,8 @@ public:
 	const OS_CHAR * output_filename;
 	bool is_multi_touch;
 
-	struct Strings
-	{
-		String app;
-		String touches;
-		Strings(OS * os): 
-			app(os, OS_TEXT("app")), 
-			touches(os, OS_TEXT("touches"))
-		{
-		}
-	} * strings;
-
 	MarmaladeOS()
 	{
-		strings = NULL;
-
 		output_filename = "output.txt";
 		s3eFileDelete(output_filename);
 
@@ -161,8 +148,6 @@ public:
 			return false;
 		}
 
-		strings = new Strings(this);
-
 		initOpenGL(this);
 		initOpenGL2(this);
 		initOpenGLExt(this);
@@ -174,8 +159,6 @@ public:
 	void shutdown()
 	{
 		OS::shutdown();
-		delete strings;
-		strings = NULL;
 	}
 
 	int orientation;
@@ -251,25 +234,25 @@ public:
 			}
 		};
 		FuncDef list[] = {
-			// {OS_TEXT("getScreenWidth"), App::getScreenWidth},
-			{OS_TEXT("__get@screenWidth"), App::getScreenWidth},
-			// {OS_TEXT("getScreenHeight"), App::getScreenHeight},
-			{OS_TEXT("__get@screenHeight"), App::getScreenHeight},
-			// {OS_TEXT("getIsMultiTouch"), App::getIsMultiTouch},
-			{OS_TEXT("__get@isMultiTouch"), App::getIsMultiTouch},
-			{OS_TEXT("__get@timeMS"), App::getTimeMS},
-			{OS_TEXT("__get@timeSec"), App::getTimeSec},
-			{OS_TEXT("__get@accelerometerX"), App::getAccelerometerX},
-			{OS_TEXT("__get@accelerometerY"), App::getAccelerometerY},
-			{OS_TEXT("__get@accelerometerZ"), App::getAccelerometerZ},
-			{OS_TEXT("__get@hasAccelerometer"), App::getHasAccelerometer},
-			{OS_TEXT("startAccelerometer"), App::startAccelerometer},
-			{OS_TEXT("stopAccelerometer"), App::stopAccelerometer},
-			{OS_TEXT("__get@orientation"), App::getOrientation},
-			{OS_TEXT("__set@orientation"), App::setOrientation},
+			// {"getScreenWidth", App::getScreenWidth},
+			{"__get@screenWidth", App::getScreenWidth},
+			// {"getScreenHeight", App::getScreenHeight},
+			{"__get@screenHeight", App::getScreenHeight},
+			// {"getIsMultiTouch", App::getIsMultiTouch},
+			{"__get@isMultiTouch", App::getIsMultiTouch},
+			{"__get@timeMS", App::getTimeMS},
+			{"__get@timeSec", App::getTimeSec},
+			{"__get@accelerometerX", App::getAccelerometerX},
+			{"__get@accelerometerY", App::getAccelerometerY},
+			{"__get@accelerometerZ", App::getAccelerometerZ},
+			{"__get@hasAccelerometer", App::getHasAccelerometer},
+			{"startAccelerometer", App::startAccelerometer},
+			{"stopAccelerometer", App::stopAccelerometer},
+			{"__get@orientation", App::getOrientation},
+			{"__set@orientation", App::setOrientation},
 			{}
 		};
-		getModule(OS_TEXT("app"));
+		getModule("app");
 		setFuncs(list);
 		pop();
 
@@ -278,86 +261,39 @@ public:
 
 	enum ETouchPhase
 	{
-		TOUCH_PHASE_BEGAN,
-		TOUCH_PHASE_MOVED,
-		TOUCH_PHASE_ENDED,
-		TOUCH_PHASE_CANCELED,
+		TOUCH_PHASE_START,
+		TOUCH_PHASE_MOVE,
+		TOUCH_PHASE_END,
+		TOUCH_PHASE_CANCEL,
 	};
 
-	void setTouchEvent(int x, int y, ETouchPhase phase, int id)
+	void registerTouchEvent(int x, int y, ETouchPhase phase, int id)
 	{
-		// printf("setTouchEvent: %d %d %d %d\n", x, y, (int)phase, id);
-
-		getGlobal(OS_TEXT("app"), false, false);
-		OS_ASSERT(!isNull());
-		getProperty(OS_TEXT("touches"), false, false);
-		if(isNull()){
-			pop();
-			newObject();
-			getGlobal(OS_TEXT("app"), false, false);
-			pushString(OS_TEXT("touches"));
-			pushStackValue(-3);
-			setProperty(false);
-		}
-		pushStackValue(-1);
-		pushNumber(id);
-		getProperty(false, false);
-		if(isNull()){
-			if(phase != TOUCH_PHASE_BEGAN){
-				pop(2);
-				return;
-			}
-			pop();
-			newObject();
-			pushStackValue(-2);
-			pushNumber(id);
-			pushStackValue(-3);
-			setProperty(false);
-		}
-		remove(-2);	
-
-		pushStackValue(-1);
-		pushString(OS_TEXT("id"));
-		pushNumber(id);
-		setProperty(false);
-
-		pushStackValue(-1);
-		pushString(OS_TEXT("x"));
+		getGlobal("app");
+		getProperty("registerTouchEvent");
+		getGlobal("app"); // push 'this' for registerTouchEvent
 		pushNumber(x);
-		setProperty(false);
-
-		pushStackValue(-1);
-		pushString(OS_TEXT("y"));
 		pushNumber(y);
-		setProperty(false);
-
-		pushStackValue(-1);
-		pushString(OS_TEXT("processed"));
-		pushBool(false);
-		setProperty(false);
-
-		pushStackValue(-1);
-		pushString(OS_TEXT("phase"));
 		switch(phase){
-		case TOUCH_PHASE_BEGAN:
-			pushString(OS_TEXT("began"));
+		case TOUCH_PHASE_START:
+			pushString("start");
 			break;
 
-		case TOUCH_PHASE_MOVED:
-			pushString(OS_TEXT("moved"));
+		case TOUCH_PHASE_MOVE:
+			pushString("move");
 			break;
 
-		case TOUCH_PHASE_ENDED:
-			pushString(OS_TEXT("ended"));
+		case TOUCH_PHASE_END:
+			pushString("end");
 			break;
 
 		default:
-		case TOUCH_PHASE_CANCELED:
-			pushString(OS_TEXT("canceled"));
+		case TOUCH_PHASE_CANCEL:
+			pushString("cancel");
 			break;
 		}
-		setProperty(false);
-		pop();
+		pushNumber(id);
+		call(4, 0);
 	}
 
 	static int32 touchEventHandler(void* system_data, void* user_data)
@@ -366,11 +302,11 @@ public:
 		s3ePointerEvent * ev = (s3ePointerEvent*)system_data;
 		switch(ev->m_Pressed){
 		case S3E_POINTER_STATE_DOWN:
-			os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_BEGAN, 0);
+			os->registerTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_START, 0);
 			break;
 
 		case S3E_POINTER_STATE_UP:
-			os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_ENDED, 0);
+			os->registerTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_END, 0);
 			break;
 		}
 		return 0;
@@ -380,7 +316,7 @@ public:
 	{
 		MarmaladeOS * os = (MarmaladeOS*)user_data;
 		s3ePointerMotionEvent * ev = (s3ePointerMotionEvent*)system_data;
-		os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_MOVED, 0);
+		os->registerTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_MOVE, 0);
 		return 0;
 	}
 
@@ -390,11 +326,11 @@ public:
 		s3ePointerTouchEvent * ev = (s3ePointerTouchEvent*)system_data;
 		switch(ev->m_Pressed){
 		case S3E_POINTER_STATE_DOWN:
-			os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_BEGAN, ev->m_TouchID);
+			os->registerTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_START, ev->m_TouchID);
 			break;
 
 		case S3E_POINTER_STATE_UP:
-			os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_ENDED, ev->m_TouchID);
+			os->registerTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_END, ev->m_TouchID);
 			break;
 		}
 		return 0;
@@ -404,7 +340,7 @@ public:
 	{
 		MarmaladeOS * os = (MarmaladeOS*)user_data;
 		s3ePointerTouchMotionEvent * ev = (s3ePointerTouchMotionEvent*)system_data;
-		os->setTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_MOVED, ev->m_TouchID);
+		os->registerTouchEvent(ev->m_x, ev->m_y, TOUCH_PHASE_MOVE, ev->m_TouchID);
 		return 0;
 	}
 
@@ -483,72 +419,49 @@ public:
 	}
 };
 
+double clamp(double a, double min, double max)
+{
+	if(a < min) return min;
+	if(a > max) return max;
+	return a;
+}
+
 int main()
 {
-	// IwMemBucketInit();
-	// IwMemBucketDebugSetBreakpoint(2331);
-	// IW_CALLSTACK("Main");
-	// int32 checkpoint = IwMemBucketCheckpoint();
-
 	OS * os = OS::create(new MarmaladeOS()); //, new MarmaladeOSMemoryManager());
-	// os->setMemBreakpointId(9075);
-	// os->setSetting(OS_SETTING_CREATE_DEBUG_OPCODES, false);
-	{
-		OS::String enterFrame(os, "enterFrame");
-		OS::String triggerEvent(os, "triggerEvent");
-		OS::String director(os, "director");
-		OS::String animationIntervalSec(os, "animationIntervalSec");
-
-		// os->require("core");
-		os->require("main.os");
+	os->require("main.os");
 	
-		// uint64 startTimeMS = s3eTimerGetMs();
-		uint64 updateTimeMS = 0;
-		for(;;){ 
-			updateTimeMS = s3eTimerGetMs();
-			/* if(updateTimeMS - startTimeMS > 10 * 1000){
-				break;
-			} */
+	uint64 updateTimeMS = 0;
+	for(;;){ 
+		updateTimeMS = s3eTimerGetMs();
 			
-			// s3eDeviceYield(0);
-			s3eKeyboardUpdate();
-			s3ePointerUpdate();
+		s3eDeviceYield(0);
+		s3eKeyboardUpdate();
+		s3ePointerUpdate();
 			
-			// ccAccelerationUpdate();
+		// ccAccelerationUpdate();
 
-			if(s3eDeviceCheckQuitRequest() || os->isTerminated()){
+		if(s3eDeviceCheckQuitRequest() || os->isTerminated()){
+			break;
+		}
+
+		os->getGlobal("triggerEvent");
+		os->pushGlobals(); // this
+		os->pushString("enterFrame");
+		os->call(1);
+
+		os->getGlobal("director");
+		os->getProperty("animationIntervalSec");
+		int animationIntervalMS = (int)(1.0f / clamp(os->popNumber(), 0.01, 0.2));
+		while((s3eTimerGetMs() - updateTimeMS) < animationIntervalMS){
+			int yield = (int)(animationIntervalMS - (s3eTimerGetMs() - updateTimeMS));
+			if(yield < 0){
 				break;
 			}
-
-			os->getGlobal(triggerEvent);
-			os->pushGlobals(); // this
-			os->pushString(enterFrame);
-			os->call(1);
-
-			// s3eDeviceYield(0);
-
-			os->getGlobal(director);
-			os->getProperty(animationIntervalSec);
-			double animationIntervalSec = os->popNumber();
-			if(animationIntervalSec < 0.01){
-				animationIntervalSec = 0.01;
-			}else if(animationIntervalSec > 0.2){
-				animationIntervalSec = 0.2;
-			}
-			int animationIntervalMS = (int)(1.0f / animationIntervalSec);
-			while((s3eTimerGetMs() - updateTimeMS) < animationIntervalMS){
-				int yield = (int)(animationIntervalMS - (s3eTimerGetMs() - updateTimeMS));
-				if(yield < 0){
-					break;
-				}
-				s3eDeviceYield(yield);
-			}
+			s3eDeviceYield(yield);
 		}
 	}
 	int code = os->getTerminatedCode();
 	os->release();
-
-	// IwMemBucketDebugCheck(0, checkpoint, "check-app-leak.txt");
-	// IwMemBucketTerminate();
 	return code;
 }

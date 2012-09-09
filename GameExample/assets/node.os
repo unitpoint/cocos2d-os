@@ -216,7 +216,7 @@ Node = {
 			t = t.mult( p.nodeToParentTransform() )
 			p = p.__parent
 		}
-		print "nodeToWorldTransform"..t
+		// print "nodeToWorldTransform"..t
 		return t
 	}
 	
