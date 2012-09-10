@@ -88,10 +88,9 @@ var function applyOrientation()
 
 	var orientation = app.orientation
 	if(orientation == ORIENTATION_PORTRAIT){
-		/* glTranslatef(w,h,0)
-		// glRotatef(180,0,0,1)
+		/* glTranslatef(w h 0)
 		glScalef(-1 1 1)
-		glTranslatef(-w,-h,0) */
+		glTranslatef(-w -h 0) */
 	}else if(orientation == ORIENTATION_PORTRAIT_UPSIDE_DOWN){
 		// upside down
 		glTranslatef(w,h,0)
@@ -248,7 +247,7 @@ function triggerTouches(){
 			var recursion = {[cur] = true}
 			for(;cur !== runningScene && cur.__parent;){
 				cur = cur.__parent
-				if(recursion[cur]) break
+				if(cur in recursion) break
 				recursion[cur] = true
 			}
 			if(cur === runningScene){
@@ -259,7 +258,7 @@ function triggerTouches(){
 				}
 				// print concat("captured node "cur" didn't capture "touch" so run generic step")
 			}else{
-				delete touch.captured
+				touch.captured = null
 				// print "captured node is detached "..touch.." so run generic step"
 			}
 		}

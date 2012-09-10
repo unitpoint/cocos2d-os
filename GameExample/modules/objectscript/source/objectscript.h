@@ -43,7 +43,7 @@
 #endif
 
 #ifdef _DEBUG
-#define OS_DEBUG
+// #define OS_DEBUG
 #endif
 
 // select ObjectScript number type here
@@ -241,7 +241,7 @@ namespace ObjectScript
 		OP_RSHIFT, // >>
 		OP_POW, // **
 
-		OP_CONCAT, // ..
+		OP_CONCAT,	// ..
 
 		// unary operators
 
@@ -924,9 +924,9 @@ namespace ObjectScript
 					COMMENT_MULTI_LINE,
 
 					NAME,           // [a..z_$][a..z0..9_$]*
-					DOT_NAME,       // used in compiler [NAME].[NAME]... - for types
-					IDENTIFER,      // used in compiler [NAME]
-					DOT_IDENTIFER,  // used in compiler [NAME].[NAME]... - for types
+					// DOT_NAME,       // used in compiler [NAME].[NAME]... - for types
+					// IDENTIFER,      // used in compiler [NAME]
+					// DOT_IDENTIFER,  // used in compiler [NAME].[NAME]... - for types
 
 					STRING,         // ["].*?["]
 
@@ -965,6 +965,7 @@ namespace ObjectScript
 					OPERATOR_QUESTION,  // ?
 					OPERATOR_COLON,     // :
 
+					OPERATOR_IN,		// in
 					OPERATOR_LENGTH,	// #
 
 					OPERATOR_BIT_AND, // &
@@ -1521,10 +1522,11 @@ namespace ObjectScript
 
 					EXP_TYPE_LOGIC_BOOL,    // !!
 					EXP_TYPE_LOGIC_NOT,     // !
-					EXP_TYPE_BIT_NOT, // ~
-					EXP_TYPE_PLUS,    // +
-					EXP_TYPE_NEG,     // -
-					EXP_TYPE_LENGTH,  // #
+					EXP_TYPE_BIT_NOT,		// ~
+					EXP_TYPE_PLUS,			// +
+					EXP_TYPE_NEG,			// -
+					EXP_TYPE_LENGTH,		// #
+					EXP_TYPE_IN,			// in
 
 					// EXP_TYPE_PARAM_SEPARTOR, // ,
 
@@ -1757,7 +1759,7 @@ namespace ObjectScript
 					OP_LEVEL_10, // << >> >>>
 					OP_LEVEL_11, // + -
 					OP_LEVEL_12, // * / %
-					OP_LEVEL_13, // ** as is
+					OP_LEVEL_13, // ** in as is
 					OP_LEVEL_14, // ++ --
 					OP_LEVEL_15, // unary ! ~ + #
 					OP_LEVEL_16, // .
@@ -2046,7 +2048,7 @@ namespace ObjectScript
 					OP_RSHIFT, // >>
 					OP_POW, // **
 
-					OP_CONCAT, // ..
+					OP_CONCAT,	// ..
 
 					OP_BIT_NOT,
 					OP_PLUS,
@@ -2056,6 +2058,7 @@ namespace ObjectScript
 					OP_LOGIC_BOOL,
 					OP_LOGIC_NOT,
 
+					OP_IN,
 					OP_SUPER,
 
 					OP_TYPE_OF,
@@ -2564,7 +2567,7 @@ namespace ObjectScript
 			bool getPropertyValue(Value& result, GCValue * table_value, const PropertyIndex& index, bool prototype_enabled);
 			bool getPropertyValue(Value& result, Value table_value, const PropertyIndex& index, bool prototype_enabled);
 
-			bool hasOwnProperty(GCValue * table_value, const PropertyIndex& index);
+			bool hasProperty(GCValue * table_value, const PropertyIndex& index, bool prototype_enabled, bool getter_enabled);
 			void pushPropertyValue(GCValue * table_value, const PropertyIndex& index, bool prototype_enabled, bool getter_enabled, bool auto_create);
 			void pushPropertyValue(Value table_value, const PropertyIndex& index, bool prototype_enabled, bool getter_enabled, bool auto_create);
 
@@ -2605,7 +2608,8 @@ namespace ObjectScript
 		void initArrayClass();
 		void initFunctionClass();
 		void initStringClass();
-		void initMathLibrary();
+		void initMathModule();
+		void initLangTokenizerModule();
 		void initPreScript();
 		void initPostScript();
 

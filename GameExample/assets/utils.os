@@ -8,9 +8,9 @@ function ccDrawPoly(points closePolygon fill)
 	// save to local var to prevent dealocation by gc
 	var pointer = glVertexPointer(2, GL_FLOAT, 0, points);
     if(closePolygon){
-        glDrawArrays(fill && GL_TRIANGLE_FAN || GL_LINE_LOOP, 0, #points);
+        glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINE_LOOP, 0, #points);
 	}else{
-		glDrawArrays(fill && GL_TRIANGLE_FAN || GL_LINE_STRIP, 0, #points);
+		glDrawArrays(fill ? GL_TRIANGLE_FAN : GL_LINE_STRIP, 0, #points);
 	}
 
     glEnableClientState(GL_COLOR_ARRAY);
@@ -81,7 +81,6 @@ Matrix = {
 		angle = math.rad(angle)
 		var fSin = math.sin(angle);
 		var fCos = math.cos(angle);
-		var t = this
 		return this.set(this.a * fCos + this.c * fSin,
 			this.b * fCos + this.d * fSin,
 			this.c * fCos - this.a * fSin,
@@ -119,7 +118,7 @@ Matrix = {
 		return m
 	}
 	
-	setFromGL = function(m){
+	fromGL = function(m){
 		this.a = m[0]; this.c = m[4]; this.tx = m[12];
 		this.b = m[1]; this.d = m[5]; this.ty = m[13];
 		return this

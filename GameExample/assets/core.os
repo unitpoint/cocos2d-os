@@ -5,22 +5,16 @@ function __get(name){
 	print ""
 }
 
-/* looks like it doesn't work at the moment
-function Object.__get(name){
-	var backTrace = debugBackTrace(1 1)[0]
-	// print backTrace return;
-	if(backTrace.name == "addEventListener" || backTrace.name == "triggerEvent"){
-		return;
-	}
+function Object.__get(name, autoCreate){
+	if(autoCreate) return;
 	print concat("object property \""name"\" is not declared in "this)
 	print "back trace"
-	printBackTrace(1)
+	printBackTrace(1) // skip current function
 	print ""
 }
-*/
 
-function printBackTrace(skip_funcs){
-	for(var i, t in debugBackTrace(skip_funcs + 1)){
+function printBackTrace(skipNumFuncs){
+	for(var i, t in debugBackTrace(skipNumFuncs + 1)){ // skip printBackTrace
 		print concat("======= ["i"]")
 		print concat("  function: "t.name", arguments: "t.arguments)
 		// print concat("  line: "t.line", pos: "t.pos", token: "t.token", file: "t.file)

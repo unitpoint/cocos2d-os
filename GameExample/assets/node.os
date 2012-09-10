@@ -21,24 +21,10 @@ Node = {
 		__childrenNeg = {}
 		__childrenPos = {}
 		__timers = {}
+		
 		timeSec = 0
 		timeSpeed = 1
 		visible = true
-		
-		/*
-		isRelativeAnchor = true
-		x = 0
-		y = 0
-		width = 0
-		height = 0
-		scaleX = 1
-		scaleY = 1
-		skewX = 0
-		skewY = 0
-		rotation = 0
-		anchorX = 0.5
-		anchorY = 0.5
-		*/
 		
 		__isRelativeAnchor = true
 		__x = 0
@@ -113,11 +99,11 @@ Node = {
 		
 		zOrder = zOrder || 0
 		this.__num = this.__num + 1
-		var children = zOrder < 0 && this.__childrenNeg || this.__childrenPos
+		var children = zOrder < 0 ? this.__childrenNeg : this.__childrenPos
 		children[node] = [zOrder this.__num]
 		children.rsort(function(a b){
 			var z = a[0] - b[0]
-			return z != 0 && z || a[1] - b[1]
+			return z != 0 ? z : a[1] - b[1]
 		})
 		node.__parent = this
 		node.__parentChildren = children
@@ -125,7 +111,7 @@ Node = {
 	}
 	
 	remove = function(){
-		this.__parent && this.__parent.removeChild(this)
+		if(this.__parent) this.__parent.removeChild(this)
 	}
 	
 	removeChild = function(node){
@@ -140,38 +126,7 @@ Node = {
 	}
 	
 	nodeToParentTransform = function(){
-		if(this.__transformDirty 
-			/*
-			|| this.__x !== this.x 
-			|| this.__y !== this.y
-			|| this.__width !== this.width
-			|| this.__height !== this.height
-			|| this.__scaleX !== this.scaleX
-			|| this.__scaleY !== this.scaleY
-			|| this.__skewX !== this.skewX
-			|| this.__skewY !== this.skewY
-			|| this.__anchorX !== this.anchorX
-			|| this.__anchorY !== this.anchorY
-			|| this.__rotation !== this.rotation
-			|| this.__isRelativeAnchor !== this.isRelativeAnchor
-			*/
-			)
-		{
-			/*
-			this.__x = this.x 
-			this.__y = this.y
-			this.__width = this.width
-			this.__height = this.height
-			this.__scaleX = this.scaleX
-			this.__scaleY = this.scaleY
-			this.__skewX = this.skewX
-			this.__skewY = this.skewY
-			this.__anchorX = this.anchorX
-			this.__anchorY = this.anchorY
-			this.__rotation = this.rotation
-			this.__isRelativeAnchor = this.isRelativeAnchor
-			*/
-
+		if(this.__transformDirty){
 			var t = Matrix()
 			var anchorX, anchorY
 			if(this.__anchorX !== 0 || this.__anchorY !== 0){
@@ -211,6 +166,7 @@ Node = {
 	}
 	
 	nodeToWorldTransform = function(){
+		// t could be changed so clone it
 		var t = clone this.nodeToParentTransform()
 		for(var p = this.__parent; p;){
 			t = t.mult( p.nodeToParentTransform() )
@@ -278,8 +234,10 @@ Node = {
 		for(var child in this.__childrenPos){
 			child.triggerEvent(eventName, params)
 		}
-		for(var func in this.__events[eventName]){
-			func(params)
+		if(eventName in this.__events){
+			for(var func in this.__events[eventName]){
+				func(params)
+			}
 		}
 		for(var child in this.__childrenNeg){
 			child.triggerEvent(eventName, params)

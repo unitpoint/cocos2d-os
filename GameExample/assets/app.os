@@ -24,13 +24,14 @@ function registerTouchEvent(x y phase id){
 			phase = phase
 			processed = false
 			id = id
+			captured = null
 		}
 		return
 	}
-	var touch = touches[id]
-	if(!touch){
+	if(!(id in touches)){
 		return
 	}
+	var touch = touches[id]
 	if(phase == "move"){
 		if(touch.phase == "start"){
 			if(!touch.processed){

@@ -11,23 +11,51 @@ addEventListener("enterFrame", function(){
 
 MyColorNode = extends ColorNode {
 	__object = {
-		speed: 0.5
-		dd: [1 1]
+		speed = 0.5
+		dd = [1 1]
+		touch = false
+	}
+	
+	isLocalPoint = function(point){
+		return point.x >= 0 && point.x < this.width 
+			&& point.y >= 0 && point.y < this.height
 	}
 	
 	__construct = function(){
 		super.__construct.call(this);
 		
-		var self = this
+		var self, timer = this
 		var function changeDir(){
 			self.dd[0] = math.random(-1 1)
 			self.dd[1] = math.random(-1 1)
-			self.setTimeout(changeDir, math.random(0.5 1.5))
+			timer = self.setTimeout(changeDir, math.random(3.0 5.0))
 		}
 		changeDir()
+		
+		var tx, ty, sx, sy
+		this.addEventListener("touch", function(touch){
+			if(touch.phase == "start" && !touch.captured){
+				var local = self.pointToNodeSpace(touch)
+				if(self.isLocalPoint(local)){
+					tx, ty, sx, sy = touch.x, touch.y, self.x, self.y
+					touch.captured = self
+					self.touch = true
+					self.clearTimeout(timer)
+				}
+			}else if(touch.phase == "move" && touch.captured === self){
+				self.x, self.y = sx + touch.x - tx, sy + touch.y - ty
+				self.touch = true
+				self.clearTimeout(timer)
+			}else{
+				self.touch = false
+				changeDir()
+			}
+		})
 	}
 	
 	update = function(deltaTimeSec){
+		if(this.touch) return;
+		
 		var offsPerSec = director.width * this.speed * deltaTimeSec
 		
 		this.x = this.x + this.dd[0] * offsPerSec
@@ -58,45 +86,14 @@ MyScene = extends Scene {
 			return [math.random() math.random() math.random() 1]
 		}
 		
-		function(){
-			var rect = ColorNode()
-			rect.speed = math.random(0.2 0.5)
-			rect.setRect(
-				this.width * 0.7
-				this.height * 0.7
-				200
-				100
-				)
-			rect.color = color()
-			
-			var tx, ty, sx, sy
-			
-			rect.addEventListener("touch", function(touch){
-				var local = rect.pointToNodeSpace(touch)
-				// if(touch.phase == "end")
-					// print "listener touch"..touch.." local "..local
-				if(touch.phase == "start" && !touch.captured){
-					tx, ty = touch.x, touch.y
-					sx, sy = rect.x, rect.y
-					touch.captured = rect
-				}else if(touch.phase == "move" && touch.captured === rect){
-					rect.x, rect.y = sx + touch.x - tx, sy + touch.y - ty
-					// touch.captured = rect
-				}else{ // if(touch.phase == "end"&& touch.captured === rect){
-					// delete touch.captured
-				}
-			})
-			this.addChild(rect)
-		}.call(this)
-		
-		for(var i = 0; i < 2; i++){
+		for(var i = 0; i < 10; i++){
 			var rect = MyColorNode()
 			rect.speed = math.random(0.2 0.5)
 			rect.setRect(
-				this.width * math.random(0.1 0.6) 
-				this.height * math.random(0.1 0.6) 
-				this.width * math.random(0.1 0.3) 
-				this.width * math.random(0.1 0.3) 
+				this.width * math.random(0.1 0.7) 
+				this.height * math.random(0.1 0.7) 
+				this.width * math.random(0.1 0.2) 
+				this.width * math.random(0.1 0.2) 
 				)
 			rect.color = color()
 			this.addChild(rect)
@@ -105,3 +102,5 @@ MyScene = extends Scene {
 }
 
 director.scene = MyScene()
+
+require("bitmapfont")

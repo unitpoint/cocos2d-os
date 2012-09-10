@@ -988,8 +988,8 @@ const OS_CHAR * OS::Core::Tokenizer::getTokenTypeName(TokenType token_type)
 
 	case NAME:      return OS_TEXT("NAME");
 		// case DOT_NAME:  return OS_TEXT("DOT_NAME");
-	case IDENTIFER:  return OS_TEXT("IDENTIFER");
-	case DOT_IDENTIFER:  return OS_TEXT("DOT_IDENTIFER");
+	// case IDENTIFER:  return OS_TEXT("IDENTIFER");
+	// case DOT_IDENTIFER:  return OS_TEXT("DOT_IDENTIFER");
 	case STRING:    return OS_TEXT("STRING");
 
 	case NUMBER:   return OS_TEXT("NUMBER");
@@ -1542,19 +1542,22 @@ bool OS::Core::Tokenizer::parseLines()
 				continue;
 			}
 			// parse operator
-			int i;
-			for(i = 0; i < operator_count; i++){
-				size_t len = OS_STRLEN(operator_desc[i].name);
-				if(OS_STRNCMP(str, operator_desc[i].name, len) == 0){
-					addToken(String(allocator, str, (int)len), operator_desc[i].type, cur_line, str - line_start OS_DBG_FILEPOS);
-					str += len;
-					break;
+			if((*str == OS_TEXT('-') || *str == OS_TEXT('+')) && (str[1] >= OS_TEXT('0') && str[1] <= OS_TEXT('9'))){
+				int i = 0;
+			}else{
+				int i;
+				for(i = 0; i < operator_count; i++){
+					size_t len = OS_STRLEN(operator_desc[i].name);
+					if(OS_STRNCMP(str, operator_desc[i].name, len) == 0){
+						addToken(String(allocator, str, (int)len), operator_desc[i].type, cur_line, str - line_start OS_DBG_FILEPOS);
+						str += len;
+						break;
+					}
+				}
+				if(i < operator_count){
+					continue;
 				}
 			}
-			if(i < operator_count){
-				continue;
-			}
-
 			{
 				OS_FLOAT fval;
 				const OS_CHAR * token_start = str;
@@ -1800,6 +1803,8 @@ bool OS::Core::Compiler::Expression::isBinaryOperator() const
 	case EXP_TYPE_ASSIGN:
 
 	case EXP_TYPE_PARAMS:
+	case EXP_TYPE_QUESTION:
+	case EXP_TYPE_IN:
 	case EXP_TYPE_CONCAT: // ..
 
 	case EXP_TYPE_LOGIC_AND: // &&
@@ -2218,6 +2223,7 @@ void OS::Core::Compiler::Expression::debugPrint(StringBuffer& out, OS::Core::Com
 	case EXP_TYPE_INDIRECT:
 	case EXP_TYPE_ASSIGN:
 	case EXP_TYPE_CONCAT: // ..
+	case EXP_TYPE_IN:
 	case EXP_TYPE_LOGIC_AND: // &&
 	case EXP_TYPE_LOGIC_OR:  // ||
 	case EXP_TYPE_LOGIC_PTR_EQ:  // ===
@@ -2957,6 +2963,7 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 		break;
 
 	case EXP_TYPE_CONCAT:
+	case EXP_TYPE_IN:
 
 		// case EXP_TYPE_LOGIC_AND:
 		// case EXP_TYPE_LOGIC_OR:
@@ -3380,6 +3387,7 @@ OS::Core::Compiler::ExpressionType OS::Core::Compiler::getExpressionType(TokenTy
 
 	case Tokenizer::OPERATOR_QUESTION: return EXP_TYPE_QUESTION;
 		// case Tokenizer::OPERATOR_COLON: return ;
+	case Tokenizer::OPERATOR_IN: return EXP_TYPE_IN;
 
 	case Tokenizer::OPERATOR_BIT_AND: return EXP_TYPE_BIT_AND;
 	case Tokenizer::OPERATOR_BIT_OR: return EXP_TYPE_BIT_OR;
@@ -3478,6 +3486,7 @@ OS::Core::Compiler::OpcodeLevel OS::Core::Compiler::getOpcodeLevel(ExpressionTyp
 		return OP_LEVEL_12;
 
 	case EXP_TYPE_POW: // **
+	case EXP_TYPE_IN:
 		return OP_LEVEL_13;
 
 	case EXP_TYPE_PRE_INC:     // ++
@@ -4159,6 +4168,9 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::stepPass2(Scope * scope, Ex
 					break;
 				}
 				return exp;
+			}
+			if(params->list.count == 0){
+				// nop
 			}
 			break;
 		}
@@ -6126,7 +6138,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::finishValueExpression(Scope
 		case Tokenizer::OPERATOR_LSHIFT: // <<
 		case Tokenizer::OPERATOR_RSHIFT: // >>
 		case Tokenizer::OPERATOR_POW: // **
-			if(!p.allow_binary_operator){ // && token_type != Tokenizer::OPERATOR_INDIRECT){
+			if(!p.allow_binary_operator){
 				return exp;
 			}
 			exp = finishBinaryOperator(scope, OP_LEVEL_NOTHING, exp, p, is_finished);
@@ -6195,6 +6207,21 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::finishValueExpression(Scope
 			exp->ret_values = 1;
 			// allow_auto_call = false;
 			continue;
+
+		case Tokenizer::NAME:
+			if(token->str == allocator->core->strings->syntax_in){
+				if(!p.allow_binary_operator){
+					return exp;
+				}
+				token->type = Tokenizer::OPERATOR_IN;
+				exp = finishBinaryOperator(scope, OP_LEVEL_NOTHING, exp, p, is_finished);
+				if(!exp){
+					return NULL;
+				}
+				OS_ASSERT(is_finished);
+				continue;
+			}
+			// no break
 
 		default:
 			if(!p.allow_auto_call){
@@ -6889,6 +6916,9 @@ const OS_CHAR * OS::Core::Compiler::getExpName(ExpressionType type)
 	case EXP_TYPE_LENGTH:
 		return OS_TEXT("length");
 
+	case EXP_TYPE_IN:
+		return OS_TEXT("in");
+
 	case EXP_TYPE_SUPER:
 		return OS_TEXT("super");
 
@@ -7417,6 +7447,7 @@ OS::Core::Program::OpcodeType OS::Core::Program::getOpcodeType(Compiler::Express
 	case Compiler::EXP_TYPE_LENGTH: return OP_LENGTH;
 
 	case Compiler::EXP_TYPE_CONCAT: return OP_CONCAT;
+	case Compiler::EXP_TYPE_IN: return OP_IN;
 
 	case Compiler::EXP_TYPE_LOGIC_AND: return OP_LOGIC_AND;
 	case Compiler::EXP_TYPE_LOGIC_OR: return OP_LOGIC_OR;
@@ -10280,7 +10311,8 @@ bool OS::init(MemoryManager * p_manager)
 		initArrayClass();
 		initStringClass();
 		initFunctionClass();
-		initMathLibrary();
+		initMathModule();
+		initLangTokenizerModule();
 		initPostScript();
 		return true;
 	}
@@ -12920,7 +12952,7 @@ void * OS::pushUserPointer(int crc, void * data, OS_UserDataDtor dtor, void * us
 
 void * OS::pushUserPointer(void * data, OS_UserDataDtor dtor, void * user_param)
 {
-	return pushUserPointer(data, dtor, user_param);
+	return pushUserPointer(0, data, dtor, user_param);
 }
 
 void OS::newObject()
@@ -13312,19 +13344,19 @@ bool OS::Core::getPropertyValue(Value& result, Value table_value, const Property
 	return false;
 }
 
-bool OS::Core::hasOwnProperty(GCValue * table_value, const PropertyIndex& index)
+bool OS::Core::hasProperty(GCValue * table_value, const PropertyIndex& index, bool prototype_enabled, bool getter_enabled)
 {
 	Value value;
-	if(getPropertyValue(value, table_value, index, false)){
+	if(getPropertyValue(value, table_value, index, prototype_enabled)){
 		return true;
 	}
-	if(index.index.type == OS_VALUE_TYPE_STRING && !hasSpecialPrefix(index.index.v.string)){
+	if(getter_enabled && index.index.type == OS_VALUE_TYPE_STRING && !hasSpecialPrefix(index.index.v.string)){
 		const void * buf1 = strings->__getAt.toChar();
 		int size1 = strings->__getAt.getDataSize();
 		const void * buf2 = index.index.v.string->toChar();
 		int size2 = index.index.v.string->getDataSize();
 		GCStringValue * getter_name = newStringValue(buf1, size1, buf2, size2);
-		if(getPropertyValue(value, table_value, PropertyIndex(getter_name, PropertyIndex::KeepStringIndex()), false)){
+		if(getPropertyValue(value, table_value, PropertyIndex(getter_name, PropertyIndex::KeepStringIndex()), prototype_enabled)){
 			return true;
 		}
 	}
@@ -13636,6 +13668,7 @@ restart:
 		{
 			int cur_ret_values = 0;
 			int ret_values = stack_func->need_ret_values;
+			stack_values.count = stack_func->bottom_stack_pos;
 			syncStackRetValues(ret_values, cur_ret_values);
 			OS_ASSERT(stack_values.count == stack_func->bottom_stack_pos + ret_values);
 			// stack_func->opcodes_pos = opcodes.getPos();
@@ -14111,7 +14144,7 @@ restart:
 				Value table_value = stack_values[stack_values.count-1-params];
 				Value func;
 				if(getPropertyValue(func, table_value, 
-					PropertyIndex(strings->__setdim, PropertyIndex::KeepStringIndex()), true)
+					PropertyIndex(params == 1 ? strings->__setempty : strings->__setdim, PropertyIndex::KeepStringIndex()), true)
 					&& func.isFunction())
 				{
 					pushValue(func);
@@ -14290,6 +14323,16 @@ restart:
 			{
 				OS_ASSERT(stack_values.count >= 1);
 				stack_values[stack_values.count-1] = !valueToBool(stack_values[stack_values.count-1]);
+				break;
+			}
+
+		case Program::OP_IN:
+			{
+				OS_ASSERT(stack_values.count >= 2);
+				Core::GCValue * self = stack_values[stack_values.count-1].getGCValue();
+				bool has_property = self && hasProperty(self, stack_values[stack_values.count-2], true, true);
+				pop(2);
+				pushBool(has_property);
 				break;
 			}
 
@@ -15203,7 +15246,19 @@ void OS::initObjectClass()
 			Core::Value index = os->core->getStackValue(-params);
 			Core::GCValue * self = self_var.getGCValue();
 			if(self){
-				os->pushBool( os->core->hasOwnProperty(self, index) );
+				os->pushBool( os->core->hasProperty(self, index, false, true) );
+				return 1;
+			}
+			return 0;
+		}
+
+		static int hasProperty(OS * os, int params, int, int, void*)
+		{
+			Core::Value self_var = os->core->getStackValue(-params-1);
+			Core::Value index = os->core->getStackValue(-params);
+			Core::GCValue * self = self_var.getGCValue();
+			if(self){
+				os->pushBool( os->core->hasProperty(self, index, true, true) );
 				return 1;
 			}
 			return 0;
@@ -15224,6 +15279,7 @@ void OS::initObjectClass()
 		{OS_TEXT("push"), Object::push},
 		{OS_TEXT("pop"), Object::pop},
 		{OS_TEXT("hasOwnProperty"), Object::hasOwnProperty},
+		{OS_TEXT("hasProperty"), Object::hasProperty},
 		{}
 	};
 	core->pushValue(core->prototypes[Core::PROTOTYPE_OBJECT]);
@@ -15506,7 +15562,7 @@ double OS::Core::getRand(double min, double max)
 #define OS_MATH_PI 3.1415926535897932384626433832795
 #define OS_RADIANS_PER_DEGREE (OS_MATH_PI/180.0)
 
-void OS::initMathLibrary()
+void OS::initMathModule()
 {
 	struct Math
 	{
@@ -15797,6 +15853,119 @@ void OS::initMathLibrary()
 	pop();
 }
 
+void OS::initLangTokenizerModule()
+{
+	struct LangTokenizer
+	{
+		enum {
+			TOKEN_TYPE_STRING,
+			TOKEN_TYPE_NUMBER,
+			TOKEN_TYPE_NAME,
+			TOKEN_TYPE_OPERATOR
+		};
+
+		static int getTokenType(Core::TokenType type)
+		{
+			switch(type){
+			case Core::Tokenizer::NAME:
+				return TOKEN_TYPE_NAME;
+
+			case Core::Tokenizer::STRING:
+				return TOKEN_TYPE_STRING;
+
+			case Core::Tokenizer::NUMBER:
+				return TOKEN_TYPE_NUMBER;
+			}
+			return TOKEN_TYPE_OPERATOR;
+		}
+
+		static void pushTokensAsObject(OS * os, Core::Tokenizer& tokenizer)
+		{
+			os->newArray();
+			int count = tokenizer.getNumTokens();
+			for(int i = 0; i < count; i++){
+				os->pushStackValue(-1);
+				os->newObject();
+				{
+					Core::TokenData * token = tokenizer.getToken(i);
+
+					os->pushStackValue(-1);
+					os->pushString(OS_TEXT("str"));
+					os->pushString(token->str);
+					os->setProperty();
+#if 0
+					os->pushStackValue(-1);
+					os->pushString(OS_TEXT("line"));
+					os->pushNumber(token->line+1);
+					os->setProperty();
+
+					os->pushStackValue(-1);
+					os->pushString(OS_TEXT("pos"));
+					os->pushNumber(token->pos+1);
+					os->setProperty();
+#endif
+					os->pushStackValue(-1);
+					os->pushString(OS_TEXT("type"));
+					os->pushNumber(getTokenType(token->type));
+					os->setProperty();
+				}
+				os->addProperty();
+			}
+		}
+
+		static int parseText(OS * os, int params, int, int, void*)
+		{
+			String str = os->toString(-params);
+			if(str.getDataSize() == 0){
+				return 0;
+			}
+			Core::Tokenizer tokenizer(os);
+			tokenizer.parseText(str.toChar(), str.getLen(), String(os));
+			pushTokensAsObject(os, tokenizer);
+			return 1;
+		}
+
+		static int parseFile(OS * os, int params, int, int, void*)
+		{
+			String filename = os->resolvePath(os->toString(-params));
+			if(filename.getDataSize() == 0){
+				return 0;
+			}
+			Core::FileStreamReader file(os, filename);
+			if(!file.f){
+				return 0;
+			}
+			Core::MemStreamWriter file_data(os);
+			file_data.readFromStream(&file);
+
+			Core::Tokenizer tokenizer(os);
+			tokenizer.parseText((OS_CHAR*)file_data.buffer.buf, file_data.buffer.count, filename);
+
+			pushTokensAsObject(os, tokenizer);
+			return 1;
+		}
+	};
+
+	FuncDef list[] = {
+		{OS_TEXT("parseText"), LangTokenizer::parseText},
+		{OS_TEXT("parseFile"), LangTokenizer::parseFile},
+		{}
+	};
+
+	NumberDef numbers[] = {
+		{OS_TEXT("TOKEN_TYPE_STRING"), LangTokenizer::TOKEN_TYPE_STRING},
+		{OS_TEXT("TOKEN_TYPE_NUMBER"), LangTokenizer::TOKEN_TYPE_NUMBER},
+		{OS_TEXT("TOKEN_TYPE_NAME"), LangTokenizer::TOKEN_TYPE_NAME},
+		{OS_TEXT("TOKEN_TYPE_OPERATOR"), LangTokenizer::TOKEN_TYPE_OPERATOR},
+		{}
+	};
+
+	getModule(OS_TEXT("LangTokenizer"));
+	setFuncs(list);
+	setNumbers(numbers);
+	pop();
+}
+
 #define OS_AUTO_TEXT(exp) OS_TEXT(#exp)
 
 void OS::initPreScript()
@@ -15820,6 +15989,11 @@ void OS::initPreScript()
 
 void OS::initPostScript()
 {
+	eval(OS_AUTO_TEXT(
+		// it's ObjectScript code here
+		Object.__setempty = Object.push
+		Object.__getempty = Object.pop
+	));
 }
 
 void OS::Core::syncStackRetValues(int need_ret_values, int cur_ret_values)
