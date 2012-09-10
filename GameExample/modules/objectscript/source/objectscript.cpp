@@ -1543,7 +1543,7 @@ bool OS::Core::Tokenizer::parseLines()
 				continue;
 			}
 			// parse operator
-			if((*str == OS_TEXT('-') || *str == OS_TEXT('+')) && (str[1] >= OS_TEXT('0') && str[1] <= OS_TEXT('9'))){
+			if(0 && (*str == OS_TEXT('-') || *str == OS_TEXT('+')) && (str[1] >= OS_TEXT('0') && str[1] <= OS_TEXT('9'))){
 				int i = 0;
 			}else{
 				int i;
