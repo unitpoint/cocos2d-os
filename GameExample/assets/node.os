@@ -217,14 +217,14 @@ Node = {
 		glMultMatrix(this.__transformGL)
 	}
 	
-	handlePaint = function(){
+	handlePaint = function(params){
+		this.visible || return;
+		
 		glPushMatrix()
 		this.transform()
 		
 		for(var child in this.__childrenNeg.reverseIter()){
-			if(child.visible){
-				child.handlePaint()
-			}
+			child.handlePaint(params)
 		}
 		
 		this.paint()
@@ -236,27 +236,26 @@ Node = {
 		}
 		
 		for(var child in this.__childrenPos.reverseIter()){
-			if(child.visible){
-				child.handlePaint()
-			}
+			child.handlePaint(params)
 		}
 		
 		glPopMatrix()
 	}
 	
-	handleUpdate = function(deltaTimeSec){
-		this.updateTimers(deltaTimeSec)
+	handleUpdate = function(params){
+		this.updateTimers(params)
 		for(var child in this.__childrenPos){
-			child.handleUpdate(deltaTimeSec)
+			child.handleUpdate(params)
 		}
 		// this.update(deltaTimeSec)
 		if("enterFrame" in this.__events){
 			for(var func in this.__events["enterFrame"]){
-				func(deltaTimeSec this)
+				params.target = this
+				func(params)
 			}
 		}
 		for(var child in this.__childrenNeg){
-			child.handleUpdate(deltaTimeSec)
+			child.handleUpdate(params)
 		}
 	}
 	
@@ -277,6 +276,7 @@ Node = {
 	}
 	
 	addEventListener = function(eventName, func, zOrder){
+		func || return;
 		this.__events[eventName][func] = zOrder || 0
 		this.__events[eventName].rsort()
 	}
@@ -284,8 +284,9 @@ Node = {
 	removeEventListener = function(eventName, func){
 		if(func)
 			delete this.__events[eventName][func]
-		else
-			delete this.__events[eventName]
+		else{
+			// delete this.__events[eventName]
+		}
 	}
 
 	triggerEvent = function(eventName, params){
@@ -326,8 +327,9 @@ Node = {
 		delete this.__timers[t]
 	}
 	
-	updateTimers = function(deltaTimeSec){
-		this.timeSec = this.timeSec + deltaTimeSec * this.timeSpeed
+	updateTimers = function(params){
+		params.deltaTimeSec = params.deltaTimeSec * this.timeSpeed
+		this.timeSec = this.timeSec + params.deltaTimeSec
 		var timeSec = this.timeSec
 		for(var i, t in this.__timers){
 			if(t.nextTimeSec <= timeSec){

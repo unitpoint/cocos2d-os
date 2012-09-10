@@ -12,7 +12,8 @@ addEventListener("enterFrame", function(){
 MyColorNode = extends ColorNode {
 	__object = {
 		speed = 0.5
-		dd = [1 1]
+		dx = 1 
+		dy = 1
 		touch = false
 	}
 	
@@ -21,15 +22,15 @@ MyColorNode = extends ColorNode {
 		
 		var self, timer = this
 		var function changeDir(){
-			self.dd[0] = math.random(-1 1)
-			self.dd[1] = math.random(-1 1)
+			self.dx = math.random(-1 1)
+			self.dy = math.random(-1 1)
 			// self.clearTimeout(timer)
 			timer = self.setTimeout(changeDir, math.random(3.0 5.0))
 		}
 		changeDir()
 		
-		this.addEventListener("enterFrame", function(dt){
-			self.update(dt)
+		this.addEventListener("enterFrame", function(params){
+			self.update(params)
 		})
 		
 		var tx, ty, sx, sy
@@ -55,13 +56,13 @@ MyColorNode = extends ColorNode {
 		})
 	}
 	
-	update = function(deltaTimeSec){
+	update = function(params){
 		if(this.touch) return;
 		
-		var offsPerSec = director.width * this.speed * deltaTimeSec
+		var offsPerSec = director.width * this.speed * params.deltaTimeSec
 		
-		this.x = this.x + this.dd[0] * offsPerSec
-		this.y = this.y + this.dd[1] * offsPerSec
+		this.x = this.x + this.dx * offsPerSec
+		this.y = this.y + this.dy * offsPerSec
 		
 		var function clamp(a min max){
 			if(a < min) return min
@@ -70,11 +71,11 @@ MyColorNode = extends ColorNode {
 		}
 		
 		if(this.x < 0 || this.x > this.__parent.width){
-			this.dd[0] = -this.dd[0]
+			this.dx = -this.dx
 			this.x = clamp(this.x, 0, this.__parent.width)
 		}
 		if(this.y < 0 || this.y > this.__parent.height){
-			this.dd[1] = -this.dd[1]
+			this.dy = -this.dy
 			this.y = clamp(this.y, 0, this.__parent.height)
 		}
 	}

@@ -30,12 +30,17 @@ function eval(str, env){
 var events = {}
 
 function addEventListener(eventName, func, zOrder){
+	func || return;
 	events[eventName][func] = zOrder || -1
 	events[eventName].rsort()
 }
 
 function removeEventListener(eventName, func){
-	delete events[eventName][func]
+	if(func)
+		delete events[eventName][func]
+	else{
+		// delete events[eventName]
+	}
 }
 
 function triggerEvent(eventName, params){

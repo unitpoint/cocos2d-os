@@ -156,11 +156,6 @@ public:
 		return true;
 	}
 
-	void shutdown()
-	{
-		OS::shutdown();
-	}
-
 	int orientation;
 
 	void initAppModule()
@@ -435,7 +430,7 @@ int main()
 	for(;;){ 
 		updateTimeMS = s3eTimerGetMs();
 			
-		// s3eDeviceYield(0);
+		s3eDeviceYield(0);
 		s3eKeyboardUpdate();
 		s3ePointerUpdate();
 			
@@ -456,7 +451,7 @@ int main()
 		while((s3eTimerGetMs() - updateTimeMS) < animationIntervalMS){
 			int yield = (int)(animationIntervalMS - (s3eTimerGetMs() - updateTimeMS));
 			if(yield < 0){
-				s3eDeviceYield(0);
+				// s3eDeviceYield(0);
 				break;
 			}
 			s3eDeviceYield(yield);

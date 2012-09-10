@@ -117,7 +117,7 @@ animationIntervalSec = 1 / 60
 
 var setAppOrientation = app.__set@orientation
 app.__set@orientation = function(a){
-	setAppOrientation(a)
+	setAppOrientation.call(app, a)
 	// screenSize = app.screenSize
 	updateProjection()
 }
@@ -176,15 +176,11 @@ var function paint(){
 	// By default enable VertexArray, ColorArray, TextureCoordArray and Texture2D
 	enableDefaultGlStates()
 	
-	// draw the scene
-    if(runningScene && runningScene.visible){ 
-		runningScene.handlePaint()
-	}
-
-	if(notificationNode && notificationNode.visible){ 
-		notificationNode.handlePaint()
-	}
-
+	// paint the scene
+	var paintParams = {}
+    if(runningScene) runningScene.handlePaint(paintParams)
+	if(notificationNode) notificationNode.handlePaint(paintParams)
+	
 	if(displayFPS) showFPS()
 	if(displayProfilers) showProfilers()
 
@@ -277,9 +273,16 @@ function core.triggerEvent(eventName, params){
 		timeSec = timeSec + deltaTimeSec
 		
 		handleTouches()
-		
-		if(runningScene) runningScene.handleUpdate(deltaTimeSec)
-		if(notificationNode) notificationNode.handleUpdate(deltaTimeSec)
+
+		var updateParams = {deltaTimeSec = deltaTimeSec}
+		if(runningScene){
+			updateParams.target = runningScene
+			runningScene.handleUpdate(updateParams)
+		}
+		if(notificationNode){ 
+			updateParams.target = notificationNode
+			notificationNode.handleUpdate(updateParams)
+		}
 
 		paint()
 	}else{ 
