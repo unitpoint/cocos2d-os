@@ -25,7 +25,7 @@ subprojects
 #	libxml2
 #	freetype
 	libjpeg
-	cocos2d-os
+#	cocos2d-os
 	objectscript
 }
 
