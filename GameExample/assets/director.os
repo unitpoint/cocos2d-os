@@ -164,16 +164,7 @@ var function setNextScene(){
 	nextScene = null
 }
 
-var function updateScene(deltaTimeSec){
-	if(runningScene){
-		runningScene.handleUpdate(deltaTimeSec)
-	}
-	if(notificationNode){ 
-		notificationNode.handleUpdate(deltaTimeSec)
-	}
-}
-
-var function drawScene(){
+var function paint(){
 	// glClearColor(1 0 0 1)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 	
@@ -211,15 +202,7 @@ function showFPS(){
 function showProfilers(){
 }
 
-var coreTriggerEvent = core.triggerEvent
-function core.triggerEvent(eventName, params){
-	coreTriggerEvent(eventName, params)
-	if(runningScene && eventName != "enterFrame"){
-		runningScene.triggerEvent(eventName, params)
-	}
-}
-
-function triggerTouches(){
+function handleTouches(){
 	var timeSec, orientation, width, height = app.timeSec, app.orientation, _E.width, _E.height
 	for(var id, touch in app.touches){
 		if(!touch.processed){
@@ -251,7 +234,8 @@ function triggerTouches(){
 				recursion[cur] = true
 			}
 			if(cur === runningScene){
-				touch.captured.triggerEvent("touch" touch)
+				// touch.captured.triggerEvent("touch" touch)
+				touch.captured.handleTouch(touch)
 				if(touch.captured){
 					// print "still captured " // ..touch
 					continue
@@ -262,14 +246,11 @@ function triggerTouches(){
 				// print "captured node is detached "..touch.." so run generic step"
 			}
 		}
-		runningScene.triggerEvent("touch" touch)
+		// runningScene.triggerEvent("touch" touch)
+		runningScene.handleTouch(touch)
 	}
 	// print "touches "..app.touches
 }
-
-addEventListener("touch", function(event){
-
-})
 
 var deltaTimeSec = 0.01
 function get deltaTimeSec(){return deltaTimeSec}
@@ -278,15 +259,31 @@ var timeSpeed = 1
 function get timeSpeed(){return timeSpeed}
 function set timeSpeed(a){ timeSpeed = a }
 
-var prevTimeSec = 0
+var timeSec = 1
+function get timeSec(){return timeSec}
+function set timeSec(a){ timeSec = a }
 
-addEventListener("enterFrame", function(){
-	// calculate delta time
-	var timeSec = app.timeSec
-	deltaTimeSec = (timeSec - prevTimeSec) * timeSpeed
-	prevTimeSec = timeSec
-	if(deltaTimeSec > 0.2) deltaTimeSec = 0.2
-	triggerTouches()
-	updateScene(deltaTimeSec)
-	drawScene()
-})
+var prevAppTimeSec = 0
+
+var coreTriggerEvent = core.triggerEvent
+function core.triggerEvent(eventName, params){
+	coreTriggerEvent.call(core, eventName, params)
+	if(eventName == "enterFrame"){
+		// calculate delta time
+		var appTimeSec = app.timeSec
+		deltaTimeSec = (appTimeSec - prevAppTimeSec) * timeSpeed
+		prevAppTimeSec = appTimeSec
+		if(deltaTimeSec > 0.2) deltaTimeSec = 0.2
+		timeSec = timeSec + deltaTimeSec
+		
+		handleTouches()
+		
+		if(runningScene) runningScene.handleUpdate(deltaTimeSec)
+		if(notificationNode) notificationNode.handleUpdate(deltaTimeSec)
+
+		paint()
+	}else{ 
+		if(runningScene) runningScene.triggerEvent(eventName, params)
+		if(notificationNode) notificationNode.triggerEvent(eventName, params)
+	}
+}

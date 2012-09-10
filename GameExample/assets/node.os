@@ -38,6 +38,7 @@ Node = {
 		__anchorX = 0.5
 		__anchorY = 0.5
 		__rotation = 0
+		__zOrder = 0
 		
 		__transformDirty = true
 		__transform = null // node to parent
@@ -90,36 +91,58 @@ Node = {
 		this.height = director.height
 	}
 	
-	update = function(deltaTimeSec){}
+	// update = function(deltaTimeSec){}
 	paint = function(){}
 	
-	__num = 0
-	addChild = function(node, zOrder){
-		node.remove()
-		
-		zOrder = zOrder || 0
-		this.__num = this.__num + 1
-		var children = zOrder < 0 ? this.__childrenNeg : this.__childrenPos
-		children[node] = [zOrder this.__num]
+	__get@parent = function(){return this.__parent}
+	__set@parent = function(a){
+		if(this.__parent !== a){ 
+			this.remove() 
+			if(a) a.insert(this) 
+		}
+	}
+	
+	__get@zOrder = function(){return this.__zOrder}
+	__set@zOrder = function(a){
+		if(this.__zOrder !== a){ 
+			this.__zOrder = a
+			if(this.__parent){
+				this.__parentChildren[this][0] = a
+				this.__parent.sortChildren(this.__parentChildren)
+			}
+		}
+	}
+	
+	sortChildren = function(children){
 		children.rsort(function(a b){
 			var z = a[0] - b[0]
 			return z != 0 ? z : a[1] - b[1]
 		})
+	}
+	
+	__num = 0
+	insert = function(node, zOrder){
+		node.remove()
+		
+		if(zOrder)
+			node.__zOrder = zOrder
+		else
+			zOrder = node.__zOrder
+		
+		this.__num = this.__num + 1
+		var children = zOrder < 0 ? this.__childrenNeg : this.__childrenPos
+		children[node] = [zOrder this.__num]
+		this.sortChildren(children)
 		node.__parent = this
 		node.__parentChildren = children
-		node.triggerEvent("onEnter")
+		// node.triggerEvent("onEnter")
 	}
 	
-	remove = function(){
-		if(this.__parent) this.__parent.removeChild(this)
-	}
-	
-	removeChild = function(node){
-		if(node.__parent === this){
-			node.triggerEvent("onExit")
+	remove = function(node){
+		node = node || this
+		if(node.__parent){
+			// node.triggerEvent("onExit")
 			delete node.__parentChildren[node]
-			// delete this.__childrenNeg[node]
-			// delete this.__childrenPos[node]
 			node.__parent = null
 			node.__parentChildren = null
 		}
@@ -133,7 +156,7 @@ Node = {
 				anchorX = this.__anchorX * this.__width
 				anchorY = this.__anchorY * this.__height
 			}
-			if(!this.__isRelativeAnchor && anchorX){
+			if(anchorX && !this.__isRelativeAnchor){
 				t = t.translate(anchorX, anchorY)
 			}
 			if(this.__x !== 0 || this.__y !== 0){
@@ -184,6 +207,11 @@ Node = {
 		return this.worldToNodeTransform().transform(point)
 	}
 	
+	isLocalPoint = function(point){
+		return point.x >= 0 && point.x < this.__width 
+			&& point.y >= 0 && point.y < this.__height
+	}
+	
 	transform = function(){
 		this.nodeToParentTransform()
 		glMultMatrix(this.__transformGL)
@@ -200,6 +228,12 @@ Node = {
 		}
 		
 		this.paint()
+		if("paint" in this.__events){
+			for(var func in this.__events["paint"]){
+				params.target = this
+				func(params)
+			}
+		}
 		
 		for(var child in this.__childrenPos.reverseIter()){
 			if(child.visible){
@@ -211,13 +245,34 @@ Node = {
 	}
 	
 	handleUpdate = function(deltaTimeSec){
-		this.updateTime(deltaTimeSec)
+		this.updateTimers(deltaTimeSec)
 		for(var child in this.__childrenPos){
 			child.handleUpdate(deltaTimeSec)
 		}
-		this.update(deltaTimeSec)
+		// this.update(deltaTimeSec)
+		if("enterFrame" in this.__events){
+			for(var func in this.__events["enterFrame"]){
+				func(deltaTimeSec this)
+			}
+		}
 		for(var child in this.__childrenNeg){
 			child.handleUpdate(deltaTimeSec)
+		}
+	}
+	
+	handleTouch = function(touch){
+		for(var child in this.__childrenPos){
+			child.handleTouch(touch)
+		}
+		// this.update(deltaTimeSec)
+		if("touch" in this.__events){
+			for(var func in this.__events["touch"]){
+				touch.target = this
+				func(touch)
+			}
+		}
+		for(var child in this.__childrenNeg){
+			child.handleTouch(touch)
 		}
 	}
 	
@@ -227,7 +282,10 @@ Node = {
 	}
 	
 	removeEventListener = function(eventName, func){
-		delete this.__events[eventName][func]
+		if(func)
+			delete this.__events[eventName][func]
+		else
+			delete this.__events[eventName]
 	}
 
 	triggerEvent = function(eventName, params){
@@ -236,6 +294,7 @@ Node = {
 		}
 		if(eventName in this.__events){
 			for(var func in this.__events[eventName]){
+				params.target = this
 				func(params)
 			}
 		}
@@ -267,7 +326,7 @@ Node = {
 		delete this.__timers[t]
 	}
 	
-	updateTime = function(deltaTimeSec){
+	updateTimers = function(deltaTimeSec){
 		this.timeSec = this.timeSec + deltaTimeSec * this.timeSpeed
 		var timeSec = this.timeSec
 		for(var i, t in this.__timers){

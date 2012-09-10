@@ -12,7 +12,7 @@ orientation = ORIENTATION_PORTRAIT
 
 touches = {}
 
-var autoTouchId = -1
+var autoTouchId = 0
 function registerTouchEvent(x y phase id){
 	if(id == 0){
 		id = phase == "start" ? --autoTouchId : autoTouchId

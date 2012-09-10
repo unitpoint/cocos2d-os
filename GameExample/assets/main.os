@@ -16,11 +16,6 @@ MyColorNode = extends ColorNode {
 		touch = false
 	}
 	
-	isLocalPoint = function(point){
-		return point.x >= 0 && point.x < this.width 
-			&& point.y >= 0 && point.y < this.height
-	}
-	
 	__construct = function(){
 		super.__construct.call(this);
 		
@@ -33,6 +28,10 @@ MyColorNode = extends ColorNode {
 		}
 		changeDir()
 		
+		this.addEventListener("enterFrame", function(dt){
+			self.update(dt)
+		})
+		
 		var tx, ty, sx, sy
 		this.addEventListener("touch", function(touch){
 			if(touch.phase == "start" && !touch.captured){
@@ -42,14 +41,16 @@ MyColorNode = extends ColorNode {
 					touch.captured = self
 					self.touch = true
 					self.clearTimeout(timer)
+					self.zOrder = 1
 				}
 			}else if(touch.phase == "move" && touch.captured === self){
 				self.x, self.y = sx + touch.x - tx, sy + touch.y - ty
 				self.touch = true
 				self.clearTimeout(timer)
-			}else if(touch.captured === self){
+			}else if(touch.phase == "end" && touch.captured === self){
 				self.touch = false
 				changeDir()
+				self.zOrder = 0
 			}
 		})
 	}
@@ -87,7 +88,7 @@ MyScene = extends Scene {
 			return [math.random() math.random() math.random() 1]
 		}
 		
-		for(var i = 0; i < 10; i++){
+		for(var i = 0; i < 100; i++){
 			var rect = MyColorNode()
 			rect.speed = math.random(0.2 0.5)
 			rect.setRect(
@@ -97,7 +98,7 @@ MyScene = extends Scene {
 				this.width * math.random(0.1 0.2) 
 				)
 			rect.color = color()
-			this.addChild(rect)
+			this.insert(rect)
 		}
 	}
 }
