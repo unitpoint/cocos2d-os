@@ -13294,7 +13294,7 @@ void OS::setPrototype()
 	pop(2);
 }
 
-int OS::getId(int offs)
+int OS::getValueId(int offs)
 {
 	Core::Value val = core->getStackValue(offs);
 	switch(val.type){
@@ -14853,6 +14853,12 @@ void OS::initObjectClass()
 			return 0;
 		}
 
+		static int getValueId(OS * os, int params, int closure_values, int, void*)
+		{
+			os->pushNumber(os->getValueId(-params-1));
+			return 1;
+		}
+
 		static int iteratorStep(OS * os, int params, int closure_values, int, void*)
 		{
 			OS_ASSERT(closure_values == 2);
@@ -15340,6 +15346,7 @@ void OS::initObjectClass()
 	FuncDef list[] = {
 		{OS_TEXT("rawget"), Object::rawget},
 		{OS_TEXT("rawset"), Object::rawset},
+		{OS_TEXT("__get@osValueId"), Object::getValueId},
 		{core->strings->__len, Object::length},
 		// {OS_TEXT("__get@length"), Object::length},
 		{core->strings->__iter, Object::iterator},

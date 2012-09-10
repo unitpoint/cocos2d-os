@@ -2699,7 +2699,7 @@ namespace ObjectScript
 		void getPrototype();
 		void setPrototype();
 
-		int getId(int offs = -1);
+		int getValueId(int offs = -1);
 		
 		void pushNull();
 		void pushNumber(OS_INT32);
