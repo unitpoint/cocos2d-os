@@ -43,7 +43,7 @@
 #endif
 
 #ifdef _DEBUG
-// #define OS_DEBUG
+#define OS_DEBUG
 #endif
 
 // select ObjectScript number type here
@@ -1172,6 +1172,7 @@ namespace ObjectScript
 			enum EGCColor
 			{
 				GC_WHITE,
+				// GC_WHITE_WHITE,
 				GC_GREY,
 				GC_BLACK
 			};
@@ -2349,7 +2350,13 @@ namespace ObjectScript
 			GCValue * gc_grey_list_first;
 			bool gc_grey_root_initialized;
 			int gc_values_head_index;
+			int gc_start_allocated_bytes;
+			int gc_max_allocated_bytes;
+			int gc_keep_heap_count;
+			int gc_continuous_count;
+			bool gc_continuous;
 			int gc_time;
+			bool gc_in_process;
 			int gc_grey_added_count;
 			
 			float gc_start_values_mult;

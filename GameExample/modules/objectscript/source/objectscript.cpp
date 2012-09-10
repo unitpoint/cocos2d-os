@@ -1131,7 +1131,8 @@ bool OS::Core::Tokenizer::TokenData::isTypeOf(TokenType token_type) const
 		case OS::Core::Tokenizer::OPERATOR_QUESTION:
 
 		case OS::Core::Tokenizer::OPERATOR_INDIRECT:  // .
-		case OS::Core::Tokenizer::OPERATOR_CONCAT: // ..
+		case OS::Core::Tokenizer::OPERATOR_CONCAT:	// ..
+		case OS::Core::Tokenizer::OPERATOR_IN:		// in
 
 		case OS::Core::Tokenizer::OPERATOR_LOGIC_AND: // &&
 		case OS::Core::Tokenizer::OPERATOR_LOGIC_OR:  // ||
@@ -10611,12 +10612,18 @@ void OS::Core::gcInitGreyList()
 {
 	gc_grey_list_first = NULL;
 	gc_grey_root_initialized = false;
+	gc_start_allocated_bytes = 0;
+	gc_max_allocated_bytes = 0;
+	gc_keep_heap_count = 0;
+	gc_continuous_count = 0;
+	gc_continuous = false;
 	gc_values_head_index = -1;
 	gc_time = 0;
+	gc_in_process = false;
 	gc_grey_added_count = 0;
 	// gc_grey_removed_count = 0;
 	gc_start_values_mult = 1.1f;
-	gc_step_size_mult = 1.5f;
+	gc_step_size_mult = 1.0f; // 0.05f;
 	gc_start_next_values = 16;
 	gc_step_size = 0;
 }
@@ -10633,6 +10640,9 @@ void OS::Core::gcResetGreyList()
 
 void OS::Core::gcMarkList(int step_size)
 {
+	if(step_size < 16){
+		step_size = 16;
+	}
 	for(; step_size > 0 && gc_grey_list_first; step_size--){
 		gcMarkValue(gc_grey_list_first);
 	}
@@ -10818,8 +10828,19 @@ void OS::Core::gcMarkValue(GCValue * value)
 int OS::Core::gcStep()
 {
 	// return OS_GC_PHASE_MARK;
+	if(gc_in_process){
+		return OS_GC_PHASE_MARK;
+	}
+	struct GCTouch {
+		Core * core;
+		GCTouch(Core * p_core){ core = p_core; core->gc_in_process = true; }
+		~GCTouch(){ core->gc_in_process = false; }
+	} gc_touch(this);
 
 	if(values.count == 0){
+		gc_values_head_index = -1;
+		gc_grey_root_initialized = false;
+		gc_continuous = false;
 		return OS_GC_PHASE_MARK;
 	}
 	int step_size = gc_step_size;
@@ -10831,7 +10852,10 @@ int OS::Core::gcStep()
 			for(GCValue * value = values.heads[i], * next; value; value = next, step_size--){
 				next = value->hash_next;
 				if(value->gc_color == GC_WHITE && !value->external_ref_count){
+				//	 value->gc_color = GC_WHITE_WHITE;
+				// }else if(value->gc_color == GC_WHITE_WHITE && !value->external_ref_count){
 					OS_ASSERT(!isValueUsed(value));
+					// allocator->eval("print _G");
 					deleteValue(value);
 					if(gc_values_head_index < 0){
 						return OS_GC_PHASE_MARK;
@@ -10848,6 +10872,22 @@ int OS::Core::gcStep()
 		}
 		gc_values_head_index = -1;
 		gc_start_next_values = (int)((float)values.count * gc_start_values_mult);
+		
+		int end_allocated_bytes = allocator->getAllocatedBytes();
+		gc_continuous_count++;
+		if(gc_start_allocated_bytes == end_allocated_bytes){
+			if(++gc_keep_heap_count >= 2){
+				gc_continuous = false;
+			}
+		}else{
+			gc_start_allocated_bytes = end_allocated_bytes;
+			gc_keep_heap_count = 0;
+		}
+
+		if((!gc_continuous || !(gc_continuous_count%16)) && gc_max_allocated_bytes < end_allocated_bytes){
+			gc_max_allocated_bytes = end_allocated_bytes;
+			allocator->printf("[GC] max allocated bytes %d, values %d\n", gc_max_allocated_bytes, values.count);
+		}
 
 		return OS_GC_PHASE_MARK;
 	}
@@ -10855,6 +10895,15 @@ int OS::Core::gcStep()
 		gc_grey_root_initialized = true;
 		gc_step_size = (int)((float)values.count * gc_step_size_mult * 2);
 		gc_time++;
+
+		if(!gc_continuous){
+			gc_continuous = true;
+			gc_continuous_count = 0;
+			gc_keep_heap_count = 0;
+			gc_start_allocated_bytes = allocator->getAllocatedBytes();
+		}else{
+			// int i = 0;
+		}
 
 		// int old_count = gc_grey_added_count;
 		gcAddToGreyList(check_recursion);
@@ -10886,7 +10935,7 @@ int OS::Core::gcStep()
 
 void OS::Core::gcFinishSweepPhase()
 {
-	if(values.count == 0){
+	if(gc_in_process || values.count == 0){
 		return;
 	}
 	if(gc_values_head_index >= 0){
@@ -10898,7 +10947,7 @@ void OS::Core::gcFinishSweepPhase()
 
 void OS::Core::gcFinishMarkPhase()
 {
-	if(values.count == 0){
+	if(gc_in_process || values.count == 0){
 		return;
 	}
 	while(gc_values_head_index < 0){
@@ -10909,7 +10958,10 @@ void OS::Core::gcFinishMarkPhase()
 
 void OS::Core::gcStepIfNeeded()
 {
-	if(gc_values_head_index >= 0 || gc_grey_root_initialized){
+	if(gc_in_process){
+		return;
+	}
+	if(gc_values_head_index >= 0 || gc_grey_root_initialized || gc_continuous){
 		gcStep();
 	}else if(gc_start_next_values <= values.count){
 		gcFinishSweepPhase();
@@ -10919,6 +10971,9 @@ void OS::Core::gcStepIfNeeded()
 
 void OS::Core::gcFull()
 {
+	if(gc_in_process){
+		return;
+	}
 	gcFinishSweepPhase();
 	int start_allocated_bytes = allocator->getAllocatedBytes();
 	for(int i = 1;; i++){
@@ -11105,6 +11160,7 @@ bool OS::Core::isValueUsed(GCValue * val)
 
 		bool findAt(GCValue * cur)
 		{
+			OS_ASSERT(cur != (GCValue*)0xdededede);
 			if(cur->gc_time == core->gc_time){
 				return false;
 			}
@@ -13281,8 +13337,23 @@ bool OS::Core::getPropertyValue(Value& result, GCValue * table_value, const Prop
 		error(OS_WARNING, OS_TEXT("object get null index"));
 	}
 #endif
+
+	struct Lib {
+		static bool getArrayIndex(Value& result, Core * core, GCValue * table_value, const PropertyIndex& index)
+		{
+			OS_ASSERT(dynamic_cast<GCArrayValue*>(table_value));
+			GCArrayValue * arr = (GCArrayValue*)table_value;
+			int i = (int)core->valueToInt(index.index);
+			if(i >= 0 && i < arr->values.count){
+				result = arr->values[i];
+				return true;
+			}
+			return false;
+		}
+	};
+
 	if(table_value->type == OS_VALUE_TYPE_ARRAY && index.index.type == OS_VALUE_TYPE_NUMBER){
-		goto arr;
+		return Lib::getArrayIndex(result, this, table_value, index);
 	}
 	Property * prop = NULL;
 	Table * table = table_value->table;
@@ -13306,7 +13377,8 @@ bool OS::Core::getPropertyValue(Value& result, GCValue * table_value, const Prop
 		return true;
 	}
 	if(table_value->type == OS_VALUE_TYPE_ARRAY){
-arr:
+		return Lib::getArrayIndex(result, this, table_value, index);
+/*
 		OS_ASSERT(dynamic_cast<GCArrayValue*>(table_value));
 		GCArrayValue * arr = (GCArrayValue*)table_value;
 		int i = (int)valueToInt(index.index);
@@ -13314,6 +13386,7 @@ arr:
 			result = arr->values[i];
 			return true;
 		}
+*/
 	}
 	return false;
 }
