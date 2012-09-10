@@ -247,8 +247,9 @@ Node = {
 	setTimeout = function(func, delaySec, count, priority){
 		count = count || 1
 		count > 0 && func || return;
-		var i = this.__num + 1
-		this.__num = i
+		// var i = this.__num + 1
+		// this.__num = i
+		var i = func
 		this.__timers[i] = {
 			nextTimeSec = this.timeSec + delaySec
 			delaySec = delaySec

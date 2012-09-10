@@ -28,6 +28,7 @@ MyColorNode = extends ColorNode {
 		var function changeDir(){
 			self.dd[0] = math.random(-1 1)
 			self.dd[1] = math.random(-1 1)
+			// self.clearTimeout(timer)
 			timer = self.setTimeout(changeDir, math.random(3.0 5.0))
 		}
 		changeDir()
@@ -46,7 +47,7 @@ MyColorNode = extends ColorNode {
 				self.x, self.y = sx + touch.x - tx, sy + touch.y - ty
 				self.touch = true
 				self.clearTimeout(timer)
-			}else{
+			}else if(touch.captured === self){
 				self.touch = false
 				changeDir()
 			}

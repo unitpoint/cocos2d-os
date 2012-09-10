@@ -52,7 +52,7 @@ function isCallable(f){ return typeof f === "function" || typeof f === "object" 
 function setTimeout(func, delaySec, count, priority){
 	count = count || 1
 	count > 0 && func || return;
-	var i = #timers
+	var i = func // #timers
 	timers[i] = {
 		nextTimeSec = app.timeSec + delaySec
 		delaySec = delaySec
