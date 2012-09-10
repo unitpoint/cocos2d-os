@@ -80,15 +80,16 @@ addEventListener("enterFrame" function(){
 	var timeSec = app.timeSec
 	for(var i, t in timers){
 		if(t.nextTimeSec <= timeSec){
-			t.func()
-			if(t.count !== true){
-				if(t.count <= 1){
-					delete timers[i]
-					continue
-				}
-				t.count = t.count - 1
-			}
 			t.nextTimeSec = timeSec + t.delaySec
+			if(t.count === true){
+				t.func()
+			}else{
+				t.count = t.count - 1
+				if(t.count <= 0){
+					delete timers[i]
+				}
+				t.func()
+			}
 		}
 	}
 } HIGH_PRIORITY+1)

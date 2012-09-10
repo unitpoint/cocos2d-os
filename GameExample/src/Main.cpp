@@ -14,84 +14,6 @@
 
 using namespace ObjectScript;
 
-OS_NUMBER getGlobalNumber(OS * os, const OS::String& name)
-{
-	os->getGlobal(name);
-	OS_NUMBER val = os->toNumber();
-	os->pop();
-	return val;
-}
-
-OS_NUMBER popNumber(OS * os)
-{
-	OS_NUMBER val = os->toNumber();
-	os->pop();
-	return val;
-}
-
-bool getGlobalBool(OS * os, const OS::String& name)
-{
-	os->getGlobal(name);
-	bool val = os->toBool();
-	os->pop();
-	return val;
-}
-
-class MarmaladeOSMemoryManager: public OS::MemoryManager
-{
-public:
-
-	int allocated_bytes;
-	int max_allocated_bytes;
-
-	MarmaladeOSMemoryManager()
-	{
-		allocated_bytes = 0;
-		max_allocated_bytes = 0;
-	}
-
-	void * malloc(int size OS_DBG_FILEPOS_DECL)
-	{
-		int * p = (int*)::malloc(size + sizeof(int));
-		p[0] = size;
-		allocated_bytes += size + sizeof(int);
-		if(max_allocated_bytes < allocated_bytes){
-			max_allocated_bytes = allocated_bytes;
-		}
-		OS_MEMSET(p+1, 0, size);
-		return p+1;
-	}
-
-	void free(void * ptr)
-	{
-		if(ptr){
-			int * p = (int*)ptr - 1;
-			allocated_bytes -= p[0] + sizeof(int);
-			OS_MEMSET(ptr, 0xde, p[0]);
-			::free(p);
-		}
-	}
-
-	void setBreakpointId(int id)
-	{
-	}
-
-	int getAllocatedBytes()
-	{
-		return allocated_bytes;
-	}
-
-	int getMaxAllocatedBytes()
-	{
-		return max_allocated_bytes;
-	}
-
-	int getCachedBytes()
-	{
-		return 0;
-	}
-};
-
 class MarmaladeOS: public OS
 {
 public:
@@ -423,7 +345,7 @@ double clamp(double a, double min, double max)
 
 int main()
 {
-	OS * os = OS::create(new MarmaladeOS()); //, new MarmaladeOSMemoryManager());
+	OS * os = OS::create(new MarmaladeOS());
 	os->require("main.os");
 	
 	uint64 updateTimeMS = 0;
@@ -451,7 +373,6 @@ int main()
 		while((s3eTimerGetMs() - updateTimeMS) < animationIntervalMS){
 			int yield = (int)(animationIntervalMS - (s3eTimerGetMs() - updateTimeMS));
 			if(yield < 0){
-				// s3eDeviceYield(0);
 				break;
 			}
 			s3eDeviceYield(yield);

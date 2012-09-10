@@ -333,16 +333,16 @@ Node = {
 		var timeSec = this.timeSec
 		for(var i, t in this.__timers){
 			if(t.nextTimeSec <= timeSec){
-				t.func()
-				if(t.count !== true){
-					if(t.count <= 1){
-						delete this.__timers[i]
-						continue
-					}
-					t.count = t.count - 1
-				}
 				t.nextTimeSec = timeSec + t.delaySec
-				// print concat("timeout triggered, time "timeSec" "t)
+				if(t.count === true){
+					t.func()
+				}else{
+					t.count = t.count - 1
+					if(t.count <= 0){
+						delete this.__timers[i]
+					}
+					t.func()
+				}
 			}
 		}
 	}
