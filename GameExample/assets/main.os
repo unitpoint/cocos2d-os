@@ -22,6 +22,7 @@ MyColorNode = extends ColorNode {
 		
 		var self, timer = this
 		var function changeDir(){
+			// print "changeDir "..self.osValueId
 			self.dx = math.random(-1 1)
 			self.dy = math.random(-1 1)
 			// self.clearTimeout(timer)
@@ -86,10 +87,10 @@ MyScene = extends Scene {
 		super.__construct.call(this);
 		
 		var function color(){
-			return [math.random() math.random() math.random() 1]
+			return [math.random(0.3 1.0) math.random(0.3 1.0) math.random(0.3 1.0) 1]
 		}
 		
-		for(var i = 0; i < 100; i++){
+		for(var i = 0; i < 20; i++){
 			var rect = MyColorNode()
 			rect.speed = math.random(0.2 0.5)
 			rect.setRect(
