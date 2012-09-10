@@ -2619,7 +2619,7 @@ void initOpenGLExt(OS * os)
 							points[i*size + j] = os->popFloat();
 						}
 					}else if(os->isObject()){
-						static OS_CHAR * xyz[] = {
+						static const OS_CHAR * xyz[] = {
 							OS_TEXT("x"), OS_TEXT("y"), OS_TEXT("z")
 						};
 						for(int j = 0; j < size; j++){
