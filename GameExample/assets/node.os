@@ -243,11 +243,12 @@ Node = {
 	}
 	
 	handleUpdate = function(params){
+		var deltaTimeSec = params.deltaTimeSec
 		this.updateTimers(params)
 		for(var child in this.__childrenPos){
 			child.handleUpdate(params)
 		}
-		// this.update(deltaTimeSec)
+		// this.update(params.deltaTimeSec)
 		if("enterFrame" in this.__events){
 			for(var func in this.__events["enterFrame"]){
 				params.target = this
@@ -257,6 +258,7 @@ Node = {
 		for(var child in this.__childrenNeg){
 			child.handleUpdate(params)
 		}
+		params.deltaTimeSec = deltaTimeSec
 	}
 	
 	handleTouch = function(touch){
