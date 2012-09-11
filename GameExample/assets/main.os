@@ -14,7 +14,7 @@ MyColorNode = extends ColorNode {
 		speed = 0.5
 		dx = 1 
 		dy = 1
-		touch = false
+		touched = false
 	}
 	
 	__construct = function(){
@@ -36,29 +36,23 @@ MyColorNode = extends ColorNode {
 		
 		var tx, ty, sx, sy
 		this.addEventListener("touch", function(touch){
-			if(touch.phase == "start" && !touch.captured){
-				var local = self.pointToNodeSpace(touch)
-				if(self.isLocalPoint(local)){
-					tx, ty, sx, sy = touch.x, touch.y, self.x, self.y
-					touch.captured = self
-					self.touch = true
-					self.clearTimeout(timer)
-					self.zOrder = 1
-				}
-			}else if(touch.phase == "move" && touch.captured === self){
-				self.x, self.y = sx + touch.x - tx, sy + touch.y - ty
-				self.touch = true
+			if(touch.phase == "start"){
+				tx, ty, sx, sy = touch.x, touch.y, self.x, self.y
+				self.touched = true
+				self.zOrder = 1
 				self.clearTimeout(timer)
-			}else if(touch.phase == "end" && touch.captured === self){
-				self.touch = false
-				changeDir()
+			}else if(touch.phase == "move"){
+				self.x, self.y = sx + touch.x - tx, sy + touch.y - ty
+			}else if(touch.phase == "end"){
+				self.touched = false
 				self.zOrder = 0
+				changeDir()
 			}
 		})
 	}
 	
 	update = function(params){
-		if(this.touch) return;
+		if(this.touched) return;
 		
 		var offsPerSec = director.width * this.speed * params.deltaTimeSec
 		
@@ -90,7 +84,22 @@ MyScene = extends Scene {
 			return [math.random(0.3 1.0) math.random(0.3 1.0) math.random(0.3 1.0) 1]
 		}
 		
-		for(var i = 0; i < 20; i++){
+		{
+			var rect = ColorNode()
+			rect.speed = math.random(0.2 0.5)
+			rect.anchor = {x = 0 y = 1}
+			rect.setRect(
+				this.width * 0.0
+				this.height * 1.0
+				200
+				100
+				)
+			rect.color = color()
+			this.insert(rect)
+		}
+		
+		// OOP way using class MyColorNode, please see implementation of MyColorNode above
+		for(var i = 0; i < 0; i++){
 			var rect = MyColorNode()
 			rect.speed = math.random(0.2 0.5)
 			rect.setRect(
@@ -101,6 +110,72 @@ MyScene = extends Scene {
 				)
 			rect.color = color()
 			this.insert(rect)
+		}
+		
+		// the same functionality but using closure instead of OOP
+		var scene = this
+		for(var i = 0; i < 20; i++){
+			function(){
+				var self = ColorNode()
+				var speed = math.random(0.2 0.5)
+				self.setRect(
+					scene.width * math.random(0.1 0.7) 
+					scene.height * math.random(0.1 0.7) 
+					scene.width * math.random(0.1 0.2) 
+					scene.width * math.random(0.1 0.2) 
+					)
+				self.color = color()
+				scene.insert(self)
+				
+				var dx, dy, touched, timer
+				var function changeDir(){
+					dx = math.random(-1 1)
+					dy = math.random(-1 1)
+					timer = self.setTimeout(changeDir, math.random(3.0 5.0))
+				}
+				changeDir()
+				
+				var tx, ty, sx, sy
+				self.addEventListener("touch", function(touch){
+					if(touch.phase == "start"){
+						tx, ty, sx, sy = touch.x, touch.y, self.x, self.y
+						touched = true
+						self.zOrder = 1
+						self.clearTimeout(timer)
+					}else if(touch.phase == "move"){
+						self.x, self.y = sx + touch.x - tx, sy + touch.y - ty
+					}else if(touch.phase == "end"){
+						touched = false
+						self.zOrder = 0
+						changeDir()
+					}
+				})
+				
+				var function clamp(a min max){
+					if(a < min) return min
+					if(a > max) return max
+					return a
+				}
+				
+				self.addEventListener("enterFrame", function(params){
+					if(touched) return;
+					
+					var offsPerSec = director.width * speed * params.deltaTimeSec
+					
+					self.x = self.x + dx * offsPerSec
+					self.y = self.y + dy * offsPerSec
+					
+					if(self.x < 0 || self.x > self.__parent.width){
+						dx = -dx
+						self.x = clamp(self.x, 0, self.__parent.width)
+					}
+					if(self.y < 0 || self.y > self.__parent.height){
+						dy = -dy
+						self.y = clamp(self.y, 0, self.__parent.height)
+					}
+				})
+				
+			}()
 		}
 	}
 }
