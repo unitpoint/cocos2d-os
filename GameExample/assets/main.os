@@ -81,7 +81,7 @@ MyScene = extends Scene {
 		super.__construct.call(this);
 		
 		var function color(){
-			return [math.random(0.3 1.0) math.random(0.3 1.0) math.random(0.3 1.0) 1]
+			return [math.random(0.2 0.95) math.random(0.2 0.95) math.random(0.2 0.95) 1]
 		}
 		
 		{
@@ -114,7 +114,7 @@ MyScene = extends Scene {
 		
 		// the same functionality but using closure instead of OOP
 		var scene = this
-		for(var i = 0; i < 20; i++){
+		for(var i = 0; i < 100; i++){
 			function(){
 				var self = ColorNode()
 				var speed = math.random(0.2 0.5)
