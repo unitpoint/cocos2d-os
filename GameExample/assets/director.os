@@ -73,9 +73,9 @@ var function updateProjection(){
 		
 		glMatrixMode(GL_MODELVIEW)	
 		glLoadIdentity()
-		gluLookAt(size.width/2, size.height/2, zeye,
+		gluLookAt(size.width/2, size.height/2, -zeye,
 				 size.width/2, size.height/2, 0,
-				 0.0, 1.0, 0.0)
+				 0.0, -1.0, 0.0)
 	}
 }
 
@@ -203,14 +203,17 @@ function handleTouches(){
 	for(var id, touch in app.touches){
 		if(!touch.processed){
 			if(orientation == ORIENTATION_PORTRAIT){
-				touch.y = height - touch.y
+				// touch.y = height - touch.y
 			}else if(orientation == ORIENTATION_PORTRAIT_UPSIDE_DOWN){
 				touch.x = width - touch.x
 			}else if(orientation == ORIENTATION_LANDSCAPE_LEFT){
-				touch.x, touch.y = touch.y, touch.x
+				// touch.x, touch.y = touch.y, touch.x
+				touch.x, touch.y = height - touch.y, touch.x
 			}else if(orientation == ORIENTATION_LANDSCAPE_RIGHT){
-				touch.x, touch.y = height - touch.y, width - touch.x
+				// touch.x, touch.y = height - touch.y, width - touch.x
+				touch.x, touch.y = touch.y, width - touch.x
 			}
+			touch.nativeX, touch.nativeY = touch.x, touch.y
 		}else if(touch.phase == "end" || touch.phase == "cancel" || timeSec - touch.processed > 30){
 			// print "delete old touch "..app.touches[id]
 			delete app.touches[id]
@@ -275,14 +278,8 @@ function core.triggerEvent(eventName, params){
 		handleTouches()
 
 		var updateParams = {deltaTimeSec = deltaTimeSec}
-		if(runningScene){
-			updateParams.target = runningScene
-			runningScene.handleUpdate(updateParams)
-		}
-		if(notificationNode){ 
-			updateParams.target = notificationNode
-			notificationNode.handleUpdate(updateParams)
-		}
+		if(runningScene) runningScene.handleUpdate(updateParams)
+		if(notificationNode) notificationNode.handleUpdate(updateParams)
 
 		paint()
 	}else{ 
