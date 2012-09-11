@@ -56,6 +56,9 @@ Node = {
 	__get@y = function(){return this.__y}
 	__set@y = function(a){if(this.__y !== a){ this.__y = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
+	__get@position = function(){return Point(this.__x this.__y)}
+	__set@position = function(a){ this.x, this.y = a.x, a.y }
+	
 	__get@width = function(){return this.__width}
 	__set@width = function(a){if(this.__width !== a){ this.__width = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
@@ -68,17 +71,26 @@ Node = {
 	__get@scaleY = function(){return this.__scaleY}
 	__set@scaleY = function(a){if(this.__scaleY !== a){ this.__scaleY = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
+	__get@scale = function(){return Point(this.__scaleX this.__scaleY)}
+	__set@scale = function(a){ this.scaleX, this.scaleY = a.x, a.y }
+	
 	__get@skewX = function(){return this.__skewX}
 	__set@skewX = function(a){if(this.__skewX !== a){ this.__skewX = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@skewY = function(){return this.__skewY}
 	__set@skewY = function(a){if(this.__skewY !== a){ this.__skewY = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
+	__get@skew = function(){return Point(this.__skewX this.__skewY)}
+	__set@skew = function(a){ this.skewX, this.skewY = a.x, a.y }
+	
 	__get@anchorX = function(){return this.__anchorX}
 	__set@anchorX = function(a){if(this.__anchorX !== a){ this.__anchorX = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
 	__get@anchorY = function(){return this.__anchorY}
 	__set@anchorY = function(a){if(this.__anchorY !== a){ this.__anchorY = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	
+	__get@anchor = function(){return Point(this.__anchorX this.__anchorY)}
+	__set@anchor = function(a){ this.anchorX, this.anchorY = a.x, a.y }
 	
 	__get@rotation = function(){return this.__rotation}
 	__set@rotation = function(a){if(this.__rotation !== a){ this.__rotation = a; this.__transformDirty, this.__inverseDirty = true, true }}
@@ -229,8 +241,8 @@ Node = {
 		
 		this.paint()
 		if("paint" in this.__events){
+			params.target = this
 			for(var func in this.__events["paint"]){
-				params.target = this
 				func(params)
 			}
 		}
@@ -250,8 +262,8 @@ Node = {
 		}
 		// this.update(params.deltaTimeSec)
 		if("enterFrame" in this.__events){
+			params.target = this
 			for(var func in this.__events["enterFrame"]){
-				params.target = this
 				func(params)
 			}
 		}
@@ -265,15 +277,41 @@ Node = {
 		for(var child in this.__childrenPos){
 			child.handleTouch(touch)
 		}
-		// this.update(deltaTimeSec)
-		if("touch" in this.__events){
-			for(var func in this.__events["touch"]){
-				touch.target = this
+		if("nativeTouch" in this.__events){
+			touch.target = this
+			for(var func in this.__events["nativeTouch"]){
 				func(touch)
+			}
+		}
+		var autoCapture
+		if("touch" in this.__events){
+			if(touch.phase == "start"){
+				if(!touch.captured){
+					touch.x, touch.y = touch.nativeX, touch.nativeY
+					var local = this.pointToNodeSpace(touch)
+					// echo("touch "touch", local"local", is local "this.isLocalPoint(local)"\n")
+					if(this.isLocalPoint(local)){
+						touch.local, touch.target, autoCapture = local, this, true
+						for(var func in this.__events["touch"]){
+							func(touch)
+						}
+						delete touch.local
+					}
+				}
+			}else if(touch.captured === this){
+				touch.x, touch.y = touch.nativeX, touch.nativeY
+				touch.local, touch.target = this.pointToNodeSpace(touch), this
+				for(var func in this.__events["touch"]){
+					func(touch)
+				}
+				delete touch.local
 			}
 		}
 		for(var child in this.__childrenNeg){
 			child.handleTouch(touch)
+		}
+		if(autoCapture && !touch.captured){
+			touch.captured = this
 		}
 	}
 	
