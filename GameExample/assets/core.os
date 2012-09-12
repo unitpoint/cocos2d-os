@@ -31,7 +31,7 @@ var events = {}
 
 function addEventListener(eventName, func, zOrder){
 	func || return;
-	events[eventName][func] = zOrder || -1
+	events[eventName][func] = zOrder || 0
 	events[eventName].rsort()
 }
 

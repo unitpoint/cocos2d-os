@@ -3,6 +3,7 @@
 #include "Main.h"
 #include "objectscript.h"
 #include "OpenGLOS.h"
+#include "stddef.h"
 
 #include "s3eOSExec.h"
 #include "s3eSurface.h"
@@ -11,6 +12,10 @@
 #include "s3eAccelerometer.h"
 
 #include "IwMemBucket.h"
+
+#include "CCAutoreleasePool.h"
+#include "CCTexture2D.h"
+#include "CCTextureCache.h"
 
 using namespace ObjectScript;
 
@@ -21,10 +26,16 @@ public:
 	const OS_CHAR * output_filename;
 	bool is_multi_touch;
 
+	int texture2d_class_crc;
+	int texture2d_instance_crc;
+
 	MarmaladeOS()
 	{
 		output_filename = "output.txt";
 		s3eFileDelete(output_filename);
+
+		texture2d_class_crc = (int)&texture2d_class_crc;
+		texture2d_instance_crc = (int)&texture2d_instance_crc;
 
 		IwGLInit();
 
@@ -74,8 +85,15 @@ public:
 		initOpenGL2(this);
 		initOpenGLExt(this);
 		initAppModule();
+		initTextureClass();
 
 		return true;
+	}
+
+	void shutdown()
+	{
+		cocos2d::CCSharedFinalizer::finalizeAll();
+		OS::shutdown();
 	}
 
 	int orientation;
@@ -149,6 +167,11 @@ public:
 				((MarmaladeOS*)os)->orientation = os->toInt();
 				return 0;
 			}
+			static int drawTexture(OS * os, int params, int, int, void*)
+			{
+				((MarmaladeOS*)os)->drawTexture(params);
+				return 0;
+			}
 		};
 		FuncDef list[] = {
 			// {"getScreenWidth", App::getScreenWidth},
@@ -167,6 +190,7 @@ public:
 			{"stopAccelerometer", App::stopAccelerometer},
 			{"__get@orientation", App::getOrientation},
 			{"__set@orientation", App::setOrientation},
+			{"drawTexture", App::drawTexture},
 			{}
 		};
 		getModule("app");
@@ -174,6 +198,256 @@ public:
 		pop();
 
 		require("app"); // add some additional
+	}
+
+	static float clampUnit(float f)
+	{
+		if(f < 0.0f) return 0.0f;
+		if(f > 1.0f) return 1.0f;
+		return f;
+	}
+
+	bool getColor(int offs, float color[4])
+	{
+		if(isArray(offs)){
+			for(int i = 0; i < 4; i++){
+				pushStackValue(offs);
+				pushNumber(i);
+				getProperty();
+				color[i] = isNull() ? 1.0f : clampUnit(popFloat());
+			}
+			return true;
+		}else if(isObject(offs)){
+			static const OS_CHAR * rgba[] = {
+				OS_TEXT("r"), OS_TEXT("g"), OS_TEXT("b"), OS_TEXT("a") 
+			};
+			for(int i = 0; i < 4; i++){
+				pushStackValue(offs);
+				pushString(rgba[i]);
+				getProperty();
+				color[i] = isNull() ? 1.0f : clampUnit(popFloat());
+			}
+			return true;
+		}
+		for(int i = 0; i < 4; i++){
+			color[i] = 1.0f;
+		}
+		return false;
+	}
+
+	void drawTexture(int params)
+	{
+		if(!isObject(-params)) return;
+		params = getAbsoluteOffs(-params);
+			
+		getProperty(params, "texture");
+		cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)toUserdata(-1, texture2d_instance_crc);
+		if(!texture) return;
+
+		getProperty(params, "width");
+		float width = popFloat();
+
+		getProperty(params, "height");
+		float height = popFloat();
+
+		getProperty(params, "frameX");
+		float frameX = popFloat();
+
+		getProperty(params, "frameY");
+		float frameY = popFloat();
+
+		getProperty(params, "frameWidth");
+		float frameWidth = popFloat();
+
+		getProperty(params, "frameHeight");
+		float frameHeight = popFloat();
+
+		getProperty(params, "flipX");
+		bool flipX = popBool();
+
+		getProperty(params, "flipY");
+		bool flipY = popBool();
+
+		getProperty(params, "opacity");
+		float opacity = isNull() ? 1.0f : clampUnit(popFloat());
+
+		float color[4];
+		getProperty(params, "color");
+		getColor(-1, color);
+		pop();
+
+		cocos2d::ccBlendFunc blendFunc;
+		if(texture->getHasPremultipliedAlpha()){
+			blendFunc.src = CC_BLEND_SRC;
+			blendFunc.dst = CC_BLEND_DST;
+			for(int i = 0; i < 3; i++){
+				color[i] *= opacity;
+			}
+		}else{
+			blendFunc.src = GL_SRC_ALPHA;
+			blendFunc.dst = GL_ONE_MINUS_SRC_ALPHA;
+		}
+
+		float atlasWidth = (float)texture->getPixelsWide();
+		float atlasHeight = (float)texture->getPixelsHigh();
+
+		float left = frameX / atlasWidth;
+		float right	= left + frameWidth / atlasWidth;
+		float top = frameY / atlasHeight;
+		float bottom = top + frameHeight / atlasHeight;
+
+		float temp;
+		if(flipX){
+			temp = left;
+			left = right;
+			right = temp;
+		}
+		if(flipY){
+			temp = top;
+			top = bottom;
+			bottom = temp;
+		}
+
+		cocos2d::ccV3F_C4B_T2F_Quad quad;
+
+		quad.tl.vertices = cocos2d::vertex3(0, 0, 0);
+		quad.tr.vertices = cocos2d::vertex3(width, 0, 0);
+		quad.bl.vertices = cocos2d::vertex3(0, height, 0);
+		quad.br.vertices = cocos2d::vertex3(width, height, 0);
+
+		quad.bl.texCoords.u = left;
+		quad.bl.texCoords.v = bottom;
+		quad.br.texCoords.u = right;
+		quad.br.texCoords.v = bottom;
+		quad.tl.texCoords.u = left;
+		quad.tl.texCoords.v = top;
+		quad.tr.texCoords.u = right;
+		quad.tr.texCoords.v = top;
+
+		cocos2d::ccColor4B tmpColor = { 
+			(GLubyte)(255 * color[0]),
+			(GLubyte)(255 * color[1]),
+			(GLubyte)(255 * color[2]),
+			(GLubyte)(255 * color[3])
+		};
+		quad.bl.colors = tmpColor;
+		quad.br.colors = tmpColor;
+		quad.tl.colors = tmpColor;
+		quad.tr.colors = tmpColor;
+
+		#define kQuadSize sizeof(quad.bl)
+
+		bool newBlend = blendFunc.src != CC_BLEND_SRC || blendFunc.dst != CC_BLEND_DST;
+		if(newBlend){
+			glBlendFunc(blendFunc.src, blendFunc.dst);
+		}
+		glBindTexture(GL_TEXTURE_2D, texture->getName());
+
+		long offset = (long)&quad;
+
+		// vertex
+		int diff = offsetof(cocos2d::ccV3F_C4B_T2F, vertices);
+		glVertexPointer(3, GL_FLOAT, kQuadSize, (void*)(offset + diff));
+
+		// color
+		diff = offsetof(cocos2d::ccV3F_C4B_T2F, colors);
+		glColorPointer(4, GL_UNSIGNED_BYTE, kQuadSize, (void*)(offset + diff));
+	
+		// tex coords
+		diff = offsetof(cocos2d::ccV3F_C4B_T2F, texCoords);
+		glTexCoordPointer(2, GL_FLOAT, kQuadSize, (void*)(offset + diff));
+	
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	
+		if(newBlend){
+			glBlendFunc(CC_BLEND_SRC, CC_BLEND_DST);
+		}
+	}
+
+	void initTextureClass()
+	{
+		struct Texture2d
+		{
+			static int getPixelFormat(OS * p_os, int params, int, int, void*)
+			{
+				MarmaladeOS * os = (MarmaladeOS*)p_os;
+				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(-params-1, os->texture2d_instance_crc);
+				if(texture){
+					os->pushNumber((OS_NUMBER)texture->getPixelFormat());
+					return 1;
+				}
+				return 0;
+			}
+
+			static int getWidth(OS * p_os, int params, int, int, void*)
+			{
+				MarmaladeOS * os = (MarmaladeOS*)p_os;
+				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(-params-1, os->texture2d_instance_crc);
+				if(texture){
+					os->pushNumber((OS_NUMBER)texture->getContentSize().width);
+					return 1;
+				}
+				return 0;
+			}
+
+			static int getHeight(OS * p_os, int params, int, int, void*)
+			{
+				MarmaladeOS * os = (MarmaladeOS*)p_os;
+				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(-params-1, os->texture2d_instance_crc);
+				if(texture){
+					os->pushNumber((OS_NUMBER)texture->getContentSize().height);
+					return 1;
+				}
+				return 0;
+			}
+
+			static int getHasPremultipliedAlpha(OS * p_os, int params, int, int, void*)
+			{
+				MarmaladeOS * os = (MarmaladeOS*)p_os;
+				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(-params-1, os->texture2d_instance_crc);
+				if(texture){
+					os->pushNumber((OS_NUMBER)texture->getHasPremultipliedAlpha());
+					return 1;
+				}
+				return 0;
+			}
+
+			static void ccTexture2dDtor(OS * os, void * data, void * user_param)
+			{
+				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)data;
+				texture->release();
+			}
+
+			static int newTexture(OS * p_os, int params, int, int, void*)
+			{
+				MarmaladeOS * os = (MarmaladeOS*)p_os;
+				String filename = os->toString(-params);
+				cocos2d::CCTexture2D * texture = cocos2d::CCTextureCache::sharedTextureCache()->addImage(filename);
+				if(texture){
+					texture->retain();
+					os->pushUserPointer(os->texture2d_instance_crc, texture, ccTexture2dDtor);
+					os->pushStackValue(-1);
+					os->getGlobal("Texture2d");
+					os->setPrototype(os->texture2d_instance_crc);
+					return 1;
+				}
+				return 0;
+			}
+		};
+		FuncDef list[] = {
+			{"__get@pixelFormat", Texture2d::getPixelFormat},
+			{"__get@width", Texture2d::getWidth},
+			{"__get@height", Texture2d::getHeight},
+			{"__get@hasPremultipliedAlpha", Texture2d::getHasPremultipliedAlpha},
+			{"__construct", Texture2d::newTexture},
+			{}
+		};
+
+		pushGlobals();
+		pushString("Texture2d");
+		pushUserdata(texture2d_class_crc, 0);
+		setFuncs(list);
+		setProperty();
 	}
 
 	enum ETouchPhase
@@ -334,6 +608,12 @@ public:
 		vfprintf(f, format, va);
 		fclose(f);
 	}
+
+	void startFrame()
+	{
+ 		// release cocos2d-x objects
+ 		cocos2d::CCPoolManager::getInstance()->pop();		
+	}
 };
 
 double clamp(double a, double min, double max)
@@ -345,11 +625,13 @@ double clamp(double a, double min, double max)
 
 int main()
 {
-	OS * os = OS::create(new MarmaladeOS());
+	MarmaladeOS * os = OS::create(new MarmaladeOS());
 	os->require("main.os");
 	
 	uint64 updateTimeMS = 0;
 	for(;;){ 
+		os->startFrame();
+
 		updateTimeMS = s3eTimerGetMs();
 			
 		s3eDeviceYield(0);

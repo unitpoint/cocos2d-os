@@ -1,9 +1,13 @@
 var core = require("core")
 var app = require("app")
 var node = require("node")
+var image = require("image")
 var director = require("director")
 
 print "Hello World!"
+
+// var image = Texture2d("award-first.png")
+// print("image width "image.width" height "image.height" pixelformat "image.pixelFormat" hasPremultipliedAlpha "image.hasPremultipliedAlpha)
 
 addEventListener("enterFrame", function(){
 	// print "touches "..app.touches
@@ -85,14 +89,15 @@ MyScene = extends Scene {
 		}
 		
 		{
-			var rect = ColorNode()
+			// var rect = ColorNode()
+			var rect = Image("award-first.png")
 			rect.speed = math.random(0.2 0.5)
 			rect.anchor = {x = 0 y = 1}
 			rect.setRect(
 				this.width * 0.0
 				this.height * 1.0
-				200
 				100
+				200
 				)
 			rect.color = color()
 			this.insert(rect)
@@ -114,9 +119,10 @@ MyScene = extends Scene {
 		
 		// the same functionality but using closure instead of OOP
 		var scene = this
-		for(var i = 0; i < 100; i++){
+		for(var i = 0; i < 20; i++){
 			function(){
-				var self = ColorNode()
+				var self = Image("award-first.png") // ColorNode()
+				self.anchor = { x = 0.5 y = 0.38 }
 				var speed = math.random(0.2 0.5)
 				self.setRect(
 					scene.width * math.random(0.1 0.7) 
@@ -157,7 +163,15 @@ MyScene = extends Scene {
 					return a
 				}
 				
+				// self.rotation = 45
+				/* self.addEventListener("enterFrame", function(params){
+					self.rotation = 45 // math.deg(math.sin(params.deltaTimeSec * math.PI * 2))
+				}) */
+				
+				var rotSpeed = math.random(0.8 1.5)
 				self.addEventListener("enterFrame", function(params){
+					self.rotation = math.deg(math.sin(self.timeSec * math.PI * rotSpeed))
+					
 					if(touched) return;
 					
 					var offsPerSec = director.width * speed * params.deltaTimeSec

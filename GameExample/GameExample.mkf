@@ -5,6 +5,9 @@ options
 	# module_path="c:/Marmalade/6.0/examples/SoundEngine"
 	module_path="../cocos2d-os/marmalade-modules"
 	module_path="modules/objectscript"
+	module_path="modules/cocos2dx/proj.marmalade"
+	# module_path="modules/CocosDenshion/proj.marmalade"
+	# module_path="src/cc/platform/third_party/marmalade"
 }
 
 includepaths
@@ -21,11 +24,12 @@ subprojects
 #	iwgx
 #	iwgraphics
 #	zlib
-	libpng
+#	libpng
 #	libxml2
 #	freetype
-	libjpeg
-#	cocos2d-os
+#	libjpeg
+	cocos2dx
+#	cocos2dos
 	objectscript
 }
 

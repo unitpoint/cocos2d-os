@@ -3,7 +3,8 @@ subprojects
 	GameExample
 }
 
-defines { 
+defines {
+	OS_NUMBER=float
 	GAME_VERSION_MAJOR=1
 	GAME_VERSION_MINOR=0
 	GAME_VERSION_REVISION=0

@@ -38,6 +38,7 @@ Node = {
 		__anchorX = 0.5
 		__anchorY = 0.5
 		__rotation = 0
+		__opacity = 1
 		__zOrder = 0
 		
 		__transformDirty = true
@@ -97,6 +98,9 @@ Node = {
 	
 	__get@isRelativeAnchor = function(){return this.__isRelativeAnchor}
 	__set@isRelativeAnchor = function(a){if(this.__isRelativeAnchor !== a){ this.__isRelativeAnchor = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	
+	__get@opacity = function(){return this.__opacity}
+	__set@opacity = function(a){this.__opacity = a}
 	
 	__construct = function(){
 		this.width = director.width
@@ -175,7 +179,7 @@ Node = {
 				t = t.translate(this.__x, this.__y)
 			}
 			if(this.__rotation !== 0){
-				t = t.rotate(-this.__rotation)
+				t = t.rotate(this.__rotation)
 			}
 			if(this.__skewX !== 0 || this.__skewY !== 0){
 				t = t.skew(this.__skewX, this.__skewY)
@@ -256,11 +260,12 @@ Node = {
 	
 	handleUpdate = function(params){
 		var deltaTimeSec = params.deltaTimeSec
+		params.deltaTimeSec = deltaTimeSec * this.timeSpeed
+		this.timeSec = this.timeSec + params.deltaTimeSec
 		this.updateTimers(params)
 		for(var child in this.__childrenPos){
 			child.handleUpdate(params)
 		}
-		// this.update(params.deltaTimeSec)
 		if("enterFrame" in this.__events){
 			params.target = this
 			for(var func in this.__events["enterFrame"]){
@@ -287,7 +292,7 @@ Node = {
 		if("touch" in this.__events){
 			if(touch.phase == "start"){
 				if(!touch.captured){
-					touch.x, touch.y = touch.nativeX, touch.nativeY
+					// touch.x, touch.y = touch.nativeX, touch.nativeY
 					var local = this.pointToNodeSpace(touch)
 					// echo("touch "touch", local"local", is local "this.isLocalPoint(local)"\n")
 					if(this.isLocalPoint(local)){
@@ -299,7 +304,7 @@ Node = {
 					}
 				}
 			}else if(touch.captured === this){
-				touch.x, touch.y = touch.nativeX, touch.nativeY
+				// touch.x, touch.y = touch.nativeX, touch.nativeY
 				touch.local, touch.target = this.pointToNodeSpace(touch), this
 				for(var func in this.__events["touch"]){
 					func(touch)
@@ -334,8 +339,8 @@ Node = {
 			child.triggerEvent(eventName, params)
 		}
 		if(eventName in this.__events){
+			params.target = this
 			for(var func in this.__events[eventName]){
-				params.target = this
 				func(params)
 			}
 		}
@@ -368,8 +373,6 @@ Node = {
 	}
 	
 	updateTimers = function(params){
-		params.deltaTimeSec = params.deltaTimeSec * this.timeSpeed
-		this.timeSec = this.timeSec + params.deltaTimeSec
 		var timeSec = this.timeSec
 		for(var i, t in this.__timers){
 			if(t.nextTimeSec <= timeSec){
