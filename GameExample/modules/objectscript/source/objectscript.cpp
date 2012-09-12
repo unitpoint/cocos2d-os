@@ -12028,16 +12028,19 @@ OS::Core::GCArrayValue * OS::Core::pushArrayOf(Value val)
 		// case OS_VALUE_TYPE_NULL:
 		// 	return pushNull(); // pushArrayValue();
 
+	/*
 	case OS_VALUE_TYPE_BOOL:
 	case OS_VALUE_TYPE_NUMBER:
 	case OS_VALUE_TYPE_STRING:
 		arr = pushArrayValue();
 		allocator->vectorAddItem(arr->values, val OS_DBG_FILEPOS);
 		return arr;
+	*/
 
 	case OS_VALUE_TYPE_ARRAY:
 		return pushValue(val.v.arr);
 
+	/*
 	case OS_VALUE_TYPE_OBJECT:
 		arr = pushArrayValue();
 		if(val.v.object->table && val.v.object->table->count > 0){
@@ -12047,6 +12050,7 @@ OS::Core::GCArrayValue * OS::Core::pushArrayOf(Value val)
 			}
 		}
 		return arr;
+	*/
 	}
 	pushNull();
 	return NULL;
@@ -12059,6 +12063,7 @@ OS::Core::GCObjectValue * OS::Core::pushObjectOf(Value val)
 		// case OS_VALUE_TYPE_NULL:
 		// 	return pushObjectValue();
 
+	/*
 	case OS_VALUE_TYPE_BOOL:
 	case OS_VALUE_TYPE_NUMBER:
 	case OS_VALUE_TYPE_STRING:
@@ -12076,6 +12081,7 @@ OS::Core::GCObjectValue * OS::Core::pushObjectOf(Value val)
 			}
 			return object;
 		}
+	*/
 
 	case OS_VALUE_TYPE_OBJECT:
 		return pushValue(val.v.object);
