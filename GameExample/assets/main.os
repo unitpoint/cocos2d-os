@@ -169,10 +169,15 @@ MyScene = extends Scene {
 				}) */
 				
 				var rotSpeed = math.random(0.8 1.5)
+				var timeSec = 0
 				self.addEventListener("enterFrame", function(params){
-					self.rotation = math.deg(math.sin(self.timeSec * math.PI * rotSpeed))
-					
-					if(touched) return;
+					if(touched){ 
+						self.scaleX = 1 + (math.cos(self.timeSec * math.PI * rotSpeed) + 1) / 2 * 0.5
+						self.scaleY = 1 + (math.sin(self.timeSec * math.PI * rotSpeed * 3) + 1) / 2 * 0.5
+						return
+					}
+					timeSec = timeSec + params.deltaTimeSec
+					self.rotation = math.deg(math.sin(timeSec * math.PI * rotSpeed))
 					
 					var offsPerSec = director.width * speed * params.deltaTimeSec
 					

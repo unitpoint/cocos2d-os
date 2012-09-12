@@ -72,8 +72,14 @@ Node = {
 	__get@scaleY = function(){return this.__scaleY}
 	__set@scaleY = function(a){if(this.__scaleY !== a){ this.__scaleY = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
-	__get@scale = function(){return Point(this.__scaleX this.__scaleY)}
-	__set@scale = function(a){ this.scaleX, this.scaleY = a.x, a.y }
+	__get@scale = function(){return this.__scaleX} // Point(this.__scaleX this.__scaleY)}
+	__set@scale = function(a){ 
+		if(numberof a){
+			this.scaleX, this.scaleY = a, a
+		}else{
+			this.scaleX, this.scaleY = a.x, a.y 
+		}
+	}
 	
 	__get@skewX = function(){return this.__skewX}
 	__set@skewX = function(a){if(this.__skewX !== a){ this.__skewX = a; this.__transformDirty, this.__inverseDirty = true, true }}
