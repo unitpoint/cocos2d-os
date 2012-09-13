@@ -113,7 +113,7 @@ _E.projection = PROJECTION_3D
 
 glClearColor(0 0 0 1)
 
-animationIntervalSec = 1 / 60
+animationInterval = 1 / 60
 
 var setAppOrientation = app.__set@orientation
 app.__set@orientation = function(a){
@@ -133,6 +133,14 @@ function set scene(a){
 	// runningScene = a
 	nextScene = a
 	setNextScene()
+}
+
+function insert(node){
+	if(runningScene && node) runningScene.insert(node)
+}
+
+function remove(node){
+	if(runningScene && node) runningScene.remove(node)
 }
 
 nextScene = null
@@ -177,7 +185,7 @@ var function paint(){
 	enableDefaultGlStates()
 	
 	// paint the scene
-	var paintParams = {}
+	var paintParams = {opacity = 1}
     if(runningScene) runningScene.handlePaint(paintParams)
 	if(notificationNode) notificationNode.handlePaint(paintParams)
 	
@@ -199,7 +207,7 @@ function showProfilers(){
 }
 
 function handleTouches(){
-	var timeSec, orientation, width, height = app.timeSec, app.orientation, _E.width, _E.height
+	var time, orientation, width, height = app.timeSec, app.orientation, _E.width, _E.height
 	for(var id, touch in app.touches){
 		if(!touch.processed){
 			if(orientation == ORIENTATION_PORTRAIT){
@@ -214,7 +222,7 @@ function handleTouches(){
 				touch.x, touch.y = touch.y, width - touch.x
 			}
 			touch.nativeX, touch.nativeY = touch.x, touch.y
-		}else if(touch.phase == "end" || touch.phase == "cancel" || timeSec - touch.processed > 30){
+		}else if(touch.phase == "end" || touch.phase == "cancel" || time - touch.processed > 30){
 			// print "delete old touch "..app.touches[id]
 			delete app.touches[id]
 		}
@@ -223,8 +231,8 @@ function handleTouches(){
 		if(touch.processed){
 			continue;
 		}
-		touch.processed = timeSec
-		if(touch.captured){ // && touch.phase != "start"){
+		touch.processed = time
+		if(touch.captured && !touch.modal){ // && touch.phase != "start"){
 			var cur = touch.captured
 			var recursion = {[cur] = true}
 			for(;cur !== runningScene && cur.__parent;){
@@ -245,39 +253,40 @@ function handleTouches(){
 				// print "captured node is detached "..touch.." so run generic step"
 			}
 		}
+		touch.modal = false
 		// runningScene.triggerEvent("touch" touch)
 		runningScene.handleTouch(touch)
 	}
 	// print "touches "..app.touches
 }
 
-var deltaTimeSec = 0.01
-function get deltaTimeSec(){return deltaTimeSec}
+var deltaTime = 0.01
+function get deltaTime(){return deltaTime}
 
 var timeSpeed = 1
 function get timeSpeed(){return timeSpeed}
 function set timeSpeed(a){ timeSpeed = a }
 
-var timeSec = 1
-function get timeSec(){return timeSec}
-function set timeSec(a){ timeSec = a }
+var time = 1
+function get time(){return time}
+function set time(a){ time = a }
 
-var prevAppTimeSec = 0
+var prevAppTime = 0
 
 var coreTriggerEvent = core.triggerEvent
 function core.triggerEvent(eventName, params){
 	coreTriggerEvent.call(core, eventName, params)
 	if(eventName == "enterFrame"){
 		// calculate delta time
-		var appTimeSec = app.timeSec
-		deltaTimeSec = (appTimeSec - prevAppTimeSec) * timeSpeed
-		prevAppTimeSec = appTimeSec
-		if(deltaTimeSec > 0.2) deltaTimeSec = 0.2
-		timeSec = timeSec + deltaTimeSec
+		var appTime = app.timeSec
+		deltaTime = (appTime - prevAppTime) * timeSpeed
+		prevAppTime = appTime
+		if(deltaTime > 0.2) deltaTime = 0.2
+		time = time + deltaTime
 		
 		handleTouches()
 
-		var updateParams = {deltaTimeSec = deltaTimeSec}
+		var updateParams = {deltaTime = deltaTime}
 		if(runningScene) runningScene.handleUpdate(updateParams)
 		if(notificationNode) notificationNode.handleUpdate(updateParams)
 

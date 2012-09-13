@@ -30,16 +30,16 @@ function eval(str, env){
 var events = {}
 
 function addEventListener(eventName, func, zOrder){
-	func || return;
+	functionof func || return;
 	events[eventName][func] = zOrder || 0
 	events[eventName].rsort()
+	return [eventName func]
 }
 
-function removeEventListener(eventName, func){
-	if(func)
+function removeEventListener(eventId){
+	if(arrayof eventId){
+		var eventName, func = eventId[0], eventId[1]
 		delete events[eventName][func]
-	else{
-		// delete events[eventName]
 	}
 }
 
@@ -54,13 +54,13 @@ var timers = {}
 
 function isCallable(f){ return typeof f === "function" || typeof f === "object" }
 
-function setTimeout(func, delaySec, count, priority){
+function setTimeout(func, delay, count, priority){
 	count = count || 1
-	count > 0 && func || return;
+	count > 0 && functionof func || return;
 	var i = func // #timers
 	timers[i] = {
-		nextTimeSec = app.timeSec + delaySec
-		delaySec = delaySec
+		nextTime = app.timeSec + delay
+		delay = delay
 		func = func
 		count = count
 		priority = priority || 0
@@ -77,18 +77,19 @@ function clearTimeout(t){
 HIGH_PRIORITY = 999999
 
 addEventListener("enterFrame" function(){
-	var timeSec = app.timeSec
+	var time = app.timeSec
 	for(var i, t in timers){
-		if(t.nextTimeSec <= timeSec){
-			t.nextTimeSec = timeSec + t.delaySec
+		if(t.nextTime <= time){
+			t.nextTime = time + t.delay
 			if(t.count === true){
-				t.func()
+				t.func.call(null)
 			}else{
-				t.count = t.count - 1
-				if(t.count <= 0){
+				if(t.count <= 1){
 					delete timers[i]
+				}else{
+					t.count = t.count - 1
 				}
-				t.func()
+				t.func.call(null)
 			}
 		}
 	}

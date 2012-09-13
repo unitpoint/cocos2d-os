@@ -35,7 +35,7 @@ MyColorNode = extends ColorNode {
 		changeDir()
 		
 		this.addEventListener("enterFrame", function(params){
-			self.update(params)
+			this.update(params)
 		})
 		
 		var tx, ty, sx, sy
@@ -58,10 +58,10 @@ MyColorNode = extends ColorNode {
 	update = function(params){
 		if(this.touched) return;
 		
-		var offsPerSec = director.width * this.speed * params.deltaTimeSec
+		var offs = director.width * this.speed * params.deltaTime
 		
-		this.x = this.x + this.dx * offsPerSec
-		this.y = this.y + this.dy * offsPerSec
+		this.x = this.x + this.dx * offs
+		this.y = this.y + this.dy * offs
 		
 		var function clamp(a min max){
 			if(a < min) return min
@@ -88,7 +88,7 @@ MyScene = extends Scene {
 			return [math.random(0.2 0.95) math.random(0.2 0.95) math.random(0.2 0.95) 1]
 		}
 		
-		{
+		;{
 			// var rect = ColorNode()
 			var rect = Image("award-first.png")
 			rect.speed = math.random(0.2 0.5)
@@ -100,6 +100,22 @@ MyScene = extends Scene {
 				200
 				)
 			rect.color = color()
+			
+			// print "before transition"
+			rect.transition { 
+				delay = 2
+				duration = 2
+				x = this.width * 0.7
+				y = this.height * 0.3
+				anchorX = 0.5
+				anchorY = 0.5
+				rotation = 45
+				zOrder = 1
+				opacity = 0.7
+				easy = Easy.inOutCubic
+			}
+			// print "after transition"
+			
 			this.insert(rect)
 		}
 		
@@ -112,14 +128,14 @@ MyScene = extends Scene {
 				this.height * math.random(0.1 0.7) 
 				this.width * math.random(0.1 0.2) 
 				this.width * math.random(0.1 0.2) 
-				)
+			)
 			rect.color = color()
 			this.insert(rect)
 		}
 		
 		// the same functionality but using closure instead of OOP
 		var scene = this
-		for(var i = 0; i < 20; i++){
+		for(var i = 0; i < 50; i++){
 			function(){
 				var self = Image("award-first.png") // ColorNode()
 				self.anchor = { x = 0.5 y = 0.38 }
@@ -144,15 +160,16 @@ MyScene = extends Scene {
 				var tx, ty, sx, sy
 				self.addEventListener("touch", function(touch){
 					if(touch.phase == "start"){
-						tx, ty, sx, sy = touch.x, touch.y, self.x, self.y
+						tx, ty, sx, sy = touch.x, touch.y, this.x, this.y
 						touched = true
-						self.zOrder = 1
-						self.clearTimeout(timer)
+						this.zOrder = 1
+						this.clearTimeout(timer)
 					}else if(touch.phase == "move"){
-						self.x, self.y = sx + touch.x - tx, sy + touch.y - ty
+						this.x, this.y = sx + touch.x - tx, sy + touch.y - ty
 					}else if(touch.phase == "end"){
 						touched = false
-						self.zOrder = 0
+						this.zOrder = 0
+						this.opacity = 1
 						changeDir()
 					}
 				})
@@ -163,34 +180,30 @@ MyScene = extends Scene {
 					return a
 				}
 				
-				// self.rotation = 45
-				/* self.addEventListener("enterFrame", function(params){
-					self.rotation = 45 // math.deg(math.sin(params.deltaTimeSec * math.PI * 2))
-				}) */
-				
 				var rotSpeed = math.random(0.8 1.5)
-				var timeSec = 0
+				var time = 0
 				self.addEventListener("enterFrame", function(params){
 					if(touched){ 
-						self.scaleX = 1 + (math.cos(self.timeSec * math.PI * rotSpeed) + 1) / 2 * 0.5
-						self.scaleY = 1 + (math.sin(self.timeSec * math.PI * rotSpeed * 3) + 1) / 2 * 0.5
+						this.scaleX = 1 + (math.cos(this.time * math.PI * rotSpeed) + 1) / 2 * 0.5
+						this.scaleY = 1 + (math.sin(this.time * math.PI * rotSpeed * 3) + 1) / 2 * 0.5
+						this.opacity = 0.5 + (math.sin(this.time * math.PI * rotSpeed * 2) + 1) / 2 * 1.0
 						return
 					}
-					timeSec = timeSec + params.deltaTimeSec
-					self.rotation = math.deg(math.sin(timeSec * math.PI * rotSpeed))
+					time = time + params.deltaTime
+					this.rotation = math.deg(math.sin(time * math.PI * rotSpeed))
 					
-					var offsPerSec = director.width * speed * params.deltaTimeSec
+					var offs = director.width * speed * params.deltaTime
 					
-					self.x = self.x + dx * offsPerSec
-					self.y = self.y + dy * offsPerSec
+					this.x = this.x + dx * offs
+					this.y = this.y + dy * offs
 					
-					if(self.x < 0 || self.x > self.__parent.width){
+					if(this.x < 0 || this.x > this.parent.width){
 						dx = -dx
-						self.x = clamp(self.x, 0, self.__parent.width)
+						this.x = clamp(this.x, 0, this.parent.width)
 					}
-					if(self.y < 0 || self.y > self.__parent.height){
+					if(this.y < 0 || this.y > this.parent.height){
 						dy = -dy
-						self.y = clamp(self.y, 0, self.__parent.height)
+						this.y = clamp(this.y, 0, this.parent.height)
 					}
 				})
 				

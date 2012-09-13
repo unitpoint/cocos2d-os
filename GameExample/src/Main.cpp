@@ -167,9 +167,9 @@ public:
 				((MarmaladeOS*)os)->orientation = os->toInt();
 				return 0;
 			}
-			static int drawTexture(OS * os, int params, int, int, void*)
+			static int drawImage(OS * os, int params, int, int, void*)
 			{
-				((MarmaladeOS*)os)->drawTexture(params);
+				((MarmaladeOS*)os)->drawImage(params);
 				return 0;
 			}
 		};
@@ -190,7 +190,7 @@ public:
 			{"stopAccelerometer", App::stopAccelerometer},
 			{"__get@orientation", App::getOrientation},
 			{"__set@orientation", App::setOrientation},
-			{"drawTexture", App::drawTexture},
+			{"drawImage", App::drawImage},
 			{}
 		};
 		getModule("app");
@@ -235,13 +235,22 @@ public:
 		return false;
 	}
 
-	void drawTexture(int params)
+	void drawImage(int params)
 	{
 		if(!isObject(-params)) return;
+
+		float opacity;
+		if(params >= 2){
+			opacity = isNull(-params+1) ? 1.0f : clampUnit(toFloat(-params+1));
+		}else{
+			getProperty(-params, "opacity");
+			opacity = isNull() ? 1.0f : clampUnit(popFloat());
+		}
+
 		params = getAbsoluteOffs(-params);
 			
 		getProperty(params, "texture");
-		cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)toUserdata(-1, texture2d_instance_crc);
+		cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)toUserdata(texture2d_instance_crc);
 		if(!texture) return;
 
 		getProperty(params, "width");
@@ -268,9 +277,6 @@ public:
 		getProperty(params, "flipY");
 		bool flipY = popBool();
 
-		getProperty(params, "opacity");
-		float opacity = isNull() ? 1.0f : clampUnit(popFloat());
-
 		float color[4];
 		getProperty(params, "color");
 		getColor(-1, color);
@@ -280,7 +286,7 @@ public:
 		if(texture->getHasPremultipliedAlpha()){
 			blendFunc.src = CC_BLEND_SRC;
 			blendFunc.dst = CC_BLEND_DST;
-			for(int i = 0; i < 3; i++){
+			for(int i = 0; i < 4; i++){
 				color[i] *= opacity;
 			}
 		}else{
@@ -371,7 +377,7 @@ public:
 			static int getPixelFormat(OS * p_os, int params, int, int, void*)
 			{
 				MarmaladeOS * os = (MarmaladeOS*)p_os;
-				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(-params-1, os->texture2d_instance_crc);
+				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(os->texture2d_instance_crc, -params-1);
 				if(texture){
 					os->pushNumber((OS_NUMBER)texture->getPixelFormat());
 					return 1;
@@ -382,7 +388,7 @@ public:
 			static int getWidth(OS * p_os, int params, int, int, void*)
 			{
 				MarmaladeOS * os = (MarmaladeOS*)p_os;
-				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(-params-1, os->texture2d_instance_crc);
+				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(os->texture2d_instance_crc, -params-1);
 				if(texture){
 					os->pushNumber((OS_NUMBER)texture->getContentSize().width);
 					return 1;
@@ -393,7 +399,7 @@ public:
 			static int getHeight(OS * p_os, int params, int, int, void*)
 			{
 				MarmaladeOS * os = (MarmaladeOS*)p_os;
-				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(-params-1, os->texture2d_instance_crc);
+				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(os->texture2d_instance_crc, -params-1);
 				if(texture){
 					os->pushNumber((OS_NUMBER)texture->getContentSize().height);
 					return 1;
@@ -404,7 +410,7 @@ public:
 			static int getHasPremultipliedAlpha(OS * p_os, int params, int, int, void*)
 			{
 				MarmaladeOS * os = (MarmaladeOS*)p_os;
-				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(-params-1, os->texture2d_instance_crc);
+				cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(os->texture2d_instance_crc, -params-1);
 				if(texture){
 					os->pushNumber((OS_NUMBER)texture->getHasPremultipliedAlpha());
 					return 1;
@@ -650,7 +656,7 @@ int main()
 		os->call(1);
 
 		os->getGlobal("director");
-		os->getProperty("animationIntervalSec");
+		os->getProperty("animationInterval");
 		int animationIntervalMS = (int)(1.0f / clamp(os->popNumber(), 0.01, 0.2));
 		while((s3eTimerGetMs() - updateTimeMS) < animationIntervalMS){
 			int yield = (int)(animationIntervalMS - (s3eTimerGetMs() - updateTimeMS));

@@ -124,3 +124,435 @@ Matrix = {
 		return this
 	}
 }
+
+
+Easy = {
+	linear = function(t){
+		return t
+	}
+
+	inQuad = function(t){
+		return t * t
+	}
+
+	outQuad = function(t){
+		return -t * (t - 2)
+	}
+
+	inOutQuad = function(t){
+		return t < 0.5 ? t * t : ((1 - t) * (t - 3) - 1)
+	}
+
+	outInQuad = function(t){
+		return t < 0.5 ? Easy.outQuad(t * 2) : Easy.inQuad(t * 2 - 1)
+	}
+
+	inCubic = function(t){
+		return t * t * t
+	}
+
+	outCubic = function(t){
+		t = t - 1
+		return t * t * t + 1
+	}
+
+	inOutCubic = function(t){
+		return t < 0.5 ? Easy.inCubic(t * 2) / 2 : Easy.outCubic(t * 2 - 1) / 2 + 0.5
+	}
+
+	outInCubic = function(t){
+		return t < 0.5 ? Easy.outCubic(t * 2) / 2 : Easy.inCubic(t * 2 - 1) / 2 + 0.5
+	}
+
+	/*
+	float EasyLib::InQuart(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		t /= d;
+		return c * t * t * t * t + b;
+	}
+
+	float EasyLib::OutQuart(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		t = t / d - 1;
+		return (0 - c) * (t * t * t * t - 1) + b;
+	}
+
+	float EasyLib::InOutQuart(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if ((t = t / (d / 2)) < 1) 
+		{
+			return c / 2 * t * t * t * t + b;
+		}
+		t -= 2;
+		return (0 - c) / 2 * (t * t * t * t - 2) + b;
+	}
+
+	float EasyLib::OutInQuart(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if (t < d / 2) 
+		{
+			return OutQuart(t * 2, b, c / 2, d);
+		}
+		return InQuart(t * 2 - d, b + c / 2, c / 2, d);
+	}
+
+	float EasyLib::InQuint(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		t /= d;
+		return c * t * t * t * t * t + b;
+	}
+
+	float EasyLib::OutQuint(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		t = t / d - 1;
+		return c * (t * t * t * t * t + 1) + b;
+	}
+
+	float EasyLib::InOutQuint(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if ((t = t / (d / 2)) < 1) 
+		{
+			return c / 2 * t * t * t * t * t + b;
+		}
+		t = t - 2;
+		return c / 2 * (t * t * t * t * t + 2) + b;
+	}
+
+	float EasyLib::OutInQuint(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if (t < d / 2) 
+		{
+			return OutQuint(t * 2, b, c / 2, d);
+		}
+		return InQuint(t * 2 - d, b + c / 2, c / 2, d);
+	}
+
+	float EasyLib::InExpo(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		return c * MathLib::Pow(2, 10 * (t / d - 1)) + b;
+	}
+
+	float EasyLib::OutExpo(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		return c * (0 - MathLib::Pow(2, -10 * t / d) + 1) + b;
+	}
+
+	float EasyLib::InOutExpo(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if ((t = t / (d / 2)) < 1) 
+		{
+			return c / 2 * MathLib::Pow(2, 10 * (t - 1)) + b;
+		}
+		return c / 2 * (0 - MathLib::Pow(2, -10 * --t) + 2) + b;
+	}
+
+	float EasyLib::OutInExpo(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if (t < d / 2) 
+		{
+			return OutExpo(t * 2, b, c / 2, d);
+		}
+		return InExpo(t * 2 - d, b + c / 2, c / 2, d);
+	}
+
+	float EasyLib::InCirc(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		t /= d;
+		return (0 - c) * (MathLib::Sqrt(1 - t * t) - 1) + b;
+	}
+
+	float EasyLib::OutCirc(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		t = t / d - 1;
+		return c * MathLib::Sqrt(1 - t * t) + b;
+	}
+
+	float EasyLib::InOutCirc(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if ((t = t / (d / 2)) < 1) 
+		{
+			return (0 - c) / 2 * (MathLib::Sqrt(1 - t * t) - 1) + b;
+		}
+		t -= 2;
+		return c / 2 * (MathLib::Sqrt(1 - t * t) + 1) + b;
+	}
+
+	float EasyLib::OutInCirc(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if (t < d / 2) 
+		{
+			return OutCirc(t * 2, b, c / 2, d);
+		}
+		return InCirc(t * 2 - d, b + c / 2, c / 2, d);
+	}
+
+	float EasyLib::InBack(float t, float b, float c, float d, float s)
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		t /= d;
+		return c * t * t * ((s + 1) * t - s) + b;
+	}
+
+	float EasyLib::OutBack(float t, float b, float c, float d, float s)
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		t = t / d - 1;
+		return c * (t * t * ((s + 1) * t + s) + 1) + b;
+	}
+
+	float EasyLib::InOutBack(float t, float b, float c, float d, float s)
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if ((t = t / (d / 2)) < 1) 
+		{
+			s *= 1.525f;
+			return c / 2 * t * t * ((s + 1) * t - s) + b;
+		}
+		s *= 1.525f;
+		t -= 2;
+		return c / 2 * (t * t * ((s + 1) * t + s) + 2) + b;
+	}
+
+	float EasyLib::OutInBack(float t, float b, float c, float d, float s)
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if (t < d / 2) 
+		{
+			return OutBack(t * 2, b, c / 2, d, s);
+		}
+		return InBack(t * 2 - d, b + c / 2, c / 2, d, s);
+	}
+
+	float EasyLib::InBounce(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		return c - OutBounce(d - t, 0, c, d) + b;
+	}
+
+	float EasyLib::OutBounce(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if ((t = t / d) < 0.363636363636f) 
+		{
+			return c * 7.5625f * t * t + b;
+		}
+		if (t < 0.727272727273f) 
+		{
+			t -= 0.545454545455f;
+			return c * (7.5625f * t * t + 0.75f) + b;
+		}
+		if (t < 0.909090909091f) 
+		{
+			t -= 0.818181818182f;
+			return c * (7.5625f * t * t + 0.9375f) + b;
+		}
+		t -= 0.954545454545f;
+		return c * (7.5625f * t * t + 0.984375f) + b;
+	}
+
+	float EasyLib::InOutBounce(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if (t < d / 2) 
+		{
+			return InBounce(t * 2, 0, c, d) * 0.5f + b;
+		}
+		return OutBounce(t * 2 - d, 0, c, d) * 0.5f + c * 0.5f + b;
+	}
+
+	float EasyLib::OutInBounce(t){
+	{
+		if(t <= 0.0f)
+		{
+			return b;
+		}
+		if(t >= d)
+		{
+			return b + c;
+		}
+		if (t < d / 2) 
+		{
+			return OutBounce(t * 2, b, c / 2, d);
+		}
+		return InBounce(t * 2 - d, b + c / 2, c / 2, d);
+	}
+	*/
+}
+var Easy = Easy

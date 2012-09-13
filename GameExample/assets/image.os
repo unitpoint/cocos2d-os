@@ -19,7 +19,7 @@ Image = extends Node {
 		this.frameHeight = this.texture.height
 	}
 	
-	paint = function(){
-		app.drawTexture(this)
+	paint = function(params){
+		app.drawImage(this, params.opacity)
 	}
 }

@@ -15,16 +15,208 @@ Size = {
 	}
 }
 
-Node = {
+var counter = 0
+
+FunctionNode = {
 	__object = {
+		time = 0
+		timeSpeed = 1
+		
 		__events = {}
 		__childrenNeg = {}
 		__childrenPos = {}
 		__timers = {}
+		__transitions = {}
+		__parent = null
+		__parentChildren = null
+		__zOrder = 0
+	}
+	
+	__get@parent = function(){return this.__parent}
+	__set@parent = function(a){
+		if(this.__parent !== a){ 
+			this.remove() 
+			if(a) a.insert(this) 
+		}
+	}
+	
+	__get@zOrder = function(){return this.__zOrder}
+	__set@zOrder = function(a){
+		a = math.ceil(a)
+		if(this.__zOrder !== a){ 
+			this.__zOrder = a
+			if(this.__parent){
+				this.__parentChildren[this][0] = a
+				this.__parent.sortChildren(this.__parentChildren)
+			}
+		}
+	}
+	
+	sortChildren = function(children){
+		children.rsort(function(a b){
+			var z = a[0] - b[0]
+			return z != 0 ? z : a[1] - b[1]
+		})
+	}
+	
+	insert = function(node, zOrder){
+		node.remove()
 		
-		timeSec = 0
-		timeSpeed = 1
+		if(zOrder)
+			node.__zOrder = zOrder
+		else
+			zOrder = node.__zOrder
+		
+		var children = zOrder < 0 ? this.__childrenNeg : this.__childrenPos
+		children[node] = [zOrder ++counter]
+		this.sortChildren(children)
+		node.__parent = this
+		node.__parentChildren = children
+		// node.triggerEvent("onEnter")
+	}
+	
+	remove = function(node){
+		node = node || this
+		if(node.__parent){
+			// node.triggerEvent("onExit")
+			delete node.__parentChildren[node]
+			node.__parent = null
+			node.__parentChildren = null
+		}
+	}
+	
+	updateAllComponents = function(params){
+		this.updateTransitions(params)
+		this.updateTimers(params)
+		for(var child in this.__childrenPos){
+			child.handleUpdate(params)
+		}
+		if("enterFrame" in this.__events){
+			params.target = this
+			for(var func in this.__events["enterFrame"]){
+				func.call(this params)
+			}
+		}
+		for(var child in this.__childrenNeg){
+			child.handleUpdate(params)
+		}
+	}
+	
+	handleUpdate = function(params){
+		var deltaTime = params.deltaTime
+		params.deltaTime = deltaTime * this.timeSpeed
+		this.time = this.time + params.deltaTime
+		this.updateAllComponents(params)
+		params.deltaTime = deltaTime
+	}
+	
+	addEventListener = function(eventName, func, zOrder){
+		functionof func || return;
+		this.__events[eventName][func] = zOrder || 0
+		this.__events[eventName].rsort()
+		return [eventName func]
+	}
+	
+	removeEventListener = function(eventId){
+		if(arrayof eventId){
+			var eventName, func = eventId[0], eventId[1]
+			delete this.__events[eventName][func]
+		}
+	}
+
+	triggerEvent = function(eventName, params){
+		for(var child in this.__childrenPos){
+			child.triggerEvent(eventName, params)
+		}
+		if(eventName in this.__events){
+			params.target = this
+			for(var func in this.__events[eventName]){
+				func.call(this params)
+			}
+		}
+		for(var child in this.__childrenNeg){
+			child.triggerEvent(eventName, params)
+		}
+	}
+	
+	setTimeout = function(func, delay, count, priority){
+		count = count || 1
+		count > 0 && functionof func || return;
+		var i = func
+		this.__timers[i] = {
+			nextTime = this.time + delay
+			delay = delay
+			func = func
+			count = count
+			priority = priority || 0
+		}
+		this.__timers.rsort "priority"
+		return i
+	}
+
+	clearTimeout = function(t){
+		delete this.__timers[t]
+	}
+	
+	updateTimers = function(){
+		var time = this.time
+		for(var i, t in this.__timers){
+			if(t.nextTime <= time){
+				// print "run timer "..t
+				t.nextTime = time + t.delay
+				if(t.count === true){
+					t.func.call(this)
+				}else{
+					if(t.count <= 1){
+						delete this.__timers[i]
+					}else{
+						t.count = t.count - 1
+					}
+					t.func.call(this)
+				}
+			}
+		}
+	}
+	
+	updateTransitions = function(params){
+		for(var t in this.__transitions){
+			t.handleUpdate(params)
+		}
+	}
+	
+	transition = function(t target){
+		(t in this.__transitions) && return;
+		if(!(t is Transition)){
+			t = Transition(t)
+		}
+		t && !t.__parent || return;
+		
+		var zOrder = 0
+		var children = this.__transitions
+		children[t] = [zOrder ++counter]
+		// this.sortChildren(children)
+		t.__parent = this
+		t.__parentChildren = children
+		t.start(target || this)
+	}
+	
+	stopTransition = function(t){
+		t.remove()
+	}
+	
+	stopAllTransitions = function(){
+		for(var t in this.__transitions){
+			t.remove()
+		}
+		this.__transitions = {}
+	}
+}
+
+Node = extends FunctionNode {
+	__object = {
 		visible = true
+		modal = false
+		opacity = 1
 		
 		__isRelativeAnchor = true
 		__x = 0
@@ -38,17 +230,12 @@ Node = {
 		__anchorX = 0.5
 		__anchorY = 0.5
 		__rotation = 0
-		__opacity = 1
-		__zOrder = 0
 		
 		__transformDirty = true
 		__transform = null // node to parent
 		__inverseDirty = true
 		__inverseTransform = null // parent to node
 		__transformGL = null // node to parent (GL)
-		
-		__parent = null
-		__parentChildren = null
 	}
 	
 	__get@x = function(){return this.__x}
@@ -105,70 +292,16 @@ Node = {
 	__get@isRelativeAnchor = function(){return this.__isRelativeAnchor}
 	__set@isRelativeAnchor = function(a){if(this.__isRelativeAnchor !== a){ this.__isRelativeAnchor = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
-	__get@opacity = function(){return this.__opacity}
-	__set@opacity = function(a){this.__opacity = a}
+	// __get@opacity = function(){return this.__opacity}
+	// __set@opacity = function(a){this.__opacity = a}
 	
 	__construct = function(){
+		// super.__construct.call(this)
 		this.width = director.width
 		this.height = director.height
 	}
 	
-	// update = function(deltaTimeSec){}
 	paint = function(){}
-	
-	__get@parent = function(){return this.__parent}
-	__set@parent = function(a){
-		if(this.__parent !== a){ 
-			this.remove() 
-			if(a) a.insert(this) 
-		}
-	}
-	
-	__get@zOrder = function(){return this.__zOrder}
-	__set@zOrder = function(a){
-		if(this.__zOrder !== a){ 
-			this.__zOrder = a
-			if(this.__parent){
-				this.__parentChildren[this][0] = a
-				this.__parent.sortChildren(this.__parentChildren)
-			}
-		}
-	}
-	
-	sortChildren = function(children){
-		children.rsort(function(a b){
-			var z = a[0] - b[0]
-			return z != 0 ? z : a[1] - b[1]
-		})
-	}
-	
-	__num = 0
-	insert = function(node, zOrder){
-		node.remove()
-		
-		if(zOrder)
-			node.__zOrder = zOrder
-		else
-			zOrder = node.__zOrder
-		
-		this.__num = this.__num + 1
-		var children = zOrder < 0 ? this.__childrenNeg : this.__childrenPos
-		children[node] = [zOrder this.__num]
-		this.sortChildren(children)
-		node.__parent = this
-		node.__parentChildren = children
-		// node.triggerEvent("onEnter")
-	}
-	
-	remove = function(node){
-		node = node || this
-		if(node.__parent){
-			// node.triggerEvent("onExit")
-			delete node.__parentChildren[node]
-			node.__parent = null
-			node.__parentChildren = null
-		}
-	}
 	
 	nodeToParentTransform = function(){
 		if(this.__transformDirty){
@@ -242,6 +375,9 @@ Node = {
 	handlePaint = function(params){
 		this.visible || return;
 		
+		var saveOpacity = params.opacity
+		params.opacity = params.opacity * this.opacity
+		
 		glPushMatrix()
 		this.transform()
 		
@@ -249,11 +385,11 @@ Node = {
 			child.handlePaint(params)
 		}
 		
-		this.paint()
+		this.paint(params)
 		if("paint" in this.__events){
 			params.target = this
 			for(var func in this.__events["paint"]){
-				func(params)
+				func.call(this params)
 			}
 		}
 		
@@ -262,36 +398,20 @@ Node = {
 		}
 		
 		glPopMatrix()
-	}
-	
-	handleUpdate = function(params){
-		var deltaTimeSec = params.deltaTimeSec
-		params.deltaTimeSec = deltaTimeSec * this.timeSpeed
-		this.timeSec = this.timeSec + params.deltaTimeSec
-		this.updateTimers(params)
-		for(var child in this.__childrenPos){
-			child.handleUpdate(params)
-		}
-		if("enterFrame" in this.__events){
-			params.target = this
-			for(var func in this.__events["enterFrame"]){
-				func(params)
-			}
-		}
-		for(var child in this.__childrenNeg){
-			child.handleUpdate(params)
-		}
-		params.deltaTimeSec = deltaTimeSec
+		
+		params.opacity = saveOpacity
 	}
 	
 	handleTouch = function(touch){
 		for(var child in this.__childrenPos){
 			child.handleTouch(touch)
+			if(touch.captured) return;
 		}
 		if("nativeTouch" in this.__events){
 			touch.target = this
 			for(var func in this.__events["nativeTouch"]){
-				func(touch)
+				func.call(this touch)
+				if(touch.captured) return;
 			}
 		}
 		var autoCapture
@@ -304,7 +424,11 @@ Node = {
 					if(this.isLocalPoint(local)){
 						touch.local, touch.target, autoCapture = local, this, true
 						for(var func in this.__events["touch"]){
-							func(touch)
+							func.call(this touch)
+							if(touch.captured){ 
+								delete touch.local
+								return
+							}
 						}
 						delete touch.local
 					}
@@ -313,85 +437,25 @@ Node = {
 				// touch.x, touch.y = touch.nativeX, touch.nativeY
 				touch.local, touch.target = this.pointToNodeSpace(touch), this
 				for(var func in this.__events["touch"]){
-					func(touch)
+					func.call(this touch)
+					if(touch.captured){ 
+						delete touch.local
+						return
+					}
 				}
 				delete touch.local
 			}
 		}
 		for(var child in this.__childrenNeg){
 			child.handleTouch(touch)
+			if(touch.captured) return;
 		}
-		if(autoCapture && !touch.captured){
-			touch.captured = this
-		}
-	}
-	
-	addEventListener = function(eventName, func, zOrder){
-		func || return;
-		this.__events[eventName][func] = zOrder || 0
-		this.__events[eventName].rsort()
-	}
-	
-	removeEventListener = function(eventName, func){
-		if(func)
-			delete this.__events[eventName][func]
-		else{
-			// delete this.__events[eventName]
-		}
-	}
-
-	triggerEvent = function(eventName, params){
-		for(var child in this.__childrenPos){
-			child.triggerEvent(eventName, params)
-		}
-		if(eventName in this.__events){
-			params.target = this
-			for(var func in this.__events[eventName]){
-				func(params)
-			}
-		}
-		for(var child in this.__childrenNeg){
-			child.triggerEvent(eventName, params)
-		}
-	}
-	
-	setTimeout = function(func, delaySec, count, priority){
-		count = count || 1
-		count > 0 && func || return;
-		// var i = this.__num + 1
-		// this.__num = i
-		var i = func
-		this.__timers[i] = {
-			nextTimeSec = this.timeSec + delaySec
-			delaySec = delaySec
-			func = func
-			count = count
-			priority = priority || 0
-		}
-		// this.__timers.sort(function(a b){ return b.priority - a.priority })
-		this.__timers.rsort "priority"
-		// print "setTimeout "..this.__timers
-		return i
-	}
-
-	clearTimeout = function(t){
-		delete this.__timers[t]
-	}
-	
-	updateTimers = function(params){
-		var timeSec = this.timeSec
-		for(var i, t in this.__timers){
-			if(t.nextTimeSec <= timeSec){
-				t.nextTimeSec = timeSec + t.delaySec
-				if(t.count === true){
-					t.func()
-				}else{
-					t.count = t.count - 1
-					if(t.count <= 0){
-						delete this.__timers[i]
-					}
-					t.func()
-				}
+		if(!touch.captured){
+			if(autoCapture)
+				touch.captured = this
+			else if(this.modal){
+				touch.captured = this
+				touch.modal = true
 			}
 		}
 	}
@@ -401,6 +465,94 @@ Node = {
 		this.y = y
 		this.width = width
 		this.height = height
+	}
+}
+
+Transition = extends FunctionNode {
+	__construct = function(transition){
+		// super.__construct.call(this)
+		this.transition = transition
+	}
+	
+	start = function(target){
+		var transition = this.transition
+		if("speed" in transition){
+			this.timeSpeed = transition.speed
+			delete transition.speed
+		}
+		var function update(){
+			var duration = transition.duration
+			delete transition.duration
+			
+			var easy
+			if("easy" in transition){
+				easy = functionof transition.easy
+				delete transition.easy
+			}
+			
+			var startValues = {}
+			for(var name, value in transition){
+				if(value is Transition){
+					delete transition[name]
+					// this.transition(value, target)
+					continue
+				}
+				if(name === "sequence"){
+					
+				}
+				if(numberof value && name in target && numberof target[name]){
+					startValues[name] = target[name]
+				}else{
+					delete transition[name]
+				}
+			}
+			
+			if(duration <= 0){
+				// this.setTimeout(function(){
+					for(var name, endValue in transition){
+						target[name] = endValue
+					}
+					this.remove()
+				// })
+				return
+			}
+			this.time = 0
+			this.timeSpeed = this.timeSpeed / duration
+			
+			// easy = function(a){ return a }
+			if(easy){
+				var updateAllComponents = this.updateAllComponents
+				this.updateAllComponents = function(params){
+					var saveTime = this.time
+					this.time = easy(this.time)
+					params.deltaTime = this.time - (saveTime - params.deltaTime)
+					updateAllComponents.call(this, params)
+					this.time = saveTime
+				}
+			}
+			
+			var listener = this.addEventListener("enterFrame", function(){
+				var t = this.time
+				if(t >= 1){ 
+					t = 1
+					// print("transition ended")
+					// this.removeEventListener(listener)
+					this.remove()
+				}else{
+					// print("transition progress", math.round((time - start) * 100 / duration).."%")
+				}
+				for(var name, endValue in transition){
+					target[name] = startValues[name] * (1 - t) + endValue * t
+					// print(name" --> "target[name])
+				}
+			}, true)
+		}
+		if("delay" in transition){
+			this.setTimeout(update, transition.delay)
+			delete transition.delay
+		}else{
+			update.call(this)
+		}
 	}
 }
 
