@@ -965,6 +965,8 @@ namespace ObjectScript
 					OPERATOR_COLON,     // :
 
 					OPERATOR_IN,		// in
+					OPERATOR_ISPROTOTYPEOF,		// is
+					OPERATOR_IS,	// is
 					OPERATOR_LENGTH,	// #
 
 					OPERATOR_BIT_AND, // &
@@ -1527,6 +1529,8 @@ namespace ObjectScript
 					EXP_TYPE_NEG,			// -
 					EXP_TYPE_LENGTH,		// #
 					EXP_TYPE_IN,			// in
+					EXP_TYPE_ISPROTOTYPEOF,		// is
+					EXP_TYPE_IS,	// is
 
 					// EXP_TYPE_PARAM_SEPARTOR, // ,
 
@@ -1738,6 +1742,7 @@ namespace ObjectScript
 					ERROR_EXPECT_GET_OR_SET,
 					ERROR_EXPECT_EXPRESSION,
 					ERROR_EXPECT_FUNCTION_SCOPE,
+					ERROR_EXPECT_CODE_SEP_BEFORE_NESTED_BLOCK,
 					ERROR_EXPECT_SWITCH_SCOPE,
 					ERROR_FINISH_BINARY_OP,
 					ERROR_FINISH_UNARY_OP,
@@ -1825,12 +1830,15 @@ namespace ObjectScript
 				OpcodeLevel getOpcodeLevel(ExpressionType exp_type);
 
 				TokenData * readToken();
+				TokenData * getPrevToken();
 				TokenData * expectToken(TokenType);
 				TokenData * expectToken();
 
 				struct Params
 				{
 					bool allow_root_blocks;
+					bool allow_var_decl;
+					bool allow_inline_nested_block;
 					bool allow_binary_operator;
 					bool allow_in_operator;
 					bool allow_assing;
@@ -1846,6 +1854,8 @@ namespace ObjectScript
 					Params(const Params&);
 
 					Params& setAllowRootBlocks(bool);
+					Params& setAllowVarDecl(bool);
+					Params& setAllowInlineNestedBlock(bool);
 					Params& setAllowBinaryOperator(bool);
 					Params& setAllowInOperator(bool);
 					Params& setAllowAssign(bool);
@@ -1856,7 +1866,7 @@ namespace ObjectScript
 				};
 
 				Expression * expectSingleExpression(Scope*, const Params& p);
-				Expression * expectSingleExpression(Scope*, bool allow_nop_result = false);
+				Expression * expectSingleExpression(Scope*, bool allow_nop_result = false, bool allow_inline_nested_block = false);
 
 				Expression * expectExpressionValues(Expression * exp, int ret_values);
 				Expression * newExpressionFromList(ExpressionList& list, int ret_values);
@@ -2061,6 +2071,8 @@ namespace ObjectScript
 					OP_LOGIC_NOT,
 
 					OP_IN,
+					OP_ISPROTOTYPEOF,		// is
+					OP_IS,	// is
 					OP_SUPER,
 
 					OP_TYPE_OF,
@@ -2254,6 +2266,8 @@ namespace ObjectScript
 				String syntax_get;
 				String syntax_set;
 				String syntax_super;
+				String syntax_is;
+				String syntax_isprototypeof;
 				String syntax_typeof;
 				String syntax_valueof;
 				String syntax_booleanof;
@@ -2531,6 +2545,8 @@ namespace ObjectScript
 			bool isValueString(Value val, OS::String * out = NULL);
 			bool isValueInstanceOf(GCValue * val, GCValue * prototype_val);
 			bool isValueInstanceOf(Value val, Value prototype_val);
+			bool isValuePrototypeOf(GCValue * val, GCValue * prototype_val);
+			bool isValuePrototypeOf(Value val, Value prototype_val);
 
 			Table * newTable(OS_DBG_FILEPOS_START_DECL);
 			void clearTable(Table*);
@@ -2541,7 +2557,9 @@ namespace ObjectScript
 			bool deleteTableProperty(Table * table, const PropertyIndex& index);
 			void deleteValueProperty(GCValue * table_value, const PropertyIndex& index, bool prototype_enabled, bool del_method_enabled);
 			void deleteValueProperty(Value table_value, const PropertyIndex& index, bool prototype_enabled, bool del_method_enabled);
+			
 			void copyTableProperties(Table * dst, Table * src);
+			void copyTableProperties(GCValue * dst_value, GCValue * src_value, bool setter_enabled);
 
 			void sortTable(Table * table, int(*comp)(OS*, const void*, const void*, void*), void* = NULL, bool reorder_keys = false);
 			void sortArray(GCArrayValue * arr, int(*comp)(OS*, const void*, const void*, void*), void* = NULL);
@@ -2760,6 +2778,7 @@ namespace ObjectScript
 		bool isFunction(int offs = -1);
 		bool isUserdata(int offs = -1);
 		bool isInstanceOf(int value_offs = -2, int prototype_offs = -1);
+		bool is(int value_offs = -2, int prototype_offs = -1);
 
 		bool toBool(int offs = -1);
 		OS_NUMBER toNumber(int offs = -1, bool valueof_enabled = true);
@@ -2767,8 +2786,7 @@ namespace ObjectScript
 		double toDouble(int offs = -1, bool valueof_enabled = true);
 		int toInt(int offs = -1, bool valueof_enabled = true);
 		String toString(int offs = -1, bool valueof_enabled = true);
-		void * toUserdata(int offs, int crc);
-		void * toUserdata(int crc);
+		void * toUserdata(int crc, int offs = -1);
 
 		bool popBool();
 		OS_NUMBER popNumber(bool valueof_enabled = true);

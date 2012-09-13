@@ -1143,6 +1143,8 @@ bool OS::Core::Tokenizer::TokenData::isTypeOf(TokenType token_type) const
 		case OS::Core::Tokenizer::OPERATOR_INDIRECT:  // .
 		case OS::Core::Tokenizer::OPERATOR_CONCAT:	// ..
 		case OS::Core::Tokenizer::OPERATOR_IN:		// in
+		case OS::Core::Tokenizer::OPERATOR_ISPROTOTYPEOF:
+		case OS::Core::Tokenizer::OPERATOR_IS:
 
 		case OS::Core::Tokenizer::OPERATOR_LOGIC_AND: // &&
 		case OS::Core::Tokenizer::OPERATOR_LOGIC_OR:  // ||
@@ -1816,6 +1818,8 @@ bool OS::Core::Compiler::Expression::isBinaryOperator() const
 	case EXP_TYPE_PARAMS:
 	case EXP_TYPE_QUESTION:
 	case EXP_TYPE_IN:
+	case EXP_TYPE_ISPROTOTYPEOF:
+	case EXP_TYPE_IS:
 	case EXP_TYPE_CONCAT: // ..
 
 	case EXP_TYPE_LOGIC_AND: // &&
@@ -2235,6 +2239,8 @@ void OS::Core::Compiler::Expression::debugPrint(StringBuffer& out, OS::Core::Com
 	case EXP_TYPE_ASSIGN:
 	case EXP_TYPE_CONCAT: // ..
 	case EXP_TYPE_IN:
+	case EXP_TYPE_ISPROTOTYPEOF:
+	case EXP_TYPE_IS:
 	case EXP_TYPE_LOGIC_AND: // &&
 	case EXP_TYPE_LOGIC_OR:  // ||
 	case EXP_TYPE_LOGIC_PTR_EQ:  // ===
@@ -2975,6 +2981,8 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 
 	case EXP_TYPE_CONCAT:
 	case EXP_TYPE_IN:
+	case EXP_TYPE_ISPROTOTYPEOF:
+	case EXP_TYPE_IS:
 
 		// case EXP_TYPE_LOGIC_AND:
 		// case EXP_TYPE_LOGIC_OR:
@@ -3283,6 +3291,10 @@ bool OS::Core::Compiler::compile()
 			dump += OS_TEXT(" EXPECT_FUNCTION_SCOPE");
 			break;
 
+		case ERROR_EXPECT_CODE_SEP_BEFORE_NESTED_BLOCK:
+			dump += OS_TEXT(" EXPECT_CODE_SEP_BEFORE_NESTED_BLOCK");
+			break;
+
 		case ERROR_EXPECT_SWITCH_SCOPE:
 			dump += OS_TEXT(" EXPECT_SWITCH_SCOPE");
 			break;
@@ -3399,6 +3411,8 @@ OS::Core::Compiler::ExpressionType OS::Core::Compiler::getExpressionType(TokenTy
 	case Tokenizer::OPERATOR_QUESTION: return EXP_TYPE_QUESTION;
 		// case Tokenizer::OPERATOR_COLON: return ;
 	case Tokenizer::OPERATOR_IN: return EXP_TYPE_IN;
+	case Tokenizer::OPERATOR_ISPROTOTYPEOF: return EXP_TYPE_ISPROTOTYPEOF;
+	case Tokenizer::OPERATOR_IS: return EXP_TYPE_IS;
 
 	case Tokenizer::OPERATOR_BIT_AND: return EXP_TYPE_BIT_AND;
 	case Tokenizer::OPERATOR_BIT_OR: return EXP_TYPE_BIT_OR;
@@ -3498,6 +3512,8 @@ OS::Core::Compiler::OpcodeLevel OS::Core::Compiler::getOpcodeLevel(ExpressionTyp
 
 	case EXP_TYPE_POW: // **
 	case EXP_TYPE_IN:
+	case EXP_TYPE_ISPROTOTYPEOF:
+	case EXP_TYPE_IS:
 		return OP_LEVEL_13;
 
 	case EXP_TYPE_PRE_INC:     // ++
@@ -3527,6 +3543,12 @@ OS::Core::Compiler::OpcodeLevel OS::Core::Compiler::getOpcodeLevel(ExpressionTyp
 		return OP_LEVEL_16;
 	}
 	return OP_LEVEL_0;
+}
+
+OS::Core::Tokenizer::TokenData * OS::Core::Compiler::getPrevToken()
+{
+	int i = next_token_index-2;
+	return i >= 0 ? tokenizer->getToken(i) : NULL;
 }
 
 OS::Core::Tokenizer::TokenData * OS::Core::Compiler::readToken()
@@ -4380,10 +4402,12 @@ OS::Core::Compiler::Scope * OS::Core::Compiler::expectTextExpression()
 
 	while(!isError()){
 		exp = expectSingleExpression(scope, p);
-		if(!exp){
+		if(isError()){
 			break;
 		}
-		list.add(exp OS_DBG_FILEPOS);
+		if(exp){
+			list.add(exp OS_DBG_FILEPOS);
+		}
 		if(!recent_token){
 			break;
 		}
@@ -4494,10 +4518,12 @@ OS::Core::Compiler::Scope * OS::Core::Compiler::expectCodeExpression(Scope * par
 	ExpressionList list(allocator);
 	while(!isError()){
 		exp = expectSingleExpression(scope, p);
-		if(!exp){
+		if(isError()){
 			break;
 		}
-		list.add(exp OS_DBG_FILEPOS);
+		if(exp){
+			list.add(exp OS_DBG_FILEPOS);
+		}
 		TokenType token_type = recent_token->type;
 		if(token_type == Tokenizer::CODE_SEPARATOR){
 			if(!readToken()){
@@ -5301,7 +5327,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectForExpression(Scope *
 				.setAllowAutoCall(true)
 				.setAllowBinaryOperator(true)
 				.setAllowParams(true)
-				.setAllowRootBlocks(true)
+				.setAllowVarDecl(true)
 				.setAllowNopResult(true)
 				.setAllowInOperator(false));
 
@@ -5363,13 +5389,13 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectForExpression(Scope *
 			allocator->deleteObj(exp);
 			return NULL;
 		}
-		Expression * body_exp;
 		Scope * loop_scope = new (malloc(sizeof(Scope) OS_DBG_FILEPOS)) Scope(scope, EXP_TYPE_LOOP_SCOPE, recent_token);
-		if(recent_token->type == Tokenizer::BEGIN_CODE_BLOCK){
+		Expression * body_exp = expectSingleExpression(loop_scope, true, true);
+		/* if(recent_token->type == Tokenizer::BEGIN_CODE_BLOCK){
 			body_exp = expectCodeExpression(loop_scope);
 		}else{
-			body_exp = expectSingleExpression(loop_scope, true); // , true, false, false, true, true);
-		}
+			body_exp = expectSingleExpression(loop_scope, true);
+		} */
 		if(!body_exp){
 			allocator->deleteObj(scope);
 			allocator->deleteObj(exp);
@@ -5551,7 +5577,11 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectForExpression(Scope *
 		return NULL;
 	}
 	readToken();
-	Expression * post_exp = expectSingleExpression(scope, Params().setAllowAutoCall(true).setAllowBinaryOperator(true).setAllowNopResult(true));
+	Expression * post_exp = expectSingleExpression(scope, Params()
+		.setAllowAssign(true)
+		.setAllowAutoCall(true)
+		.setAllowBinaryOperator(true)
+		.setAllowNopResult(true));
 	if(!post_exp){
 		allocator->deleteObj(scope);
 		allocator->deleteObj(pre_exp);
@@ -5569,12 +5599,13 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectForExpression(Scope *
 	readToken();
 
 	Scope * loop_scope = new (malloc(sizeof(Scope) OS_DBG_FILEPOS)) Scope(scope, EXP_TYPE_LOOP_SCOPE, recent_token);
-	Expression * body_exp = expectSingleExpression(loop_scope, true);
+	Expression * body_exp = expectSingleExpression(loop_scope, true, true);
 	if(!body_exp){
 		allocator->deleteObj(scope);
 		allocator->deleteObj(pre_exp);
 		allocator->deleteObj(bool_exp);
 		allocator->deleteObj(post_exp);
+		allocator->deleteObj(loop_scope);
 		return NULL;
 	}
 	if(bool_exp){
@@ -5640,13 +5671,13 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectIfExpression(Scope * 
 		allocator->deleteObj(if_exp);
 		return NULL;
 	}
-	Expression * then_exp;
 	token = recent_token;
-	if(recent_token->type == Tokenizer::BEGIN_CODE_BLOCK){
+	Expression * then_exp = expectSingleExpression(scope, true, true);
+	/* if(recent_token->type == Tokenizer::BEGIN_CODE_BLOCK){
 		then_exp = expectCodeExpression(scope);
 	}else{
 		then_exp = expectSingleExpression(scope, true);
-	}
+	} */
 	if(!then_exp){
 		allocator->deleteObj(if_exp);
 		return NULL;
@@ -5668,11 +5699,12 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectIfExpression(Scope * 
 				return NULL;
 			}
 			token = recent_token;
-			if(recent_token->type == Tokenizer::BEGIN_CODE_BLOCK){
+			else_exp = expectSingleExpression(scope, true, true);
+			/* if(recent_token->type == Tokenizer::BEGIN_CODE_BLOCK){
 				else_exp = expectCodeExpression(scope);
 			}else{
 				else_exp = expectSingleExpression(scope);
-			}
+			} */
 		}else{
 			return new (malloc(sizeof(Expression) OS_DBG_FILEPOS)) Expression(EXP_TYPE_IF, if_exp->token, if_exp, then_exp OS_DBG_FILEPOS);
 		}
@@ -6027,6 +6059,15 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::finishBinaryOperator(Scope 
 		return NULL;
 	}
 	// exp2 = expectExpressionValues(exp2, 1);
+	if(recent_token && recent_token->type == Tokenizer::NAME){
+		if(recent_token->str == allocator->core->strings->syntax_in){
+			recent_token->type = Tokenizer::OPERATOR_IN;
+		}else if(recent_token->str == allocator->core->strings->syntax_isprototypeof){
+			recent_token->type = Tokenizer::OPERATOR_ISPROTOTYPEOF;
+		}else if(recent_token->str == allocator->core->strings->syntax_is){
+			recent_token->type = Tokenizer::OPERATOR_IS;
+		}
+	}
 	if(!recent_token || !recent_token->isTypeOf(Tokenizer::BINARY_OPERATOR) || (!p.allow_params && recent_token->type == Tokenizer::PARAM_SEPARATOR)){
 		// return new (malloc(sizeof(Expression) OS_DBG_FILEPOS)) Expression(getExpressionType(binary_operator->type), binary_operator, exp, exp2);
 		is_finished = true;
@@ -6080,7 +6121,8 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::finishValueExpression(Scope
 	bool is_finished;
 	Params p = Params(_p)
 		.setAllowRootBlocks(false);
-	for(;; p.allow_auto_call = false){
+	bool next_allow_auto_call = false;
+	for(;; p.allow_auto_call = next_allow_auto_call, next_allow_auto_call = false){
 		if(!recent_token){
 			return exp;
 		}
@@ -6104,6 +6146,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::finishValueExpression(Scope
 			exp->ret_values = 1;
 			readToken();
 			// p.setAllowCall(true);
+			next_allow_auto_call = p.allow_auto_call;
 			continue;
 
 			// post ++, post --
@@ -6212,9 +6255,9 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::finishValueExpression(Scope
 			return exp;
 
 		case Tokenizer::BEGIN_CODE_BLOCK: // {
-			if(!p.allow_auto_call){
+			/* if(!p.allow_auto_call){
 				return exp;
-			}
+			} */
 			exp2 = expectObjectExpression(scope, p);
 			if(!exp2){
 				allocator->deleteObj(exp);
@@ -6234,6 +6277,30 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::finishValueExpression(Scope
 					return exp;
 				}
 				token->type = Tokenizer::OPERATOR_IN;
+				exp = finishBinaryOperator(scope, OP_LEVEL_NOTHING, exp, p, is_finished);
+				if(!exp){
+					return NULL;
+				}
+				OS_ASSERT(is_finished);
+				continue;
+			}
+			if(token->str == allocator->core->strings->syntax_isprototypeof){
+				if(!p.allow_binary_operator){
+					return exp;
+				}
+				token->type = Tokenizer::OPERATOR_ISPROTOTYPEOF;
+				exp = finishBinaryOperator(scope, OP_LEVEL_NOTHING, exp, p, is_finished);
+				if(!exp){
+					return NULL;
+				}
+				OS_ASSERT(is_finished);
+				continue;
+			}
+			if(token->str == allocator->core->strings->syntax_is){
+				if(!p.allow_binary_operator){
+					return exp;
+				}
+				token->type = Tokenizer::OPERATOR_IS;
 				exp = finishBinaryOperator(scope, OP_LEVEL_NOTHING, exp, p, is_finished);
 				if(!exp){
 					return NULL;
@@ -6332,6 +6399,19 @@ OS::Core::Compiler::Params::Params(const Params& p)
 OS::Core::Compiler::Params& OS::Core::Compiler::Params::setAllowRootBlocks(bool val)
 {
 	allow_root_blocks = val;
+	allow_var_decl = val;
+	return *this;
+}
+
+OS::Core::Compiler::Params& OS::Core::Compiler::Params::setAllowVarDecl(bool val)
+{
+	allow_var_decl = val;
+	return *this;
+}
+
+OS::Core::Compiler::Params& OS::Core::Compiler::Params::setAllowInlineNestedBlock(bool val)
+{
+	allow_inline_nested_block = val;
 	return *this;
 }
 
@@ -6382,6 +6462,8 @@ bool OS::Core::Compiler::isVarNameValid(const String& name)
 {
 	const String * list[] = {
 		&allocator->core->strings->syntax_super,
+		&allocator->core->strings->syntax_is,
+		&allocator->core->strings->syntax_isprototypeof,
 		&allocator->core->strings->syntax_typeof,
 		&allocator->core->strings->syntax_valueof,
 		&allocator->core->strings->syntax_booleanof,
@@ -6426,7 +6508,7 @@ bool OS::Core::Compiler::isVarNameValid(const String& name)
 	return true;
 }
 
-OS::Core::Compiler::Expression * OS::Core::Compiler::expectSingleExpression(Scope * scope, bool allow_nop_result)
+OS::Core::Compiler::Expression * OS::Core::Compiler::expectSingleExpression(Scope * scope, bool allow_nop_result, bool allow_inline_nested_block)
 {
 	return expectSingleExpression(scope, Params()
 		.setAllowAssign(true)
@@ -6434,7 +6516,8 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectSingleExpression(Scop
 		.setAllowBinaryOperator(true)
 		.setAllowParams(true)
 		.setAllowRootBlocks(true)
-		.setAllowNopResult(allow_nop_result));
+		.setAllowNopResult(allow_nop_result)
+		.setAllowInlineNestedBlock(allow_inline_nested_block));
 }
 
 OS::Core::Compiler::Expression * OS::Core::Compiler::expectSingleExpression(Scope * scope, const Params& p)
@@ -6487,6 +6570,14 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectSingleExpression(Scop
 
 	case Tokenizer::BEGIN_CODE_BLOCK:
 		if(p.allow_root_blocks){
+			if(!p.allow_inline_nested_block){
+				TokenData * check_token = getPrevToken();
+				if(!check_token || (check_token->type != Tokenizer::CODE_SEPARATOR && check_token->type != Tokenizer::BEGIN_CODE_BLOCK)){
+					// setError(Tokenizer::CODE_SEPARATOR, recent_token);
+					setError(ERROR_EXPECT_CODE_SEP_BEFORE_NESTED_BLOCK, recent_token);
+					return NULL;
+				}
+			}
 			return expectCodeExpression(scope);
 		}
 		return expectObjectExpression(scope, p);
@@ -6526,7 +6617,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectSingleExpression(Scop
 
 	case Tokenizer::NAME:
 		if(token->str == allocator->core->strings->syntax_var){
-			if(!p.allow_root_blocks){
+			if(!p.allow_var_decl){
 				setError(ERROR_NESTED_ROOT_BLOCK, token);
 				return NULL;
 			}
@@ -6722,6 +6813,14 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectSingleExpression(Scop
 				return NULL;
 			}
 			return finishValueExpressionNoAutoCall(scope, exp, p);
+		}
+		if(token->str == allocator->core->strings->syntax_is){
+			setError(ERROR_SYNTAX, token);
+			return NULL;
+		}
+		if(token->str == allocator->core->strings->syntax_isprototypeof){
+			setError(ERROR_SYNTAX, token);
+			return NULL;
 		}
 		if(token->str == allocator->core->strings->syntax_class){
 			setError(ERROR_SYNTAX, token);
@@ -6945,6 +7044,12 @@ const OS_CHAR * OS::Core::Compiler::getExpName(ExpressionType type)
 
 	case EXP_TYPE_IN:
 		return OS_TEXT("in");
+
+	case EXP_TYPE_ISPROTOTYPEOF:
+		return OS_TEXT("isprototypeof");
+
+	case EXP_TYPE_IS:
+		return OS_TEXT("is");
 
 	case EXP_TYPE_SUPER:
 		return OS_TEXT("super");
@@ -7479,6 +7584,8 @@ OS::Core::Program::OpcodeType OS::Core::Program::getOpcodeType(Compiler::Express
 
 	case Compiler::EXP_TYPE_CONCAT: return OP_CONCAT;
 	case Compiler::EXP_TYPE_IN: return OP_IN;
+	case Compiler::EXP_TYPE_ISPROTOTYPEOF: return OP_ISPROTOTYPEOF;
+	case Compiler::EXP_TYPE_IS: return OP_IS;
 
 	case Compiler::EXP_TYPE_LOGIC_AND: return OP_LOGIC_AND;
 	case Compiler::EXP_TYPE_LOGIC_OR: return OP_LOGIC_OR;
@@ -8534,9 +8641,18 @@ void OS::Core::deleteValueProperty(Value table_value, const PropertyIndex& index
 
 void OS::Core::copyTableProperties(Table * dst, Table * src)
 {
-	OS_ASSERT(dst->count == 0);
+	// OS_ASSERT(dst->count == 0);
 	for(Property * prop = src->first; prop; prop = prop->next){
 		setTableValue(dst, PropertyIndex(*prop), prop->value);
+	}
+}
+
+void OS::Core::copyTableProperties(GCValue * dst_value, GCValue * src_value, bool setter_enabled)
+{
+	if(src_value->table){
+		for(Property * prop = src_value->table->first; prop; prop = prop->next){
+			setPropertyValue(dst_value, *prop, prop->value, setter_enabled);
+		}
 	}
 }
 
@@ -9642,6 +9758,8 @@ OS::Core::Strings::Strings(OS * allocator)
 	syntax_get(allocator, OS_TEXT("get")),
 	syntax_set(allocator, OS_TEXT("set")),
 	syntax_super(allocator, OS_TEXT("super")),
+	syntax_is(allocator, OS_TEXT("is")),
+	syntax_isprototypeof(allocator, OS_TEXT("isprototypeof")),
 	syntax_typeof(allocator, OS_TEXT("typeof")),
 	syntax_valueof(allocator, OS_TEXT("valueof")),
 	syntax_booleanof(allocator, OS_TEXT("booleanof")),
@@ -10522,7 +10640,7 @@ OS::String OS::getFilename(const OS_CHAR * filename, int len)
 {
 	for(int i = len-1; i >= 0; i--){
 		if(OS_IS_SLASH(filename[i])){
-			return String(this, filename+i, len-i);
+			return String(this, filename+i+1, len-i-1);
 		}
 	}
 	return String(this, filename, len);
@@ -10918,7 +11036,7 @@ int OS::Core::gcStep()
 
 		if((!gc_continuous || !(gc_continuous_count%16)) && gc_max_allocated_bytes < end_allocated_bytes){
 			gc_max_allocated_bytes = end_allocated_bytes;
-			allocator->printf("[GC] max allocated bytes %d, values %d\n", gc_max_allocated_bytes, values.count);
+			// allocator->printf("[GC] max allocated bytes %d, values %d\n", gc_max_allocated_bytes, values.count);
 		}
 
 		return OS_GC_PHASE_MARK;
@@ -12023,7 +12141,7 @@ bool OS::Core::pushValueOf(Value val)
 
 OS::Core::GCArrayValue * OS::Core::pushArrayOf(Value val)
 {
-	GCArrayValue * arr;
+	// GCArrayValue * arr;
 	switch(val.type){
 		// case OS_VALUE_TYPE_NULL:
 		// 	return pushNull(); // pushArrayValue();
@@ -12058,7 +12176,7 @@ OS::Core::GCArrayValue * OS::Core::pushArrayOf(Value val)
 
 OS::Core::GCObjectValue * OS::Core::pushObjectOf(Value val)
 {
-	GCObjectValue * object;
+	// GCObjectValue * object;
 	switch(val.type){
 		// case OS_VALUE_TYPE_NULL:
 		// 	return pushObjectValue();
@@ -12157,8 +12275,12 @@ void OS::Core::pushCloneValue(Value val)
 	}
 	OS_ASSERT(new_value->type != OS_VALUE_TYPE_NULL);
 	if(new_value != value && value->table && value->table->count > 0){
+#if 1
 		new_value->table = newTable(OS_DBG_FILEPOS_START);
 		copyTableProperties(new_value->table, value->table);
+#else
+		copyTableProperties(new_value, value, true);
+#endif
 	}
 	// removeStackValue(-2);
 
@@ -12879,7 +13001,12 @@ void OS::Core::removeStackValues(int offs, int count)
 		OS_ASSERT(end == stack_values.count);
 		stack_values.count = start;
 	}else{
-		OS_MEMMOVE(stack_values.buf + start, stack_values.buf + end, sizeof(Value) * (stack_values.count - end));
+		count = stack_values.count - end;
+		if(count == 1){
+			stack_values.buf[start] = stack_values.buf[end];
+		}else{
+			OS_MEMMOVE(stack_values.buf + start, stack_values.buf + end, sizeof(Value) * count);
+		}
 		stack_values.count -= end - start;
 	}
 	// gcStepIfNeeded();
@@ -13238,12 +13365,7 @@ bool OS::isUserdata(int offs)
 	return false;
 }
 
-void * OS::toUserdata(int crc)
-{
-	return toUserdata(-1, crc);
-}
-
-void * OS::toUserdata(int offs, int crc)
+void * OS::toUserdata(int crc, int offs)
 {
 	Core::Value val = core->getStackValue(offs);
 	switch(val.type){
@@ -13266,18 +13388,27 @@ bool OS::isFunction(int offs)
 	return core->getStackValue(offs).isFunction();
 }
 
-bool OS::Core::isValueInstanceOf(GCValue * val, GCValue * prototype_val)
+bool OS::Core::isValuePrototypeOf(GCValue * val, GCValue * prototype_val)
 {
-	// vectorClear(cache_values);
-	// vectorAddItem(cache_values, val);
 	while(val != prototype_val){
 		val = val->prototype;
-		if(!val){ // || cache_values.contains(val)){ // prevent recurse
+		if(!val){
 			return false;
 		}
-		// vectorAddItem(cache_values, val);
 	}
 	return true;
+}
+
+bool OS::Core::isValueInstanceOf(GCValue * val, GCValue * prototype_val)
+{
+	return val->prototype ? isValuePrototypeOf(val->prototype, prototype_val) : false;
+}
+
+bool OS::Core::isValuePrototypeOf(Value val, Value prototype_val)
+{
+	GCValue * object = val.getGCValue();
+	GCValue * proto = prototype_val.getGCValue();
+	return object && proto && isValuePrototypeOf(object, proto);
 }
 
 bool OS::Core::isValueInstanceOf(Value val, Value prototype_val)
@@ -13285,6 +13416,11 @@ bool OS::Core::isValueInstanceOf(Value val, Value prototype_val)
 	GCValue * object = val.getGCValue();
 	GCValue * proto = prototype_val.getGCValue();
 	return object && proto && isValueInstanceOf(object, proto);
+}
+
+bool OS::is(int value_offs, int prototype_offs)
+{
+	return core->isValuePrototypeOf(core->getStackValue(value_offs), core->getStackValue(prototype_offs));
 }
 
 bool OS::isInstanceOf(int value_offs, int prototype_offs)
@@ -14476,6 +14612,24 @@ restart:
 				break;
 			}
 
+		case Program::OP_ISPROTOTYPEOF:
+			{
+				OS_ASSERT(stack_values.count >= 2);
+				bool ret = isValuePrototypeOf(stack_values[stack_values.count-2], stack_values[stack_values.count-1]);
+				pop(2);
+				pushBool(ret);
+				break;
+			}
+
+		case Program::OP_IS:
+			{
+				OS_ASSERT(stack_values.count >= 2);
+				bool ret = isValueInstanceOf(stack_values[stack_values.count-2], stack_values[stack_values.count-1]);
+				pop(2);
+				pushBool(ret);
+				break;
+			}
+
 		case Program::OP_LENGTH:
 			{
 				OS_ASSERT(stack_values.count >= 1);
@@ -14930,7 +15084,7 @@ void OS::initObjectClass()
 		{
 			OS_ASSERT(closure_values == 2);
 			Core::Value self_var = os->core->getStackValue(-closure_values + 0);
-			void * p = os->toUserdata(-closure_values + 1, iterator_crc);
+			void * p = os->toUserdata(iterator_crc, -closure_values + 1);
 			Core::Table::IteratorState * iter = (Core::Table::IteratorState*)p;
 			if(iter->table){
 				Core::GCValue * self = self_var.getGCValue();
@@ -14959,7 +15113,7 @@ void OS::initObjectClass()
 		{
 			OS_ASSERT(closure_values == 2);
 			Core::Value self_var = os->core->getStackValue(-closure_values + 0);
-			int * pi = (int*)os->toUserdata(-closure_values + 1, array_iter_num_crc);
+			int * pi = (int*)os->toUserdata(array_iter_num_crc, -closure_values + 1);
 			OS_ASSERT(self_var.type == OS_VALUE_TYPE_ARRAY && pi && pi[1]);
 			if(pi[0] >= 0 && pi[0] < self_var.v.arr->values.count){
 				os->pushBool(true);
@@ -16354,9 +16508,22 @@ int OS::Core::call(int params, int ret_values)
 					pushValue(func);
 					pushValue(object);
 					moveStackValues(-3, 3, -3-params);
-					call(params, 0); // ignore result of constructor because of result is already in stack
-					// syncStackRetValues(0, ret_values); // object is already located inside of stack, use it as returned value
+					call(params, 1);
+					if(stack_values.lastElement().type == OS_VALUE_TYPE_BOOL && stack_values.lastElement().v.boolean == false){
+						// removeStackValues(-3, 2);
+						pop(4);
+						syncStackRetValues(ret_values, 0);
+						return ret_values;
+					}
+#if 1
+					object->external_ref_count++;
+					pop(3);
+					stack_values.lastElement() = object;
+					object->external_ref_count--;
+#else
+					pop();
 					removeStackValues(-3, 2);
+#endif
 					syncStackRetValues(ret_values, 1);
 					return ret_values;
 				}
