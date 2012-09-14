@@ -33,14 +33,14 @@ Matrix = {
 			this.d = 1
 			this.tx = 0
 			this.ty = 0
-			return
+		}else{
+			this.a = a
+			this.b = b
+			this.c = c
+			this.d = d
+			this.tx = tx
+			this.ty = ty
 		}
-		this.a = a
-		this.b = b
-		this.c = c
-		this.d = d
-		this.tx = tx
-		this.ty = ty
 	}
 	
 	set = function(a b c d tx ty){
@@ -51,7 +51,7 @@ Matrix = {
 			this.d = 1
 			this.tx = 0
 			this.ty = 0
-			return
+			return this
 		}
 		this.a = a
 		this.b = b
@@ -125,7 +125,6 @@ Matrix = {
 	}
 }
 
-
 Easy = {
 	linear = function(t){
 		return t
@@ -135,424 +134,84 @@ Easy = {
 		return t * t
 	}
 
-	outQuad = function(t){
-		return -t * (t - 2)
-	}
-
-	inOutQuad = function(t){
-		return t < 0.5 ? t * t : ((1 - t) * (t - 3) - 1)
-	}
-
-	outInQuad = function(t){
-		return t < 0.5 ? Easy.outQuad(t * 2) : Easy.inQuad(t * 2 - 1)
-	}
-
 	inCubic = function(t){
-		return t * t * t
+		return t ** 3
 	}
 
-	outCubic = function(t){
-		t = t - 1
-		return t * t * t + 1
+	inQuart = function(t){
+		return t ** 4
 	}
 
-	inOutCubic = function(t){
-		return t < 0.5 ? Easy.inCubic(t * 2) / 2 : Easy.outCubic(t * 2 - 1) / 2 + 0.5
+	inQuint = function(t){
+		return t ** 5
 	}
 
-	outInCubic = function(t){
-		return t < 0.5 ? Easy.outCubic(t * 2) / 2 : Easy.inCubic(t * 2 - 1) / 2 + 0.5
+	inSine = function(t){
+		return 1 - math.cos(t * math.PI / 2)
 	}
 
-	/*
-	float EasyLib::InQuart(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		t /= d;
-		return c * t * t * t * t + b;
+	inExpo = function(t){
+		return 2 ** (10 * (t - 1))
 	}
 
-	float EasyLib::OutQuart(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		t = t / d - 1;
-		return (0 - c) * (t * t * t * t - 1) + b;
+	inCirc = function(t){
+		return 1 - (1 - t ** 2) ** 0.5
 	}
 
-	float EasyLib::InOutQuart(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if ((t = t / (d / 2)) < 1) 
-		{
-			return c / 2 * t * t * t * t + b;
-		}
-		t -= 2;
-		return (0 - c) / 2 * (t * t * t * t - 2) + b;
+	s = 1.70158
+	
+	inBack = function(t){
+		var s = Easy.s 
+		return t * t * ((s + 1) * t - s)
 	}
 
-	float EasyLib::OutInQuart(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if (t < d / 2) 
-		{
-			return OutQuart(t * 2, b, c / 2, d);
-		}
-		return InQuart(t * 2 - d, b + c / 2, c / 2, d);
+	inBounce = function(t){
+		return 1 - outBounce(1 - t)
 	}
-
-	float EasyLib::InQuint(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		t /= d;
-		return c * t * t * t * t * t + b;
-	}
-
-	float EasyLib::OutQuint(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		t = t / d - 1;
-		return c * (t * t * t * t * t + 1) + b;
-	}
-
-	float EasyLib::InOutQuint(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if ((t = t / (d / 2)) < 1) 
-		{
-			return c / 2 * t * t * t * t * t + b;
-		}
-		t = t - 2;
-		return c / 2 * (t * t * t * t * t + 2) + b;
-	}
-
-	float EasyLib::OutInQuint(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if (t < d / 2) 
-		{
-			return OutQuint(t * 2, b, c / 2, d);
-		}
-		return InQuint(t * 2 - d, b + c / 2, c / 2, d);
-	}
-
-	float EasyLib::InExpo(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		return c * MathLib::Pow(2, 10 * (t / d - 1)) + b;
-	}
-
-	float EasyLib::OutExpo(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		return c * (0 - MathLib::Pow(2, -10 * t / d) + 1) + b;
-	}
-
-	float EasyLib::InOutExpo(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if ((t = t / (d / 2)) < 1) 
-		{
-			return c / 2 * MathLib::Pow(2, 10 * (t - 1)) + b;
-		}
-		return c / 2 * (0 - MathLib::Pow(2, -10 * --t) + 2) + b;
-	}
-
-	float EasyLib::OutInExpo(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if (t < d / 2) 
-		{
-			return OutExpo(t * 2, b, c / 2, d);
-		}
-		return InExpo(t * 2 - d, b + c / 2, c / 2, d);
-	}
-
-	float EasyLib::InCirc(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		t /= d;
-		return (0 - c) * (MathLib::Sqrt(1 - t * t) - 1) + b;
-	}
-
-	float EasyLib::OutCirc(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		t = t / d - 1;
-		return c * MathLib::Sqrt(1 - t * t) + b;
-	}
-
-	float EasyLib::InOutCirc(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if ((t = t / (d / 2)) < 1) 
-		{
-			return (0 - c) / 2 * (MathLib::Sqrt(1 - t * t) - 1) + b;
-		}
-		t -= 2;
-		return c / 2 * (MathLib::Sqrt(1 - t * t) + 1) + b;
-	}
-
-	float EasyLib::OutInCirc(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if (t < d / 2) 
-		{
-			return OutCirc(t * 2, b, c / 2, d);
-		}
-		return InCirc(t * 2 - d, b + c / 2, c / 2, d);
-	}
-
-	float EasyLib::InBack(float t, float b, float c, float d, float s)
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		t /= d;
-		return c * t * t * ((s + 1) * t - s) + b;
-	}
-
-	float EasyLib::OutBack(float t, float b, float c, float d, float s)
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		t = t / d - 1;
-		return c * (t * t * ((s + 1) * t + s) + 1) + b;
-	}
-
-	float EasyLib::InOutBack(float t, float b, float c, float d, float s)
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if ((t = t / (d / 2)) < 1) 
-		{
-			s *= 1.525f;
-			return c / 2 * t * t * ((s + 1) * t - s) + b;
-		}
-		s *= 1.525f;
-		t -= 2;
-		return c / 2 * (t * t * ((s + 1) * t + s) + 2) + b;
-	}
-
-	float EasyLib::OutInBack(float t, float b, float c, float d, float s)
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if (t < d / 2) 
-		{
-			return OutBack(t * 2, b, c / 2, d, s);
-		}
-		return InBack(t * 2 - d, b + c / 2, c / 2, d, s);
-	}
-
-	float EasyLib::InBounce(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		return c - OutBounce(d - t, 0, c, d) + b;
-	}
-
-	float EasyLib::OutBounce(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if ((t = t / d) < 0.363636363636f) 
-		{
-			return c * 7.5625f * t * t + b;
-		}
-		if (t < 0.727272727273f) 
-		{
-			t -= 0.545454545455f;
-			return c * (7.5625f * t * t + 0.75f) + b;
-		}
-		if (t < 0.909090909091f) 
-		{
-			t -= 0.818181818182f;
-			return c * (7.5625f * t * t + 0.9375f) + b;
-		}
-		t -= 0.954545454545f;
-		return c * (7.5625f * t * t + 0.984375f) + b;
-	}
-
-	float EasyLib::InOutBounce(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if (t < d / 2) 
-		{
-			return InBounce(t * 2, 0, c, d) * 0.5f + b;
-		}
-		return OutBounce(t * 2 - d, 0, c, d) * 0.5f + c * 0.5f + b;
-	}
-
-	float EasyLib::OutInBounce(t){
-	{
-		if(t <= 0.0f)
-		{
-			return b;
-		}
-		if(t >= d)
-		{
-			return b + c;
-		}
-		if (t < d / 2) 
-		{
-			return OutBounce(t * 2, b, c / 2, d);
-		}
-		return InBounce(t * 2 - d, b + c / 2, c / 2, d);
-	}
-	*/
 }
+
 var Easy = Easy
+
+var function outBounce(t){
+	if(t < 0.363636363636f){
+		return 7.5625f * t * t
+	}
+	if(t < 0.727272727273f) {
+		t = t - 0.545454545455f
+		return 7.5625f * t * t + 0.75f
+	}
+	if(t < 0.909090909091f) {
+		t = t - 0.818181818182f
+		return 7.5625f * t * t + 0.9375f
+	}
+	t = t - 0.954545454545f;
+	return 7.5625f * t * t + 0.984375f
+}
+
+
+var function easyInOutHelper(t, inFunc){
+	return t <= 0.5 ? inFunc(t * 2) / 2 : 1 - inFunc(2 - t * 2) / 2
+}
+
+for(var name, func in clone Easy){
+	if(functionof func && name.sub(0, 2) == "in"){
+		function(func){
+			function(func){
+				Easy[name] = func
+				name = name.sub(2)
+				Easy["out"..name] = function(t){
+					return 1 - func(1 - t)
+				}
+				Easy["inOut"..name] = function(t){
+					return easyInOutHelper(t, func)
+				}
+				Easy["outIn"..name] = function(t){
+					return 1 - easyInOutHelper(1 - t, func)
+				}
+			}(function(t){
+				return func(t < 0 ? 0 : t > 1 ? 1 : t)
+			})
+		}(func)
+	}
+}
+
