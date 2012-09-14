@@ -2032,6 +2032,7 @@ namespace ObjectScript
 					OP_EXTENDS,
 					OP_DELETE_PROP,
 					OP_RETURN,
+					OP_RETURN_AUTO,
 					OP_POP,
 
 					OP_LOGIC_AND,
@@ -2074,6 +2075,7 @@ namespace ObjectScript
 					OP_ISPROTOTYPEOF,		// is
 					OP_IS,	// is
 					OP_SUPER,
+					OP_SUPER_CALL,
 
 					OP_TYPE_OF,
 					OP_VALUE_OF,
@@ -2167,6 +2169,7 @@ namespace ObjectScript
 			{
 				GCFunctionValue * func;
 				GCValue * self;
+				GCValue * self_for_proto;
 
 				Upvalues * locals;
 				int num_params;
@@ -2177,9 +2180,8 @@ namespace ObjectScript
 				
 				int caller_stack_pos;
 				int locals_stack_pos;
-				int opcode_stack_pos;
-				int bottom_stack_pos;
-
+				int stack_pos;
+				
 				int need_ret_values;
 
 				int opcode_offs;
@@ -2491,6 +2493,7 @@ namespace ObjectScript
 			
 			GCStringValue * pushStringValue(const String&);
 			GCStringValue * pushStringValue(const OS_CHAR*);
+			GCStringValue * pushStringValue(const OS_CHAR*, int len);
 			GCCFunctionValue * pushCFunctionValue(OS_CFunction func, void * user_param);
 			GCCFunctionValue * pushCFunctionValue(OS_CFunction func, int closure_values, void * user_param);
 			GCUserdataValue * pushUserdataValue(int crc, int data_size, OS_UserdataDtor dtor, void * user_param);
@@ -2529,7 +2532,7 @@ namespace ObjectScript
 			void moveStackValues(int offs, int count, int new_offs);
 			void moveStackValue(int offs, int new_offs);
 
-			void syncStackRetValues(int need_ret_values, int cur_ret_values);
+			int syncRetValues(int need_ret_values, int cur_ret_values);
 
 			void registerValue(GCValue * val);
 			GCValue * unregisterValue(int value_id);
@@ -2605,11 +2608,10 @@ namespace ObjectScript
 			void pushArgumentsWithNames(StackFunction*);
 			void pushRestArguments(StackFunction*);
 
-			void enterFunction(GCFunctionValue * func_value, GCValue * self, int params, int extra_remove_from_stack, int need_ret_values);
-			int leaveFunction();
+			void enterFunction(GCFunctionValue * func_value, GCValue * self, GCValue * self_for_proto, int params, int extra_remove_from_stack, int need_ret_values);
 			int execute();
 
-			int call(int params, int ret_values);
+			int call(int params, int ret_values, GCValue * self_for_proto = NULL);
 
 			Core(OS*);
 			~Core();
@@ -2736,6 +2738,7 @@ namespace ObjectScript
 		void pushNumber(double);
 		void pushBool(bool);
 		void pushString(const OS_CHAR*);
+		void pushString(const OS_CHAR*, int len);
 		void pushString(const Core::String&);
 		void pushCFunction(OS_CFunction func, void * user_param = NULL);
 		void pushCFunction(OS_CFunction func, int closure_values, void * user_param = NULL);
