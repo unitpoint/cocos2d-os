@@ -86,8 +86,8 @@ FunctionNode = {
 	}
 	
 	updateAllComponents = function(params){
-		this.updateTransitions(params)
 		this.updateTimers(params)
+		this.updateTransitions(params)
 		for(var child in this.__childrenPos){
 			child.handleUpdate(params)
 		}
@@ -184,7 +184,7 @@ FunctionNode = {
 		}
 	}
 	
-	transition = function(t target){
+	transition = function(t, target, run){
 		(t in this.__transitions) && return;
 		if(!(t is Transition)){
 			t = Transition(t)
@@ -197,7 +197,9 @@ FunctionNode = {
 		// this.sortChildren(children)
 		t.__parent = this
 		t.__parentChildren = children
-		t.start(target || this)
+		t.init(target || this)
+		run !== false && t.run()
+		return t
 	}
 	
 	stopTransition = function(t){
@@ -292,11 +294,8 @@ Node = extends FunctionNode {
 	__get@isRelativeAnchor = function(){return this.__isRelativeAnchor}
 	__set@isRelativeAnchor = function(a){if(this.__isRelativeAnchor !== a){ this.__isRelativeAnchor = a; this.__transformDirty, this.__inverseDirty = true, true }}
 	
-	// __get@opacity = function(){return this.__opacity}
-	// __set@opacity = function(a){this.__opacity = a}
-	
 	__construct = function(){
-		// super.__construct.call(this)
+		super()
 		this.width = director.width
 		this.height = director.height
 	}
@@ -469,90 +468,197 @@ Node = extends FunctionNode {
 }
 
 Transition = extends FunctionNode {
-	__construct = function(transition){
-		// super.__construct.call(this)
-		this.transition = transition
+	__object = {
+		__delayedTrinsitions = {}
+		duration = 0
+		delay = 0
 	}
 	
-	start = function(target){
-		var transition = this.transition
-		if("speed" in transition){
-			this.timeSpeed = transition.speed
-			delete transition.speed
+	__construct = function(params){
+		super()
+		this.params = params
+	}
+	
+	__get@completed = function(){ return !this.__parent }
+	
+	transition = function(t, params){
+		if(this.__delayedTrinsitions){
+			var transitions = this.__transitions
+			this.__transitions = this.__delayedTrinsitions
+			t = super(t, params, false)
+			this.__transitions = transitions
+			return t
 		}
-		var function update(){
-			var duration = transition.duration
-			delete transition.duration
-			
-			var easy
-			if("easy" in transition){
-				easy = functionof transition.easy
-				delete transition.easy
+		return super(t, params)
+	}
+
+	init = function(target){
+		var params = this.params
+		var delay = 0
+		if("delay" in params){
+			delay = params.delay
+			delete params.delay
+		}
+		var duration = delay
+		if("duration" in params){
+			duration = duration + params.duration
+			delete params.duration
+		}
+		if("speed" in params){
+			duration = duration / params.speed
+			delay = delay / params.speed
+			delete params.speed
+		}
+
+		var easy
+		if("easy" in params){
+			easy = functionof params.easy
+			delete params.easy
+		}
+		
+		var self = this
+		var function insertTransition(t){
+			t = self.transition(t, target)
+			if(t){
+				duration = math.max(duration, t.duration + delay)
 			}
-			
-			var startValues = {}
-			for(var name, value in transition){
-				if(value is Transition){
-					delete transition[name]
-					// this.transition(value, target)
-					continue
-				}
-				if(name === "sequence"){
-					
-				}
+		}
+		
+		for(var name, value in params){
+			if(value is Transition){
+				delete params[name]
+				insertTransition(value)
+				continue
+			}
+			if(name === "sequence"){
+				delete params[name]
+				insertTransition(SequenceTransition(value))
+				continue
+			}
+			if(name === "spawn"){
+				delete params[name]
+				insertTransition(SpawnTransition(value))
+				continue
+			}
+		}
+		this.duration = duration
+		this.delay = delay
+		this.target = target
+		this.easy = easy
+	}
+	
+	run = function(){
+		var params, target, easy = this.params, this.target, this.easy
+		if(easy){
+			var updateAllComponents = this.updateAllComponents
+			this.updateAllComponents = function(params){
+				var saveTime = this.time
+				this.time = easy(this.time / duration) * duration
+				params.deltaTime = this.time - (saveTime - params.deltaTime)
+				updateAllComponents.call(this, params)
+				this.time = saveTime
+			}
+		}
+		
+		var startValues = {}
+		var delay = this.delay
+		var duration = this.duration - delay
+		
+		function start(){
+			for(var name, value in params){
 				if(numberof value && name in target && numberof target[name]){
 					startValues[name] = target[name]
 				}else{
-					delete transition[name]
+					delete params[name]
 				}
 			}
-			
-			if(duration <= 0){
-				// this.setTimeout(function(){
-					for(var name, endValue in transition){
-						target[name] = endValue
-					}
-					this.remove()
-				// })
-				return
-			}
-			this.time = 0
-			this.timeSpeed = this.timeSpeed / duration
-			
-			// easy = function(a){ return a }
-			if(easy){
-				var updateAllComponents = this.updateAllComponents
-				this.updateAllComponents = function(params){
-					var saveTime = this.time
-					this.time = easy(this.time)
-					params.deltaTime = this.time - (saveTime - params.deltaTime)
-					updateAllComponents.call(this, params)
-					this.time = saveTime
+			// print("start in time "..this.time, "delay "..delay, "start values "..startValues)
+			if(this.__delayedTrinsitions){
+				this.__transitions = this.__delayedTrinsitions
+				this.__delayedTrinsitions = null
+				for(var t in this.__transitions){
+					t.run()
 				}
 			}
-			
-			var listener = this.addEventListener("enterFrame", function(){
-				var t = this.time
+			function update(){
+				var t = duration > 0 ? (this.time - delay) / duration : 1
+				// print("transition progress", "dt "..math.round(dt, 4), math.round(t * 100).."%", "params "..params, "start values "..startValues, "target "..target)
 				if(t >= 1){ 
 					t = 1
-					// print("transition ended")
+					// print("transition finished")
 					// this.removeEventListener(listener)
 					this.remove()
-				}else{
-					// print("transition progress", math.round((time - start) * 100 / duration).."%")
 				}
-				for(var name, endValue in transition){
+				for(var name, endValue in params){
 					target[name] = startValues[name] * (1 - t) + endValue * t
-					// print(name" --> "target[name])
+					// print(name.." --> "..target[name] "start value "..startValues[name] "end "..endValue "t "..t)
 				}
-			}, true)
-		}
-		if("delay" in transition){
-			this.setTimeout(update, transition.delay)
-			delete transition.delay
-		}else{
+			}
+			this.addEventListener("enterFrame", update, true)
 			update.call(this)
 		}
+		
+		this.time = 0
+		if(delay > 0){
+			this.setTimeout(start, delay)
+		}else{
+			start.call(this)
+		}
+	}
+}
+
+SequenceTransition = extends Transition {
+	init = function(target){
+		var duration = 0
+		if(arrayof this.params){
+			for(var i, t in this.params){
+				if("delay" in t){
+					t.delay = t.delay + duration
+				}else{
+					t.delay = duration
+				}
+				t = this.transition(t, target)
+				if(t){
+					duration = t.duration
+				}
+			}
+		}
+		this.duration = duration
+		this.delay = 0
+		this.target = target
+	}
+	
+	run = function(){
+		this.time = 0
+		this.setTimeout(function(){
+			// print "SequenceTransition ended"
+			this.remove()
+		}, this.duration)
+		
+		if(this.__delayedTrinsitions){
+			this.__transitions = this.__delayedTrinsitions
+			this.__delayedTrinsitions = null
+			for(var t in this.__transitions){
+				t.run()
+			}
+		}
+	}
+}
+
+SpawnTransition = extends SequenceTransition {
+	init = function(target){
+		var duration = 0
+		if(arrayof this.params){
+			for(var i, t in this.params){
+				t = this.transition(t, target)
+				if(t){
+					duration = t.duration
+				}
+			}
+		}
+		this.duration = duration
+		this.delay = 0
+		this.target = target
 	}
 }
 

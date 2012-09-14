@@ -22,7 +22,7 @@ MyColorNode = extends ColorNode {
 	}
 	
 	__construct = function(){
-		super.__construct.call(this);
+		super()
 		
 		var self, timer = this
 		var function changeDir(){
@@ -82,7 +82,7 @@ MyColorNode = extends ColorNode {
 
 MyScene = extends Scene {
 	__construct = function(){
-		super.__construct.call(this);
+		super()
 		
 		var function color(){
 			return [math.random(0.2 0.95) math.random(0.2 0.95) math.random(0.2 0.95) 1]
@@ -104,6 +104,8 @@ MyScene = extends Scene {
 			// print "before transition"
 			rect.transition { 
 				delay = 2
+				/*
+				easy = Easy.outBounce
 				duration = 2
 				x = this.width * 0.7
 				y = this.height * 0.3
@@ -112,7 +114,35 @@ MyScene = extends Scene {
 				rotation = 45
 				zOrder = 1
 				opacity = 0.7
-				easy = Easy.inOutCubic
+				*/
+				sequence = [{
+					duration = 2
+					x = this.width * 0.7
+					y = this.height * 0.3
+					anchorX = 0.5
+					anchorY = 0.5
+					rotation = 45
+					zOrder = 1
+					opacity = 0.7
+				}, {
+					duration = 1
+					x = this.width * 0.3
+					y = this.height * 0.7
+					rotation = -45
+					opacity = 1.0
+				}, {
+					duration = 1
+					x = this.width * 0.1
+					y = this.height * 0.1
+					rotation = 270
+				}, {
+					duration = 1
+					x = this.width * 0.0
+					y = this.height * 1.0
+					anchorX = 0
+					anchorY = 1
+					rotation = 0
+				}]
 			}
 			// print "after transition"
 			
@@ -135,7 +165,7 @@ MyScene = extends Scene {
 		
 		// the same functionality but using closure instead of OOP
 		var scene = this
-		for(var i = 0; i < 50; i++){
+		for(var i = 0; i < 5; i++){
 			function(){
 				var self = Image("award-first.png") // ColorNode()
 				self.anchor = { x = 0.5 y = 0.38 }
