@@ -16,9 +16,9 @@ function Object.__get(name, autoCreate){
 function printBackTrace(skipNumFuncs){
 	for(var i, t in debugBackTrace(skipNumFuncs + 1)){ // skip printBackTrace
 		print concat("======= ["i"]")
-		print concat("  function: "t.name", arguments: "t.arguments)
 		// print concat("  line: "t.line", pos: "t.pos", token: "t.token", file: "t.file)
 		print concat("  line: "t.line", pos: "t.pos", file: "t.file)
+		print concat("  function: "t.name", arguments: "t.arguments)
 		// print concat("  object: "(t.object === _G && "<<GLOBALS>>" || t.object))
 	}
 }

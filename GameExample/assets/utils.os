@@ -197,7 +197,7 @@ for(var name, func in clone Easy){
 	if(functionof func && name.sub(0, 2) == "in"){
 		function(func){
 			function(func){
-				Easy[name] = func
+				// Easy[name] = func
 				name = name.sub(2)
 				Easy["out"..name] = function(t){
 					return 1 - func(1 - t)
