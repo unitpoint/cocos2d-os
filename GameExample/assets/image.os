@@ -1,8 +1,4 @@
 
-function new(){
-	return Function.apply(Image, arguments);
-}
-
 Image = extends Node {
 	__object = {
 		texture = null

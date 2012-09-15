@@ -13,6 +13,13 @@ function Object.__get(name, autoCreate){
 	echo("target "this"\n")
 }
 
+function Userdata.__set(name, value){
+	echo("userdata property \""name"\" is not declared, set value "value"\n")
+	echo "back trace\n"
+	printBackTrace(1) // skip current function
+	echo("target "this"\n")
+}
+
 function assert(a, message){
 	if(!a){
 		print(message ? message : "assert failed")

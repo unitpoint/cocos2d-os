@@ -16,6 +16,8 @@
 #include "CCAutoreleasePool.h"
 #include "CCTexture2D.h"
 #include "CCTextureCache.h"
+#include "CCLabelBMFont.h"
+#include "CCPointExtension.h"
 
 using namespace ObjectScript;
 
@@ -29,6 +31,9 @@ public:
 	int texture2d_class_crc;
 	int texture2d_instance_crc;
 
+	int labelBMFont_class_crc;
+	int labelBMFont_instance_crc;
+
 	MarmaladeOS()
 	{
 		output_filename = "output.txt";
@@ -36,6 +41,9 @@ public:
 
 		texture2d_class_crc = (int)&texture2d_class_crc;
 		texture2d_instance_crc = (int)&texture2d_instance_crc;
+
+		labelBMFont_class_crc = (int)&labelBMFont_class_crc;
+		labelBMFont_instance_crc = (int)&labelBMFont_instance_crc;
 
 		IwGLInit();
 
@@ -86,6 +94,7 @@ public:
 		initOpenGLExt(this);
 		initAppModule();
 		initTextureClass();
+		initLabelBMFontClass();
 
 		return true;
 	}
@@ -172,6 +181,11 @@ public:
 				((MarmaladeOS*)os)->drawImage(params);
 				return 0;
 			}
+			static int drawLabelBMFont(OS * os, int params, int, int, void*)
+			{
+				((MarmaladeOS*)os)->drawLabelBMFont(params);
+				return 0;
+			}
 		};
 		FuncDef list[] = {
 			// {"getScreenWidth", App::getScreenWidth},
@@ -191,6 +205,7 @@ public:
 			{"__get@orientation", App::getOrientation},
 			{"__set@orientation", App::setOrientation},
 			{"drawImage", App::drawImage},
+			{"drawLabelBMFont", App::drawLabelBMFont},
 			{}
 		};
 		getModule("app");
@@ -214,7 +229,7 @@ public:
 				pushStackValue(offs);
 				pushNumber(i);
 				getProperty(false, false);
-				color[i] = isNull() ? 1.0f : clampUnit(popFloat());
+				color[i] = !isNumber() ? (pop(), 1.0f) : clampUnit(popFloat());
 			}
 			return true;
 		}else if(isObject(offs)){
@@ -225,7 +240,7 @@ public:
 				pushStackValue(offs);
 				pushString(rgba[i]);
 				getProperty();
-				color[i] = isNull() ? 1.0f : clampUnit(popFloat());
+				color[i] = !isNumber() ? (pop(), 1.0f) : clampUnit(popFloat());
 			}
 			return true;
 		}
@@ -235,16 +250,37 @@ public:
 		return false;
 	}
 
+	void drawLabelBMFont(int params)
+	{
+		if(params < 1) return;
+		
+		float opacity = 1.0f;
+		if(params >= 2){
+			opacity = isNumber(-params+1) ? 1.0f : clampUnit(toFloat(-params+1));
+		}
+
+		LabelBMFont * label = (LabelBMFont*)toUserdata(labelBMFont_instance_crc, -params);
+		if(label){
+			GLubyte glOpacity = (GLubyte)(opacity * 255);
+			if(glOpacity != label->label->getOpacity()){
+				label->label->setOpacity(glOpacity);
+			}
+			// glScalef(1, -1, 1);
+			label->label->visit();
+			// glScalef(1, -1, 1);
+		}
+	}
+
 	void drawImage(int params)
 	{
 		if(!isObject(-params)) return;
 
 		float opacity;
 		if(params >= 2){
-			opacity = isNull(-params+1) ? 1.0f : clampUnit(toFloat(-params+1));
+			opacity = isNumber(-params+1) ? 1.0f : clampUnit(toFloat(-params+1));
 		}else{
 			getProperty(-params, "opacity");
-			opacity = isNull() ? 1.0f : clampUnit(popFloat());
+			opacity = isNumber() ? (pop(), 1.0f) : clampUnit(popFloat());
 		}
 
 		params = getAbsoluteOffs(-params);
@@ -456,6 +492,221 @@ public:
 		setProperty();
 	}
 
+	struct LabelBMFont
+	{
+		cocos2d::CCLabelBMFont * label;
+		Core::String string;
+		Core::String align;
+		float color[4];
+
+		LabelBMFont(OS * os, cocos2d::CCLabelBMFont * p_label): string(os), align(os, "left")
+		{
+			label = p_label;
+			label->retain();
+			label->setScaleY(-1.0f);
+			label->setAnchorPoint(ccp(0, 1));
+		}
+
+		~LabelBMFont()
+		{
+			label->release();
+		}
+
+		static int getString(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label){
+				os->pushString(label->string);
+				return 1;
+			}
+			return 0;
+		}
+
+		static int setString(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label && params > 0){
+				String str = os->toString(-params);
+				if(label->string != str){
+					label->string = str;
+					label->label->setString(label->string);
+				}
+			}
+			return 0;
+		}
+
+		static int getColor(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label){
+				os->newArray();
+				for(int i = 0; i < 4; i++){
+					os->pushStackValue(-1);
+					os->pushNumber(i);
+					os->pushNumber(label->color[i]);
+					os->setProperty();
+				}
+				return 1;
+			}
+			return 0;
+		}
+
+		void setColor(float color[4])
+		{
+			OS_MEMCPY(this->color, color, sizeof(color));
+			cocos2d::ccColor3B ccColor;
+			ccColor.r = (GLubyte)(255 * color[0]);
+			ccColor.g = (GLubyte)(255 * color[1]);
+			ccColor.b = (GLubyte)(255 * color[2]);
+			label->setColor(ccColor);
+			label->setOpacity((GLubyte)(255 * color[3]));
+		}
+
+		static int setColor(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label && params > 0){
+				float color[4];
+				os->getColor(-params, color);
+				label->setColor(color);
+			}
+			return 0;
+		}
+
+		static int getAlign(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label){
+				os->pushString(label->align);
+				return 1;
+			}
+			return 0;
+		}
+
+		static int setAlign(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label && params > 0){
+				label->align = os->toString(-params);
+					
+				cocos2d::CCTextAlignment alignment = cocos2d::CCTextAlignmentLeft;
+				if(label->align == "right"){
+					alignment = cocos2d::CCTextAlignmentRight;
+				}else if(label->align == "center"){
+					alignment = cocos2d::CCTextAlignmentCenter;
+				}else{
+					label->align = Core::String(os, "left");
+				}
+
+				label->label->setAlignment(alignment);
+			}
+			return 0;
+		}
+
+		static int getWidth(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label){
+				os->pushNumber(label->label->getContentSize().width);
+				return 1;
+			}
+			return 0;
+		}
+
+		static int setWidth(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label && params > 0){
+				label->label->setWidth(os->toNumber(-params));
+			}
+			return 0;
+		}
+
+		static int getHeight(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label){
+				os->pushNumber(label->label->getContentSize().height);
+				return 1;
+			}
+			return 0;
+		}
+
+		static void labelBMFontDtor(OS * os, void * data, void * user_param)
+		{
+			LabelBMFont * label = (LabelBMFont*)data;
+			label->~LabelBMFont();
+		}
+
+		static int newLabelBMFont(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			if(params < 1){
+				return 0;
+			}
+			String string = os->toString(-params);
+			String fontName	= os->isString(-params+1) ? os->toString(-params+1) : String(os, "arial-en-ru-32.fnt");
+			float width		= os->isNumber(-params+2) ? os->toNumber(-params+2) : 0;
+			String alignStr	= os->isString(-params+3) ? os->toString(-params+3) : String(os, "");
+			cocos2d::CCPoint offs = ccp(0, 0);
+
+			cocos2d::CCTextAlignment alignment = cocos2d::CCTextAlignmentLeft;
+			if(alignStr == "right"){
+				alignment = cocos2d::CCTextAlignmentRight;
+			}else if(alignStr == "center"){
+				alignment = cocos2d::CCTextAlignmentCenter;
+			}
+			cocos2d::CCLabelBMFont * ccLabel = cocos2d::CCLabelBMFont::labelWithString(string, fontName, width, alignment, offs);
+			if(ccLabel){
+				LabelBMFont * label = (LabelBMFont*)os->pushUserdata(os->labelBMFont_instance_crc, sizeof(LabelBMFont), labelBMFontDtor);
+				new (label) LabelBMFont(os, ccLabel);
+				label->string = string;
+				label->align = alignStr;
+
+				float color[4] = {0, 0, 0, 1};
+				label->setColor(color);
+
+				os->pushStackValue(-1);
+				os->getGlobal("LabelBMFont");
+				os->setPrototype(os->labelBMFont_instance_crc);
+				return 1;
+			}
+			return 0;
+		}
+	};
+
+	void initLabelBMFontClass()
+	{
+		FuncDef list[] = {
+			{"__get@string", LabelBMFont::getString},
+			{"__set@string", LabelBMFont::setString},
+			{"__get@color", LabelBMFont::getColor},
+			{"__set@color", LabelBMFont::setColor},
+			{"__get@align", LabelBMFont::getAlign},
+			{"__set@align", LabelBMFont::setAlign},
+			{"__get@width", LabelBMFont::getWidth},
+			{"__set@width", LabelBMFont::setWidth},
+			{"__get@height", LabelBMFont::getHeight},
+			{"__construct", LabelBMFont::newLabelBMFont},
+			{}
+		};
+
+		pushGlobals();
+		pushString("LabelBMFont");
+		pushUserdata(labelBMFont_class_crc, 0);
+		setFuncs(list);
+		setProperty();
+	}
+
 	enum ETouchPhase
 	{
 		TOUCH_PHASE_START,
@@ -634,11 +885,10 @@ int main()
 	MarmaladeOS * os = OS::create(new MarmaladeOS());
 	os->require("main.os");
 	
-	uint64 updateTimeMS = 0;
 	for(;;){ 
+		uint64 startFrameTimeMS = s3eTimerGetMs();
+		
 		os->startFrame();
-
-		updateTimeMS = s3eTimerGetMs();
 			
 		s3eDeviceYield(0);
 		s3eKeyboardUpdate();
@@ -657,13 +907,10 @@ int main()
 
 		os->getGlobal("director");
 		os->getProperty("animationInterval");
-		int animationIntervalMS = (int)(1.0f / clamp(os->popNumber(), 0.01, 0.2));
-		while((s3eTimerGetMs() - updateTimeMS) < animationIntervalMS){
-			int yield = (int)(animationIntervalMS - (s3eTimerGetMs() - updateTimeMS));
-			if(yield < 0){
-				break;
-			}
-			s3eDeviceYield(yield);
+		int animationIntervalMS = (int)(1000.0f * clamp(os->popNumber(), 0.005, 0.2));
+		int frameMS = (int)(s3eTimerGetMs() - startFrameTimeMS);
+		if(animationIntervalMS > frameMS){
+			s3eDeviceYield(animationIntervalMS - frameMS);
 		}
 	}
 	int code = os->getTerminatedCode();

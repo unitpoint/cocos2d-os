@@ -2,6 +2,7 @@ var core = require("core")
 var app = require("app")
 var node = require("node")
 var image = require("image")
+var text = require("text")
 var director = require("director")
 
 print "Hello World!"
@@ -88,6 +89,22 @@ MyScene = extends Scene {
 		var function color(){
 			return [math.random(0.2 0.95) math.random(0.2 0.95) math.random(0.2 0.95) 1]
 		}
+		
+		var message = Text("Awesome text")
+		message.x = this.width * 0.5
+		message.y = this.height * 0.5
+		message.color = [1 0 0 1]
+		this.insert(message)
+		
+		var fps = Text("fps")
+		fps.anchor = {x=1 y=1}
+		fps.x = this.width
+		fps.y = this.height
+		fps.color = [0.9, 0.9, 0.0, 1]
+		fps.setTimeout(function(){
+			this.string = math.round(1 / director.deltaTime, 1).." fps"
+		}, 0.4, true)
+		this.insert(fps)
 		
 		var Sprite = extends Node {
 			__construct = function(filename){

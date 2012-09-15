@@ -267,7 +267,7 @@ var timeSpeed = 1
 function get timeSpeed(){return timeSpeed}
 function set timeSpeed(a){ timeSpeed = a }
 
-var time = 1
+var time = 0
 function get time(){return time}
 function set time(a){ time = a }
 
