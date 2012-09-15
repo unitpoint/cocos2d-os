@@ -2331,6 +2331,7 @@ namespace ObjectScript
 				PROTOTYPE_OBJECT,
 				PROTOTYPE_ARRAY,
 				PROTOTYPE_FUNCTION,
+				PROTOTYPE_USERDATA,
 				// -----------------
 				PROTOTYPE_COUNT
 			};

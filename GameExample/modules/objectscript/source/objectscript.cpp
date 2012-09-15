@@ -9513,7 +9513,7 @@ bool OS::Core::isValueString(Value val, String * out)
 			// *out = String(allocator);
 			*out = strings->syntax_null;
 		}
-		return true;
+		return false;
 
 	case OS_VALUE_TYPE_BOOL:
 		if(out){
@@ -9552,7 +9552,7 @@ bool OS::Core::isValueString(Value val, OS::String * out)
 			// *out = String(allocator);
 			*out = strings->syntax_null;
 		}
-		return true;
+		return false;
 
 	case OS_VALUE_TYPE_BOOL:
 		if(out){
@@ -10529,6 +10529,7 @@ bool OS::Core::init()
 	prototypes[PROTOTYPE_STRING]->prototype = prototypes[PROTOTYPE_OBJECT];
 	prototypes[PROTOTYPE_ARRAY]->prototype = prototypes[PROTOTYPE_OBJECT];
 	prototypes[PROTOTYPE_FUNCTION]->prototype = prototypes[PROTOTYPE_OBJECT];
+	prototypes[PROTOTYPE_USERDATA]->prototype = prototypes[PROTOTYPE_OBJECT];
 
 	strings = new (malloc(sizeof(Strings) OS_DBG_FILEPOS)) Strings(allocator);
 
@@ -10538,6 +10539,7 @@ bool OS::Core::init()
 	setGlobalValue(OS_TEXT("String"), Value(prototypes[PROTOTYPE_STRING]), false);
 	setGlobalValue(OS_TEXT("Array"), Value(prototypes[PROTOTYPE_ARRAY]), false);
 	setGlobalValue(OS_TEXT("Function"), Value(prototypes[PROTOTYPE_FUNCTION]), false);
+	setGlobalValue(OS_TEXT("Userdata"), Value(prototypes[PROTOTYPE_USERDATA]), false);
 
 	return true;
 }
@@ -11899,7 +11901,7 @@ OS::Core::GCCFunctionValue * OS::Core::newCFunctionValue(OS_CFunction func, int 
 OS::Core::GCUserdataValue * OS::Core::newUserdataValue(int crc, int data_size, OS_UserdataDtor dtor, void * user_param)
 {
 	GCUserdataValue * res = new (malloc(sizeof(GCUserdataValue) + data_size OS_DBG_FILEPOS)) GCUserdataValue();
-	res->prototype = prototypes[PROTOTYPE_OBJECT];
+	res->prototype = prototypes[PROTOTYPE_USERDATA];
 	res->crc = crc;
 	res->dtor = dtor;
 	res->user_param = user_param;
@@ -11912,7 +11914,7 @@ OS::Core::GCUserdataValue * OS::Core::newUserdataValue(int crc, int data_size, O
 OS::Core::GCUserdataValue * OS::Core::newUserPointerValue(int crc, void * data, OS_UserdataDtor dtor, void * user_param)
 {
 	GCUserdataValue * res = new (malloc(sizeof(GCUserdataValue) OS_DBG_FILEPOS)) GCUserdataValue();
-	res->prototype = prototypes[PROTOTYPE_OBJECT];
+	res->prototype = prototypes[PROTOTYPE_USERDATA];
 	res->crc = crc;
 	res->dtor = dtor;
 	res->user_param = user_param;
