@@ -496,10 +496,12 @@ public:
 	{
 		cocos2d::CCLabelBMFont * label;
 		Core::String string;
+		Core::String font;
 		Core::String align;
 		float color[4];
+		float offs[2];
 
-		LabelBMFont(OS * os, cocos2d::CCLabelBMFont * p_label): string(os), align(os, "left")
+		LabelBMFont(OS * os, cocos2d::CCLabelBMFont * p_label): string(os), font(os), align(os, "left")
 		{
 			label = p_label;
 			label->retain();
@@ -532,6 +534,64 @@ public:
 				if(label->string != str){
 					label->string = str;
 					label->label->setString(label->string);
+				}
+			}
+			return 0;
+		}
+
+		class LabelBMFontConfig: public cocos2d::CCLabelBMFont
+		{
+		public:
+
+			cocos2d::CCBMFontConfiguration * getFontConfig(){ return m_pConfiguration; }
+		};
+
+		static int getFontHeight(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label){
+				cocos2d::CCBMFontConfiguration * fontConfig = ((LabelBMFontConfig*)label->label)->getFontConfig();
+				os->pushNumber((OS_NUMBER)fontConfig->m_uCommonHeight);
+				return 1;
+			}
+			return 0;
+		}
+
+		static int getFont(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label){
+				os->pushString(label->font);
+				return 1;
+			}
+			return 0;
+		}
+
+		static int setFont(OS * p_os, int params, int, int, void*)
+		{
+			MarmaladeOS * os = (MarmaladeOS*)p_os;
+			LabelBMFont * label = (LabelBMFont*)os->toUserdata(os->labelBMFont_instance_crc, -params-1);
+			if(label && params > 0){
+				String str = os->toString(-params);
+				if(label->font != str){
+					label->font = str;
+
+					cocos2d::CCTextAlignment alignment = cocos2d::CCTextAlignmentLeft;
+					if(label->align == "right"){
+						alignment = cocos2d::CCTextAlignmentRight;
+					}else if(label->align == "center"){
+						alignment = cocos2d::CCTextAlignmentCenter;
+					}else{
+						label->align = Core::String(os, "left");
+					}
+
+					float width = label->label->getContentSize().width;
+					
+					label->label->release();
+					label->label = cocos2d::CCLabelBMFont::labelWithString(label->string, label->font, 
+						width, alignment, ccp(label->offs[0], label->offs[1]));
 				}
 			}
 			return 0;
@@ -656,21 +716,26 @@ public:
 			String string = os->toString(-params);
 			String fontName	= os->isString(-params+1) ? os->toString(-params+1) : String(os, "arial-en-ru-32.fnt");
 			float width		= os->isNumber(-params+2) ? os->toNumber(-params+2) : 0;
-			String alignStr	= os->isString(-params+3) ? os->toString(-params+3) : String(os, "");
+			String align	= os->isString(-params+3) ? os->toString(-params+3) : String(os, "");
 			cocos2d::CCPoint offs = ccp(0, 0);
 
 			cocos2d::CCTextAlignment alignment = cocos2d::CCTextAlignmentLeft;
-			if(alignStr == "right"){
+			if(align == "right"){
 				alignment = cocos2d::CCTextAlignmentRight;
-			}else if(alignStr == "center"){
+			}else if(align == "center"){
 				alignment = cocos2d::CCTextAlignmentCenter;
+			}else{
+				align = Core::String(os, "left");
 			}
 			cocos2d::CCLabelBMFont * ccLabel = cocos2d::CCLabelBMFont::labelWithString(string, fontName, width, alignment, offs);
 			if(ccLabel){
 				LabelBMFont * label = (LabelBMFont*)os->pushUserdata(os->labelBMFont_instance_crc, sizeof(LabelBMFont), labelBMFontDtor);
 				new (label) LabelBMFont(os, ccLabel);
 				label->string = string;
-				label->align = alignStr;
+				label->font = fontName;
+				label->align = align;
+				label->offs[0] = offs.x;
+				label->offs[1] = offs.y;
 
 				float color[4] = {0, 0, 0, 1};
 				label->setColor(color);
@@ -687,6 +752,9 @@ public:
 	void initLabelBMFontClass()
 	{
 		FuncDef list[] = {
+			{"__get@fontHeight", LabelBMFont::getFontHeight},
+			{"__get@font", LabelBMFont::getFont},
+			{"__set@font", LabelBMFont::setFont},
 			{"__get@string", LabelBMFont::getString},
 			{"__set@string", LabelBMFont::setString},
 			{"__get@color", LabelBMFont::getColor},

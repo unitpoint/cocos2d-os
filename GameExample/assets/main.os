@@ -90,21 +90,52 @@ MyScene = extends Scene {
 			return [math.random(0.2 0.95) math.random(0.2 0.95) math.random(0.2 0.95) 1]
 		}
 		
-		var message = Text("Awesome text")
+		var message = Text("Awesome text with shadow")
 		message.x = this.width * 0.5
 		message.y = this.height * 0.5
 		message.color = [1 0 0 1]
+		message.shadow = true
 		this.insert(message)
+
 		
 		var fps = Text("fps")
-		fps.anchor = {x=1 y=1}
+		fps.anchor = {x=1.05 y=1.05}
 		fps.x = this.width
 		fps.y = this.height
 		fps.color = [0.9, 0.9, 0.0, 1]
-		fps.setTimeout(function(){
-			this.string = math.round(1 / director.deltaTime, 1).." fps"
-		}, 0.4, true)
+		// fps.shadow = true
 		this.insert(fps)
+		
+		var gcAllocatedBytes = Text("Kb")
+		gcAllocatedBytes.anchor = {x=1.05 y=1.05}
+		gcAllocatedBytes.x = fps.x
+		gcAllocatedBytes.y = fps.y - fps.fontHeight*1.05*2
+		gcAllocatedBytes.color = [0.9, 0.9, 0.0, 1]
+		// gcAllocatedBytes.shadow = true
+		this.insert(gcAllocatedBytes)
+		
+		var gcCachedBytes = Text("Kb")
+		gcCachedBytes.anchor = {x=1.05 y=1.05}
+		gcCachedBytes.x = fps.x
+		gcCachedBytes.y = fps.y - fps.fontHeight*1.05*1
+		gcCachedBytes.color = [0.9, 0.9, 0.0, 1]
+		// gcAllocatedBytes.shadow = true
+		this.insert(gcCachedBytes)
+		
+		var gcNumValues = Text("0")
+		gcNumValues.anchor = {x=1.05 y=1.05}
+		gcNumValues.x = fps.x
+		gcNumValues.y = fps.y - fps.fontHeight*1.05*3
+		gcNumValues.color = [0.9, 0.9, 0.0, 1]
+		// gcNumValues.shadow = true
+		this.insert(gcNumValues)
+		
+		this.setTimeout(function(){
+			fps.string = math.round(1 / director.deltaTime, 1).." fps"
+			gcAllocatedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
+			gcCachedBytes.string = math.round(GC.cachedBytes / 1024).." Kb cached"
+			gcNumValues.string = GC.numValues.." values"
+		}, 0.3, true)
 		
 		var Sprite = extends Node {
 			__construct = function(filename){
@@ -164,7 +195,7 @@ MyScene = extends Scene {
 			var anim = monster.animation {
 				cols = 9
 				rows = 10
-				delay = 0.08
+				delay = 0.08 // math.random(0.05, 0.1)
 				start = 0
 				frames = 17
 				rect = {
@@ -178,6 +209,7 @@ MyScene = extends Scene {
 			monster.y = this.height * math.random(0.2, 0.8)
 			monster.zOrder = monster.y
 			monster.color = color()
+			monster.timeSpeed = math.random(0.5, 5.0)
 			// monster.scale = math.random(0.2, 2.0)
 			this.insert(monster)
 			

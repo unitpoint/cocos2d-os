@@ -10,19 +10,19 @@ function Object.__get(name, autoCreate){
 	echo("object property \""name"\" is not declared\n")
 	echo "back trace\n"
 	printBackTrace(1) // skip current function
-	echo("target "this"\n")
+	echo("=======\ntarget "this"\n\n")
 }
 
 function Userdata.__set(name, value){
 	echo("userdata property \""name"\" is not declared, set value "value"\n")
 	echo "back trace\n"
 	printBackTrace(1) // skip current function
-	echo("target "this"\n")
+	echo("=======\ntarget "this"\n\n")
 }
 
 function assert(a, message){
 	if(!a){
-		print(message ? message : "assert failed")
+		print(message || "assert failed")
 		printBackTrace(1)
 		terminate()
 	}
