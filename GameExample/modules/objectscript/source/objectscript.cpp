@@ -417,15 +417,11 @@ OS_CHAR * OS::Utils::numToStr(OS_CHAR * dst, double a, int precision)
 	OS_CHAR buf[128];
 	if(precision <= 0) {
 		if(precision < 0) {
-#if 1
 			OS_FLOAT p = 10.0f;
 			for(int i = -precision-1; i > 0; i--){
 				p *= 10.0f;
 			}
-#else
-			OS_FLOAT p = OS_MATH_POW((OS_FLOAT)10.0, (OS_FLOAT)-precision);
-#endif
-			a = OS_MATH_FLOOR(a / p + 0.5f) * p;
+			a = ::floor(a / p + 0.5f) * p;
 		}
 		OS_SNPRINTF(dst, sizeof(buf)-sizeof(OS_CHAR), OS_TEXT("%.f"), a);
 		return dst;
@@ -2663,6 +2659,7 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 	case EXP_TYPE_ARRAY:
 		writeDebugInfo(exp);
 		prog_opcodes->writeByte(Program::OP_PUSH_NEW_ARRAY);
+		prog_opcodes->writeByte(exp->list.count > 255 ? 256 : exp->list.count);
 		if(!writeOpcodes(scope, exp->list)){
 			return false;
 		}
@@ -5864,7 +5861,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::newBinaryExpression(Scope *
 			return lib.newExpression(left_exp->toNumber() / right_exp->toNumber(), left_exp, right_exp);
 
 		case EXP_TYPE_MOD: // %
-			return lib.newExpression(OS_MATH_FMOD(left_exp->toNumber(), right_exp->toNumber()), left_exp, right_exp);
+			return lib.newExpression(OS_MATH_MOD_OPERATOR(left_exp->toNumber(), right_exp->toNumber()), left_exp, right_exp);
 
 		case EXP_TYPE_LSHIFT: // <<
 			return lib.newExpression(left_exp->toInt() << right_exp->toInt(), left_exp, right_exp);
@@ -5873,7 +5870,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::newBinaryExpression(Scope *
 			return lib.newExpression(left_exp->toInt() >> right_exp->toInt(), left_exp, right_exp);
 
 		case EXP_TYPE_POW: // **
-			return lib.newExpression(OS_MATH_POW(left_exp->toNumber(), right_exp->toNumber()), left_exp, right_exp);
+			return lib.newExpression(OS_MATH_POW_OPERATOR(left_exp->toNumber(), right_exp->toNumber()), left_exp, right_exp);
 		}
 	}
 	switch(exp_type){
@@ -11924,11 +11921,14 @@ OS::Core::GCObjectValue * OS::Core::newObjectValue(GCValue * prototype)
 	return res;
 }
 
-OS::Core::GCArrayValue * OS::Core::newArrayValue()
+OS::Core::GCArrayValue * OS::Core::newArrayValue(int initial_capacity)
 {
 	GCArrayValue * res = new (malloc(sizeof(GCArrayValue) OS_DBG_FILEPOS)) GCArrayValue();
 	res->prototype = prototypes[PROTOTYPE_ARRAY];
 	res->type = OS_VALUE_TYPE_ARRAY;
+	if(initial_capacity > 0){
+		allocator->vectorReserveCapacity(res->values, initial_capacity OS_DBG_FILEPOS);
+	}
 	registerValue(res);
 	return res;
 }
@@ -12035,9 +12035,9 @@ OS::Core::GCObjectValue * OS::Core::pushObjectValue(GCValue * prototype)
 	return pushValue(newObjectValue(prototype));
 }
 
-OS::Core::GCArrayValue * OS::Core::pushArrayValue()
+OS::Core::GCArrayValue * OS::Core::pushArrayValue(int initial_capacity)
 {
-	return pushValue(newArrayValue());
+	return pushValue(newArrayValue(initial_capacity));
 }
 
 void OS::Core::pushTypeOf(Value val)
@@ -12266,6 +12266,7 @@ void OS::Core::pushCloneValue(Value val)
 			new_value->prototype = value->prototype;
 			GCArrayValue * arr = (GCArrayValue*)value;
 			GCArrayValue * new_arr = (GCArrayValue*)new_value;
+			allocator->vectorReserveCapacity(new_arr->values, arr->values.count OS_DBG_FILEPOS);
 			for(int i = 0; i < arr->values.count; i++){
 				allocator->vectorAddItem(new_arr->values, arr->values[i] OS_DBG_FILEPOS);
 			}
@@ -12644,7 +12645,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 						// TODO: exception???
 						return core->pushNumber(0.0);
 					}
-					return core->pushNumber(OS_MATH_FMOD(core->valueToNumber(left_value), right));
+					return core->pushNumber(OS_MATH_MOD_OPERATOR(core->valueToNumber(left_value), right));
 				}
 
 			case Program::OP_LSHIFT: // <<
@@ -12654,7 +12655,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 				return core->pushNumber(core->valueToInt(left_value) >> core->valueToInt(right_value));
 
 			case Program::OP_POW: // **
-				return core->pushNumber(OS_MATH_POW(core->valueToNumber(left_value), core->valueToNumber(right_value)));
+				return core->pushNumber(OS_MATH_POW_OPERATOR(core->valueToNumber(left_value), core->valueToNumber(right_value)));
 			}
 			core->pushNull();
 		}
@@ -12912,7 +12913,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 				// TODO: exception???
 				return pushNumber(0.0);
 			}
-			return pushNumber(OS_MATH_FMOD((OS_FLOAT)left_value.v.number, (OS_FLOAT)right_value.v.number));
+			return pushNumber(OS_MATH_MOD_OPERATOR(left_value.v.number, right_value.v.number));
 		}
 		break;
 
@@ -12930,7 +12931,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 
 	case Program::OP_POW: // **
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushNumber(OS_MATH_POW((OS_FLOAT)left_value.v.number, (OS_FLOAT)right_value.v.number));
+			return pushNumber(OS_MATH_POW_OPERATOR((OS_FLOAT)left_value.v.number, (OS_FLOAT)right_value.v.number));
 		}
 		break;
 	}
@@ -13209,9 +13210,9 @@ void OS::newObject()
 	core->pushObjectValue();
 }
 
-void OS::newArray()
+void OS::newArray(int initial_capacity)
 {
-	core->pushArrayValue();
+	core->pushArrayValue(initial_capacity);
 }
 
 void OS::pushStackValue(int offs)
@@ -13634,7 +13635,7 @@ bool OS::Core::hasProperty(GCValue * table_value, const PropertyIndex& index, bo
 {
 	Value value;
 	if(getPropertyValue(value, table_value, index, prototype_enabled)){
-		return true;
+		return value.type != OS_VALUE_TYPE_NULL;
 	}
 	if(getter_enabled && index.index.type == OS_VALUE_TYPE_STRING && !hasSpecialPrefix(index.index.v.string)){
 		const void * buf1 = strings->__getAt.toChar();
@@ -13957,7 +13958,7 @@ restart:
 			int cur_ret_values = 0;
 			int ret_values = stack_func->need_ret_values;
 			stack_values.count = stack_func->stack_pos;
-			syncRetValues(ret_values, cur_ret_values);
+			ret_values = syncRetValues(ret_values, cur_ret_values);
 			OS_ASSERT(stack_values.count == stack_func->stack_pos + ret_values);
 			// stack_func->opcodes_pos = opcodes.getPos();
 			OS_ASSERT(call_stack_funcs.count > 0 && &call_stack_funcs[call_stack_funcs.count-1] == stack_func);
@@ -14027,7 +14028,7 @@ restart:
 			}
 
 		case Program::OP_PUSH_NEW_ARRAY:
-			pushArrayValue();
+			pushArrayValue(opcodes.readByte());
 			break;
 
 		case Program::OP_PUSH_NEW_OBJECT:
@@ -14316,7 +14317,7 @@ restart:
 								if(!new_self){
 									int cur_ret_values = 0;
 									int ret_values = stack_func->need_ret_values;
-									syncRetValues(ret_values, cur_ret_values);
+									ret_values = syncRetValues(ret_values, cur_ret_values);
 									// OS_ASSERT(stack_values.count == stack_func->bottom_stack_pos + ret_values);
 									// stack_func->opcodes_pos = opcodes.getPos();
 									OS_ASSERT(call_stack_funcs.count > 0 && &call_stack_funcs[call_stack_funcs.count-1] == stack_func);
@@ -14367,7 +14368,7 @@ restart:
 				default:
 					// TODO: warn or error here???
 					pop(1+params);
-					syncRetValues(ret_values, 0);
+					ret_values = syncRetValues(ret_values, 0);
 				}
 				OS_ASSERT(stack_values.count == stack_func->stack_pos + ret_values);
 				// stack_func->opcodes_pos = opcodes.getPos();
@@ -14431,7 +14432,7 @@ restart:
 				default:
 					// TODO: warn or error here???
 					pop(4+params);
-					syncRetValues(ret_values, 0);
+					ret_values = syncRetValues(ret_values, 0);
 				}
 				OS_ASSERT(stack_values.count == stack_func->stack_pos + ret_values);
 				// stack_func->opcodes_pos = opcodes.getPos();
@@ -14446,7 +14447,7 @@ restart:
 			{
 				int cur_ret_values = opcodes.readByte();
 				int ret_values = stack_func->need_ret_values;
-				syncRetValues(ret_values, cur_ret_values);
+				ret_values = syncRetValues(ret_values, cur_ret_values);
 				OS_ASSERT(stack_values.count == stack_func->stack_pos + ret_values);
 				// stack_func->opcodes_pos = opcodes.getPos();
 				OS_ASSERT(call_stack_funcs.count > 0 && &call_stack_funcs[call_stack_funcs.count-1] == stack_func);
@@ -14464,7 +14465,7 @@ restart:
 					pushValue(stack_func->self);
 					cur_ret_values = 1;
 				}
-				syncRetValues(ret_values, cur_ret_values);
+				ret_values = syncRetValues(ret_values, cur_ret_values);
 				// OS_ASSERT(stack_values.count == stack_func->stack_pos + ret_values);
 				// stack_func->opcodes_pos = opcodes.getPos();
 				OS_ASSERT(call_stack_funcs.count > 0 && &call_stack_funcs[call_stack_funcs.count-1] == stack_func);
@@ -15573,12 +15574,14 @@ void OS::initObjectClass()
 		static int push(OS * os, int params, int, int, void*)
 		{
 			Core::Value self_var = os->core->getStackValue(-params-1);
+			Core::Value value = os->core->getStackValue(-params);
 			OS_INT num_index = 0;
 			switch(self_var.type){
 			case OS_VALUE_TYPE_ARRAY:
 				OS_ASSERT(dynamic_cast<Core::GCArrayValue*>(self_var.v.arr));
-				os->vectorAddItem(self_var.v.arr->values, os->core->getStackValue(-params) OS_DBG_FILEPOS);
-				os->pushNumber(self_var.v.arr->values.count);
+				os->vectorAddItem(self_var.v.arr->values, value OS_DBG_FILEPOS);
+				// os->pushNumber(self_var.v.arr->values.count);
+				os->core->pushValue(value);
 				return 1;
 
 			case OS_VALUE_TYPE_OBJECT:
@@ -15592,8 +15595,9 @@ void OS::initObjectClass()
 			default:
 				return 0;
 			}
-			os->core->setPropertyValue(self_var, Core::PropertyIndex(num_index), os->core->getStackValue(-params), false);
-			os->pushNumber(self_var.v.object->table->count);
+			os->core->setPropertyValue(self_var, Core::PropertyIndex(num_index), value, false);
+			// os->pushNumber(self_var.v.object->table->count);
+			os->core->pushValue(value);
 			return 1;
 		}
 
@@ -15649,6 +15653,79 @@ void OS::initObjectClass()
 			}
 			return 0;
 		}
+
+		static int sub(OS * os, int params, int, int, void*)
+		{
+			int start, len, size;
+			Core::Value self_var = os->core->getStackValue(-params-1);
+			switch(self_var.type){
+			case OS_VALUE_TYPE_OBJECT:
+				OS_ASSERT(dynamic_cast<Core::GCObjectValue*>(self_var.v.object));
+				size = self_var.v.object->table ? self_var.v.object->table->count : 0;
+				break;
+
+			default:
+				return 0;
+			}
+			switch(params){
+			case 0:
+				os->core->pushValue(self_var);
+				return 1;
+
+			case 1:
+				start = os->toInt(-params);
+				len = size;
+				break;
+
+			default:
+				start = os->toInt(-params);
+				len = os->toInt(-params+1);
+			}
+			if(start < 0){
+				start = size + start;
+				if(start < 0){
+					start = 0;
+				}
+			}
+			if(start >= size){
+				os->newObject();
+				return 1;
+			}
+			if(len < 0){
+				len = size - start + len;
+			}
+			if(len <= 0){
+				os->newObject();
+				return 1;
+			}
+			if(start + len > size){
+				len = size - start;
+			}
+			if(!start && len == size){
+				os->core->pushValue(self_var);
+				return 1;
+			}
+			OS_ASSERT(self_var.v.object->table && self_var.v.object->table->first);
+			Core::GCObjectValue * object = os->core->pushObjectValue(self_var.v.object->prototype);
+			Core::Property * prop = self_var.v.object->table->first;
+			int i = 0;
+			for(; i < start; i++){
+				prop = prop->next;
+				OS_ASSERT(prop);
+			}
+			Vector<Core::Value> captured_items;
+			os->vectorReserveCapacity(captured_items, len*2 OS_DBG_FILEPOS);
+			for(i = 0; i < len; i++, prop = prop->next){
+				OS_ASSERT(prop);
+				os->vectorAddItem(captured_items, prop->index OS_DBG_FILEPOS);
+				os->vectorAddItem(captured_items, prop->value OS_DBG_FILEPOS);
+			}
+			for(i = 0; i < len; i++){
+				os->core->setPropertyValue(object, captured_items[i*2], captured_items[i*2+1], false);
+			}
+			os->vectorClear(captured_items);
+			return 1;
+		}
 	};
 	FuncDef list[] = {
 		{OS_TEXT("rawget"), Object::rawget},
@@ -15678,25 +15755,66 @@ void OS::initArrayClass()
 {
 	struct Array
 	{
-		static int length(OS * os, int params, int closure_values, int, void*)
+		static int sub(OS * os, int params, int, int, void*)
 		{
-			Core::Value self_var = os->core->getStackValue(-params-closure_values-1);
-			if(self_var.type == OS_VALUE_TYPE_ARRAY){
+			int start, len, size;
+			Core::Value self_var = os->core->getStackValue(-params-1);
+			switch(self_var.type){
+			case OS_VALUE_TYPE_ARRAY:
 				OS_ASSERT(dynamic_cast<Core::GCArrayValue*>(self_var.v.arr));
-				os->pushNumber(self_var.v.arr->values.count);
+				size = self_var.v.arr->values.count;
+				break;
+
+			default:
+				return 0;
+			}
+			switch(params){
+			case 0:
+				os->core->pushValue(self_var);
+				return 1;
+
+			case 1:
+				start = os->toInt(-params);
+				len = size;
+				break;
+
+			default:
+				start = os->toInt(-params);
+				len = os->toInt(-params+1);
+			}
+			if(start < 0){
+				start = size + start;
+				if(start < 0){
+					start = 0;
+				}
+			}
+			if(start >= size){
+				os->newArray();
 				return 1;
 			}
-			Core::GCValue * self = self_var.getGCValue();
-			if(self){
-				os->pushNumber(self->table ? (OS_FLOAT)self->table->next_index : 0);
+			if(len < 0){
+				len = size - start + len;
+			}
+			if(len <= 0){
+				os->newArray();
 				return 1;
 			}
-			return 0;
+			if(start + len > size){
+				len = size - start;
+			}
+			if(!start && len == size){
+				os->core->pushValue(self_var);
+				return 1;
+			}
+			Core::GCArrayValue * arr = os->core->pushArrayValue(len);
+			for(int i = 0; i < len; i++){
+				os->vectorAddItem(arr->values, self_var.v.arr->values[start+i] OS_DBG_FILEPOS);
+			}
+			return 1;
 		}
 	};
 	FuncDef list[] = {
-		{core->strings->__len, Array::length},
-		// {OS_TEXT("__get@length"), Array::length},
+		{OS_TEXT("sub"), Array::sub},
 		{}
 	};
 	core->pushValue(core->prototypes[Core::PROTOTYPE_ARRAY]);
@@ -15729,7 +15847,7 @@ void OS::initStringClass()
 		{
 			int start, len;
 			OS::String str = os->toString(-params-1);
-			int strLen = str.getLen();
+			int size = str.getLen();
 			switch(params){
 			case 0:
 				os->pushStackValue(-params-1);
@@ -15737,7 +15855,7 @@ void OS::initStringClass()
 
 			case 1:
 				start = os->toInt(-params);
-				len = strLen;
+				len = size;
 				break;
 
 			default:
@@ -15745,26 +15863,26 @@ void OS::initStringClass()
 				len = os->toInt(-params+1);
 			}
 			if(start < 0){
-				start = strLen + start;
+				start = size + start;
 				if(start < 0){
 					start = 0;
 				}
 			}
-			if(start >= strLen){
+			if(start >= size){
 				os->pushString(OS_TEXT(""));
 				return 1;
 			}
 			if(len < 0){
-				len = strLen - start + len;
+				len = size - start + len;
 			}
 			if(len <= 0){
 				os->pushString(OS_TEXT(""));
 				return 1;
 			}
-			if(start + len > strLen){
-				len = strLen - start;
+			if(start + len > size){
+				len = size - start;
 			}
-			if(!start && len == strLen){
+			if(!start && len == size){
 				os->pushStackValue(-params-1);
 				return 1;
 			}
@@ -15986,7 +16104,7 @@ double OS::Core::getRand()
 
 double OS::Core::getRand(double up)
 {
-	return getRand() * up;
+	return ::floor(getRand()*(up-1) + 0.5f);
 }
 
 double OS::Core::getRand(double min, double max)
@@ -16047,7 +16165,7 @@ void OS::initMathModule()
 
 		static int floor(OS * os, int params, int, int, void*)
 		{
-			os->pushNumber(OS_MATH_FLOOR(os->toNumber(-params)));
+			os->pushNumber(::floor(os->toNumber(-params)));
 			return 1;
 		}
 
@@ -16062,20 +16180,20 @@ void OS::initMathModule()
 						for(int i = -precision-1; i > 0; i--){
 							p *= 10.0f;
 						}
-						os->pushNumber(OS_MATH_FLOOR(a / p + 0.5f) * p);
+						os->pushNumber(::floor(a / p + 0.5f) * p);
 						return 1;
 					}
-					os->pushNumber(OS_MATH_FLOOR(a + 0.5f));
+					os->pushNumber(::floor(a + 0.5f));
 					return 1;
 				}
 				double p = 10.0f;
 				for(int i = precision-1; i > 0; i--){
 					p *= 10.0f;
 				}
-				os->pushNumber(OS_MATH_FLOOR(a * p + 0.5f) / p);
+				os->pushNumber(::floor(a * p + 0.5f) / p);
 				return 1;
 			}
-			os->pushNumber(OS_MATH_FLOOR(a + 0.5f));
+			os->pushNumber(::floor(a + 0.5f));
 			return 1;
 		}
 
@@ -16161,7 +16279,7 @@ void OS::initMathModule()
 
 		static int pow(OS * os, int params, int, int, void*)
 		{
-			os->pushNumber(OS_MATH_POW(os->toNumber(-params), os->toNumber(-params+1)));
+			os->pushNumber(::pow(os->toNumber(-params), os->toNumber(-params+1)));
 			return 1;
 		}
 
@@ -16198,7 +16316,7 @@ void OS::initMathModule()
 
 		static int fmod(OS * os, int params, int, int, void*)
 		{
-			os->pushNumber(OS_MATH_FMOD(os->toNumber(-params), os->toNumber(-params+1)));
+			os->pushNumber(::fmod(os->toNumber(-params), os->toNumber(-params+1)));
 			return 1;
 		}
 
@@ -16673,8 +16791,7 @@ int OS::Core::call(int params, int ret_values, GCValue * self_for_proto)
 	}
 	// OS_ASSERT(false);
 	pop(params + 2);
-	syncRetValues(ret_values, 0);
-	return ret_values;
+	return syncRetValues(ret_values, 0);
 }
 
 bool OS::compileFile(const String& p_filename, bool required)

@@ -123,9 +123,8 @@
 #define OS_IS_ALNUM isalnum // ((c) >= OS_TEXT('0') && (c) <= OS_TEXT('9'))
 #define OS_IS_SLASH(c) ((c) == OS_TEXT('/') || (c) == OS_TEXT('\\'))
 
-#define OS_MATH_POW ::pow
-#define OS_MATH_FLOOR ::floor
-#define OS_MATH_FMOD ::fmod
+#define OS_MATH_POW_OPERATOR(a, b) (OS_NUMBER)::pow((a), (b))
+#define OS_MATH_MOD_OPERATOR(a, b) (OS_NUMBER)((OS_INT)(a) % (OS_INT)(b))
 
 #if defined _MSC_VER // && !defined IW_SDK
 #define DEBUG_BREAK __debugbreak()
@@ -2472,7 +2471,7 @@ namespace ObjectScript
 			GCUserdataValue * newUserPointerValue(int crc, void * data, OS_UserdataDtor dtor, void * user_param);
 			GCObjectValue * newObjectValue();
 			GCObjectValue * newObjectValue(GCValue * prototype);
-			GCArrayValue * newArrayValue();
+			GCArrayValue * newArrayValue(int initial_capacity = 0);
 
 			GCObjectValue * initObjectInstance(GCObjectValue*);
 
@@ -2500,7 +2499,7 @@ namespace ObjectScript
 			GCUserdataValue * pushUserPointerValue(int crc, void * data, OS_UserdataDtor dtor, void * user_param);
 			GCObjectValue * pushObjectValue();
 			GCObjectValue * pushObjectValue(GCValue * prototype);
-			GCArrayValue * pushArrayValue();
+			GCArrayValue * pushArrayValue(int initial_capacity = 0);
 
 			void pushTypeOf(Value val);
 			bool pushNumberOf(Value val);
@@ -2747,7 +2746,7 @@ namespace ObjectScript
 		void * pushUserPointer(int crc, void * data, OS_UserdataDtor dtor = NULL, void * user_param = NULL);
 		void * pushUserPointer(void * data, OS_UserdataDtor dtor = NULL, void * user_param = NULL);
 		void newObject();
-		void newArray();
+		void newArray(int initial_capacity = 0);
 
 		void pushStackValue(int offs = -1);
 		void pushGlobals();
