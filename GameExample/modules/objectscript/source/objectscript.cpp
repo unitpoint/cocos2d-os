@@ -8235,6 +8235,23 @@ bool OS::Core::PropertyIndex::isEqual(const PropertyIndex& b) const
 	return index.type == b.index.type && index.v.value == b.index.v.value;
 }
 
+bool OS::Core::GCStringValue::isEqual(int hash, const void * b, int size) const
+{
+	return this->hash == hash 
+		&& data_size == size
+		&& OS_MEMCMP(toMemory(), b, size) == 0;
+}
+
+bool OS::Core::GCStringValue::isEqual(int hash, const void * buf1, int size1, const void * buf2, int size2) const
+{
+	if(this->hash != hash || data_size != size1 + size2){
+		return false;
+	}
+	const OS_BYTE * src = toBytes();
+	return OS_MEMCMP(src, buf1, size1) == 0
+		&& (!size2 || OS_MEMCMP(src + size1, buf2, size2) == 0);
+}
+
 bool OS::Core::PropertyIndex::isEqual(int hash, const void * b, int size) const
 {
 	if(index.type == OS_VALUE_TYPE_STRING){
@@ -9587,6 +9604,94 @@ bool OS::Core::isValueString(Value val, OS::String * out)
 // =====================================================================
 // =====================================================================
 
+OS::Core::StringRefs::StringRefs()
+{
+	head_mask = 0;
+	heads = NULL;
+	count = 0;
+}
+OS::Core::StringRefs::~StringRefs()
+{
+	OS_ASSERT(count == 0);
+	OS_ASSERT(!heads);
+}
+
+void OS::Core::registerStringRef(StringRef * str_ref)
+{
+	if((string_refs.count>>1) >= string_refs.head_mask){
+		int new_size = string_refs.heads ? (string_refs.head_mask+1) * 2 : 32;
+		int alloc_size = sizeof(StringRef*) * new_size;
+		StringRef ** new_heads = (StringRef**)malloc(alloc_size OS_DBG_FILEPOS);
+		OS_ASSERT(new_heads);
+		OS_MEMSET(new_heads, 0, alloc_size);
+
+		StringRef ** old_heads = string_refs.heads;
+		int old_mask = string_refs.head_mask;
+
+		string_refs.heads = new_heads;
+		string_refs.head_mask = new_size-1;
+
+		if(old_heads){
+			for(int i = 0; i <= old_mask; i++){
+				for(StringRef * str_ref = old_heads[i], * next; str_ref; str_ref = next){
+					next = str_ref->hash_next;
+					int slot = str_ref->string_hash & string_refs.head_mask;
+					str_ref->hash_next = string_refs.heads[slot];
+					string_refs.heads[slot] = str_ref;
+				}
+			}
+			free(old_heads);
+		}
+	}
+
+	int slot = str_ref->string_hash & string_refs.head_mask;
+	str_ref->hash_next = string_refs.heads[slot];
+	string_refs.heads[slot] = str_ref;
+	string_refs.count++;
+}
+
+void OS::Core::unregisterStringRef(StringRef * str_ref)
+{
+	int slot = str_ref->string_hash & string_refs.head_mask;
+	StringRef * cur = string_refs.heads[slot], * prev = NULL;
+	for(; cur; prev = cur, cur = cur->hash_next){
+		if(cur == str_ref){
+			if(prev){
+				prev->hash_next = cur->hash_next;
+			}else{
+				string_refs.heads[slot] = cur->hash_next;
+			}
+			OS_ASSERT(string_refs.count > 0);
+			string_refs.count--;
+			cur->hash_next = NULL;
+			return;
+		}
+	}
+	OS_ASSERT(false);
+}
+
+void OS::Core::deleteStringRefs()
+{
+	if(!string_refs.count){
+		return;
+	}
+	for(int i = 0; i <= string_refs.head_mask; i++){
+		while(string_refs.heads[i]){
+			StringRef * cur = string_refs.heads[i];
+			string_refs.heads[i] = cur->hash_next;
+			free(cur);
+		}
+	}
+	free(string_refs.heads);
+	string_refs.heads = NULL;
+	string_refs.head_mask = 0;
+	string_refs.count = 0;
+}
+
+// =====================================================================
+// =====================================================================
+// =====================================================================
+
 OS::Core::Values::Values()
 {
 	head_mask = 0; // OS_DEF_VALUES_HASH_SIZE-1;
@@ -10415,7 +10520,7 @@ OS::Core::Core(OS * p_allocator)
 	strings = NULL;
 	OS_MEMSET(prototypes, 0, sizeof(prototypes));
 
-	string_values_table = NULL;
+	// string_values_table = NULL;
 	check_recursion = NULL;
 	global_vars = NULL;
 	user_pool = NULL;
@@ -10480,6 +10585,7 @@ bool OS::init(MemoryManager * p_manager)
 		initStringClass();
 		initFunctionClass();
 		initMathModule();
+		initGCModule();
 		initLangTokenizerModule();
 		initPostScript();
 		return true;
@@ -10515,7 +10621,7 @@ void OS::release()
 
 bool OS::Core::init()
 {
-	string_values_table = newTable(OS_DBG_FILEPOS_START);
+	// string_values_table = newTable(OS_DBG_FILEPOS_START);
 	for(int i = 0; i < PROTOTYPE_COUNT; i++){
 		prototypes[i] = newObjectValue(NULL);
 		prototypes[i]->type = OS_VALUE_TYPE_OBJECT;
@@ -10578,8 +10684,8 @@ void OS::Core::shutdown()
 	allocator->deleteObj(strings);
 	deleteValues(false);
 
-	deleteTable(string_values_table);
-	string_values_table = NULL;
+	// deleteTable(string_values_table);
+	// string_values_table = NULL;
 
 #ifdef OS_DEBUG
 	deleteValues(false);
@@ -10592,6 +10698,7 @@ void OS::Core::shutdown()
 	}
 #endif
 	deleteValues(true);
+	deleteStringRefs();
 }
 
 OS::String OS::changeFilenameExt(const String& filename, const String& ext)
@@ -10791,8 +10898,8 @@ void OS::Core::gcInitGreyList()
 	gc_in_process = false;
 	gc_grey_added_count = 0;
 	// gc_grey_removed_count = 0;
-	gc_start_values_mult = 1.1f;
-	gc_step_size_mult = 1.0f; // 0.05f;
+	gc_start_values_mult = 1.9f;
+	gc_step_size_mult = 0.1f; // 0.05f;
 	gc_start_next_values = 16;
 	gc_step_size = 0;
 }
@@ -10976,16 +11083,22 @@ void OS::Core::gcMarkValue(GCValue * value)
 			if(func_value->upvalues){
 				gcMarkUpvalues(func_value->upvalues);
 			}
+			if(func_value->name){
+				gcAddToGreyList(func_value->name);
+			}
 			break;
 		}
 
 	case OS_VALUE_TYPE_CFUNCTION:
 		{
 			OS_ASSERT(dynamic_cast<GCCFunctionValue*>(value));
-			GCCFunctionValue * cfunc_value = (GCCFunctionValue*)value;
-			Value * closure_values = (Value*)(cfunc_value + 1);
-			for(int i = 0; i < cfunc_value->num_closure_values; i++){
+			GCCFunctionValue * func_value = (GCCFunctionValue*)value;
+			Value * closure_values = (Value*)(func_value + 1);
+			for(int i = 0; i < func_value->num_closure_values; i++){
 				gcAddToGreyList(closure_values[i]);
+			}
+			if(func_value->name){
+				gcAddToGreyList(func_value->name);
 			}
 			break;
 		}
@@ -11058,7 +11171,7 @@ int OS::Core::gcStep()
 
 		if((!gc_continuous || !(gc_continuous_count%16)) && gc_max_allocated_bytes < end_allocated_bytes){
 			gc_max_allocated_bytes = end_allocated_bytes;
-			// allocator->printf("[GC] max allocated bytes %d, values %d\n", gc_max_allocated_bytes, values.count);
+			allocator->printf("[GC] max allocated bytes %d, values %d\n", gc_max_allocated_bytes, values.count);
 		}
 
 		return OS_GC_PHASE_MARK;
@@ -11085,7 +11198,7 @@ int OS::Core::gcStep()
 		for(i = 0; i < PROTOTYPE_COUNT; i++){
 			gcAddToGreyList(prototypes[i]);
 		}
-		gcMarkTable(string_values_table);
+		// gcMarkTable(string_values_table);
 		// step_size -= gc_grey_added_count - old_count;
 	}
 	int i;
@@ -11410,6 +11523,9 @@ bool OS::Core::isValueUsed(GCValue * val)
 						if(findAt(closure_values[i])){
 							return true;
 						}
+					}
+					if(func_value->name && findAt(func_value->name)){
+						return true;
 					}
 					break;
 				}
@@ -11746,58 +11862,44 @@ OS::Core::GCStringValue * OS::Core::newStringValue(const String& str)
 
 OS::Core::GCStringValue * OS::Core::newStringValue(const void * buf, int size)
 {
-	Property * prop;
-	if(string_values_table->heads){
-		int hash = Utils::keyToHash((OS_BYTE*)buf, size);
-		prop = string_values_table->heads[hash & string_values_table->head_mask];
-		for(; prop; prop = prop->hash_next){
-			if(prop->isEqual(hash, buf, size)){
-				OS_ASSERT(prop->value.type == OS_VALUE_TYPE_WEAKREF);
-				GCValue * value = values.get(prop->value.v.value_id);
-				if(value){
-					OS_ASSERT(value->type == OS_VALUE_TYPE_STRING);
-					OS_ASSERT(dynamic_cast<GCStringValue*>(value));
-					return (GCStringValue*)value;
-				}
-				PropertyIndex index = *prop;
-				deleteTableProperty(string_values_table, index);
-			}
-		}
-	}
-	GCStringValue * value = GCStringValue::alloc(allocator, buf, size OS_DBG_FILEPOS);
-	PropertyIndex index(value, PropertyIndex::KeepStringIndex());
-	prop = new (malloc(sizeof(Property) OS_DBG_FILEPOS)) Property(index);
-	prop->value = Value(value->value_id, WeakRef());
-	addTableProperty(string_values_table, prop);
-	return value;
+	return newStringValue(buf, size, NULL, 0);
 }
 
 OS::Core::GCStringValue * OS::Core::newStringValue(const void * buf1, int size1, const void * buf2, int size2)
 {
-	Property * prop;
-	if(string_values_table->heads){
+	if(string_refs.count > 0){
+		OS_ASSERT(string_refs.heads && string_refs.head_mask);
 		int hash = Utils::keyToHash(buf1, size1, buf2, size2);
-		prop = string_values_table->heads[hash & string_values_table->head_mask];
-		for(; prop; prop = prop->hash_next){
-			if(prop->isEqual(hash, buf1, size1, buf2, size2)){
-				OS_ASSERT(prop->value.type == OS_VALUE_TYPE_WEAKREF);
-				GCValue * value = values.get(prop->value.v.value_id);
-				if(value){
-					OS_ASSERT(value->type == OS_VALUE_TYPE_STRING);
-					OS_ASSERT(dynamic_cast<GCStringValue*>(value));
-					return (GCStringValue*)value;
+		int slot = hash & string_refs.head_mask;
+		StringRef * str_ref = string_refs.heads[slot];
+		for(StringRef * prev = NULL, * next; str_ref; str_ref = next){
+			next = str_ref->hash_next;
+			GCStringValue * string_value = (GCStringValue*)values.get(str_ref->string_value_id);
+			if(!string_value){
+				if(!prev){
+					string_refs.heads[slot] = next;
+				}else{
+					prev->hash_next = next;					
 				}
-				PropertyIndex index = *prop;
-				deleteTableProperty(string_values_table, index);
+				free(str_ref);
+				string_refs.count--;
+				continue;
 			}
+			OS_ASSERT(string_value->type == OS_VALUE_TYPE_STRING);
+			OS_ASSERT(dynamic_cast<GCStringValue*>(string_value));
+			if(string_value->isEqual(hash, buf1, size1, buf2, size2)){
+				return string_value;
+			}
+			prev = str_ref;
 		}
 	}
-	GCStringValue * value = GCStringValue::alloc(allocator, buf1, size1, buf2, size2 OS_DBG_FILEPOS);
-	PropertyIndex index(value, PropertyIndex::KeepStringIndex());
-	prop = new (malloc(sizeof(Property) OS_DBG_FILEPOS)) Property(index);
-	prop->value = Value(value->value_id, WeakRef());
-	addTableProperty(string_values_table, prop);
-	return value;
+	GCStringValue * string_value = GCStringValue::alloc(allocator, buf1, size1, buf2, size2 OS_DBG_FILEPOS);
+	StringRef * str_ref = (StringRef*)malloc(sizeof(StringRef) OS_DBG_FILEPOS);
+	str_ref->string_hash = string_value->hash;
+	str_ref->string_value_id = string_value->value_id;
+	str_ref->hash_next = NULL;
+	registerStringRef(str_ref);
+	return string_value;
 }
 
 OS::Core::GCStringValue * OS::Core::newStringValue(const void * buf1, int size1, const void * buf2, int size2, const void * buf3, int size3)
@@ -14264,7 +14366,6 @@ restart:
 							}
 							break;
 						}
-
 						pop();
 						break;
 					}
@@ -16420,6 +16521,56 @@ void OS::initMathModule()
 	getModule(OS_TEXT("math"));
 	setFuncs(list);
 	setNumbers(numbers);
+	pop();
+}
+
+void OS::initGCModule()
+{
+	struct GC
+	{
+		static int getAllocatedBytes(OS * os, int params, int, int, void*)
+		{
+			os->pushNumber(os->getAllocatedBytes());
+			return 1;
+		}
+		static int getMaxAllocatedBytes(OS * os, int params, int, int, void*)
+		{
+			os->pushNumber(os->getMaxAllocatedBytes());
+			return 1;
+		}
+		static int getCachedBytes(OS * os, int params, int, int, void*)
+		{
+			os->pushNumber(os->getCachedBytes());
+			return 1;
+		}
+		static int getNumValues(OS * os, int params, int, int, void*)
+		{
+			os->pushNumber(os->core->values.count);
+			return 1;
+		}
+		static int getNumCreatedValues(OS * os, int params, int, int, void*)
+		{
+			os->pushNumber(os->core->num_created_values);
+			return 1;
+		}
+		static int getNumDestroyedValues(OS * os, int params, int, int, void*)
+		{
+			os->pushNumber(os->core->num_destroyed_values);
+			return 1;
+		}
+	};
+	FuncDef list[] = {
+		{OS_TEXT("__get@allocatedBytes"), GC::getAllocatedBytes},
+		{OS_TEXT("__get@maxAllocatedBytes"), GC::getMaxAllocatedBytes},
+		{OS_TEXT("__get@cachedBytes"), GC::getCachedBytes},
+		{OS_TEXT("__get@numValues"), GC::getNumValues},
+		{OS_TEXT("__get@numCreatedValues"), GC::getNumCreatedValues},
+		{OS_TEXT("__get@numDestroyedValues"), GC::getNumDestroyedValues},
+		{}
+	};
+
+	getModule(OS_TEXT("GC"));
+	setFuncs(list);
 	pop();
 }
 

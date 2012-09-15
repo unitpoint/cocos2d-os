@@ -1283,6 +1283,11 @@ namespace ObjectScript
 				int cmp(GCStringValue*) const;
 				int cmp(const OS_CHAR*) const;
 				int cmp(const OS_CHAR*, int len) const;
+
+				bool isEqual(int hash, const void * b, int size) const;
+				bool isEqual(int hash, const void * buf1, int size1, const void * buf2, int size2) const;
+				// bool isEqual(int hash, const void * buf1, int size1, const void * buf2, int size2, const void * buf3, int size3) const;
+
 				void calcHash();
 			};
 
@@ -2189,6 +2194,23 @@ namespace ObjectScript
 				~StackFunction();
 			};
 
+			struct StringRef
+			{
+				int string_hash;
+				int string_value_id;
+				StringRef * hash_next;
+			};
+
+			struct StringRefs
+			{
+				StringRef ** heads;
+				int head_mask;
+				int count;
+
+				StringRefs();
+				~StringRefs();
+			};
+
 			struct Values
 			{
 				GCValue ** heads;
@@ -2319,7 +2341,9 @@ namespace ObjectScript
 			int num_created_values;
 			int num_destroyed_values;
 
-			Table * string_values_table;
+			StringRefs string_refs;
+
+			// Table * string_values_table;
 			GCObjectValue * check_recursion;
 			GCObjectValue * global_vars;
 			GCObjectValue * user_pool;
@@ -2534,6 +2558,10 @@ namespace ObjectScript
 
 			int syncRetValues(int need_ret_values, int cur_ret_values);
 
+			void registerStringRef(StringRef*);
+			void unregisterStringRef(StringRef*);
+			void deleteStringRefs();
+
 			void registerValue(GCValue * val);
 			GCValue * unregisterValue(int value_id);
 			void deleteValues(bool del_ref_counted_also);
@@ -2637,6 +2665,7 @@ namespace ObjectScript
 		void initFunctionClass();
 		void initStringClass();
 		void initMathModule();
+		void initGCModule();
 		void initLangTokenizerModule();
 		void initPreScript();
 		void initPostScript();
