@@ -4144,6 +4144,9 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::stepPass2(Scope * scope, Ex
 				if(!findLocalVar(left_exp->local_var, scope, name_token->str, scope->function->num_params+ENV_VAR_INDEX+1, true)){
 					OS_ASSERT(false);
 				};
+				if(scope->function->max_up_count < left_exp->local_var.up_count){
+					scope->function->max_up_count = left_exp->local_var.up_count;
+				}
 				exp->list[0] = left_exp;
 
 				name_token->release();
@@ -4454,6 +4457,7 @@ OS::Core::Compiler::Scope * OS::Core::Compiler::expectTextExpression()
 		if(!findLocalVar(name_exp->local_var, scope, allocator->core->strings->var_env, scope->num_locals, false)){
 			OS_ASSERT(false);
 		}
+		OS_ASSERT(name_exp->local_var.up_count == 0);
 		Expression * ret_exp = new (malloc(sizeof(Expression) OS_DBG_FILEPOS)) Expression(EXP_TYPE_RETURN, recent_token, name_exp OS_DBG_FILEPOS);
 		ret_exp->ret_values = 1;
 		func_exp_list.add(ret_exp OS_DBG_FILEPOS);
@@ -5238,10 +5242,11 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectVarExpression(Scope *
 							// setError(ERROR_VAR_ALREADY_EXIST, exp->token);
 							// allocator->deleteObj(ret_exp);
 							// return NULL;
-							OS_ASSERT(true);
+							// OS_ASSERT(true);
 						}else{
 							scope->addLocalVar(exp->token->str, exp->local_var);
 						}
+						OS_ASSERT(exp->local_var.up_count == 0);
 						exp->type = EXP_TYPE_NEW_LOCAL_VAR;
 						exp->ret_values = 0;
 					}
@@ -5303,6 +5308,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectVarExpression(Scope *
 			}else{
 				scope->addLocalVar(exp->token->str, exp->local_var);
 			}
+			OS_ASSERT(exp->local_var.up_count == 0);
 			exp->type = EXP_TYPE_NEW_LOCAL_VAR;
 			exp->ret_values = 0;
 			return ret_exp;
@@ -5981,6 +5987,9 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::newAssingExpression(Scope *
 					OS_ASSERT(var_exp_left->ret_values == 1);
 					if(findLocalVar(var_exp_left->local_var, scope, var_exp_left->token->str, var_exp_left->active_locals, true)){
 						var_exp_left->type = EXP_TYPE_GET_LOCAL_VAR_AUTO_CREATE;
+						if(scope->function->max_up_count < var_exp_left->local_var.up_count){
+							scope->function->max_up_count = var_exp_left->local_var.up_count;
+						}
 					}else{
 						var_exp_left->type = EXP_TYPE_GET_ENV_VAR_AUTO_CREATE;
 					}
@@ -6162,6 +6171,9 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::finishValueExpression(Scope
 				setError(ERROR_LOCAL_VAL_NOT_DECLARED, exp->token);
 				allocator->deleteObj(exp);
 				return NULL;
+			}
+			if(scope->function->max_up_count < exp->local_var.up_count){
+				scope->function->max_up_count = exp->local_var.up_count;
 			}
 			exp->type = EXP_TYPE_GET_LOCAL_VAR;
 			exp = new (malloc(sizeof(Expression) OS_DBG_FILEPOS)) Expression(token_type == Tokenizer::OPERATOR_INC ? EXP_TYPE_POST_INC : EXP_TYPE_POST_DEC, exp->token, exp OS_DBG_FILEPOS);
@@ -6563,6 +6575,9 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectSingleExpression(Scop
 			setError(ERROR_LOCAL_VAL_NOT_DECLARED, exp->token);
 			allocator->deleteObj(exp);
 			return NULL;
+		}
+		if(scope->function->max_up_count < exp->local_var.up_count){
+			scope->function->max_up_count = exp->local_var.up_count;
 		}
 		exp = new (malloc(sizeof(Expression) OS_DBG_FILEPOS)) Expression(token_type == Tokenizer::OPERATOR_INC ? EXP_TYPE_PRE_INC : EXP_TYPE_PRE_DEC, exp->token, exp OS_DBG_FILEPOS);
 		exp->ret_values = 1;
