@@ -1,25 +1,33 @@
 function __get(name){
-	print concat("global property \""name"\" is not declared")
-	print "back trace"
+	echo("global property \""name"\" is not declared\n")
+	echo "back trace\n"
 	printBackTrace(1)
-	print ""
+	echo "\n"
 }
 
 function Object.__get(name, autoCreate){
 	if(autoCreate) return;
-	print concat("object property \""name"\" is not declared in "this)
-	print "back trace"
+	echo("object property \""name"\" is not declared\n")
+	echo "back trace\n"
 	printBackTrace(1) // skip current function
-	print ""
+	echo("target "this"\n")
+}
+
+function assert(a, message){
+	if(!a){
+		print(message ? message : "assert failed")
+		printBackTrace(1)
+		terminate()
+	}
 }
 
 function printBackTrace(skipNumFuncs){
 	for(var i, t in debugBackTrace(skipNumFuncs + 1)){ // skip printBackTrace
-		print concat("======= ["i"]")
-		// print concat("  line: "t.line", pos: "t.pos", token: "t.token", file: "t.file)
-		print concat("  line: "t.line", pos: "t.pos", file: "t.file)
-		print concat("  function: "t.name", arguments: "t.arguments)
-		// print concat("  object: "(t.object === _G && "<<GLOBALS>>" || t.object))
+		echo("======= ["i"]\n")
+		// echo("  line: "t.line", pos: "t.pos", token: "t.token", file: "t.file"\n")
+		echo("  line: "t.line", pos: "t.pos", file: "t.file"\n")
+		echo("  function: "t.name", arguments: "t.arguments"\n")
+		// print concat("  object: "(t.object === _G && "<<GLOBALS>>" || t.object)"\n")
 	}
 }
 
@@ -103,18 +111,44 @@ function toString(a){
 	return stringof valueof a
 }
 
+function toArray(a){
+	var arr = arrayof a
+	arr && return arr;
+	var type = typeof a
+	if(type == "number" || type == "string" || type == "boolean" || type == "userdata"){
+		return [a]
+	}
+	if(type == "object"){
+		arr = []
+		for(var i, v in a){
+			arr.push(v)
+		}
+		return arr
+	}
+	return null
+}
+
+function toObject(a){
+	var object = objectof a
+	object && return object;
+	var type = typeof a
+	if(type == "number" || type == "string" || type == "boolean" || type == "userdata"){
+		return {a}
+	}
+	if(type == "array"){
+		object = {}
+		for(var i, v in a){
+			object.push(v)
+		}
+		return object
+	}
+	return null
+}
+
 function deepClone(p){
 	p = clone p
 	for(var k, v in p){
 		p[k] = deepClone(v)
 	}
 	return p
-}
-
-function assert(a, message){
-	if(!a){
-		print(message ? message : "assert failed")
-		printBackTrace(1)
-		terminate()
-	}
 }
