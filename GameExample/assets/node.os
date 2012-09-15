@@ -107,6 +107,7 @@ FunctionNode = {
 	}
 	
 	handlePaint = function(){}
+	handleTouch = function(){}
 	
 	addEventListener = function(eventName, func, zOrder){
 		functionof func || return;
@@ -129,7 +130,7 @@ FunctionNode = {
 		if(eventName in this.__events){
 			params.target = this
 			for(var func in this.__events[eventName]){
-				func.call(this params)
+				func.call(this, params)
 			}
 		}
 		for(var child in this.__childrenNeg){
@@ -185,12 +186,16 @@ FunctionNode = {
 	}
 	
 	stopAllTransitions = function(){
+		this.removeAllInstancesOf(Transition)
+	}
+	
+	removeAllInstancesOf = function(type){
 		for(var t in this.__childrenPos){
-			if(t is Transition)
+			if(t is type)
 				t.remove()
 		}
 		for(var t in this.__childrenNeg){
-			if(t is Transition)
+			if(t is type)
 				t.remove()
 		}
 	}
@@ -201,6 +206,7 @@ Node = extends FunctionNode {
 		visible = true
 		modal = false
 		opacity = 1
+		color = null
 		
 		__isRelativeAnchor = true
 		__x = 0
@@ -384,15 +390,17 @@ Node = extends FunctionNode {
 	}
 	
 	handleTouch = function(touch){
-		for(var child in this.__childrenPos){
-			child.handleTouch(touch)
-			if(touch.captured) return;
-		}
-		if("nativeTouch" in this.__events){
-			touch.target = this
-			for(var func in this.__events["nativeTouch"]){
-				func.call(this touch)
+		if(touch.captured !== this){
+			for(var child in this.__childrenPos){
+				child.handleTouch(touch)
 				if(touch.captured) return;
+			}
+			if("nativeTouch" in this.__events){
+				touch.target = this
+				for(var func in this.__events["nativeTouch"]){
+					func.call(this touch)
+					if(touch.captured) return;
+				}
 			}
 		}
 		var autoCapture
@@ -427,14 +435,16 @@ Node = extends FunctionNode {
 				delete touch.local
 			}
 		}
-		for(var child in this.__childrenNeg){
-			child.handleTouch(touch)
-			if(touch.captured) return;
+		if(touch.captured !== this){
+			for(var child in this.__childrenNeg){
+				child.handleTouch(touch)
+				if(touch.captured) return;
+			}
 		}
 		if(!touch.captured){
-			if(autoCapture)
+			if(autoCapture){
 				touch.captured = this
-			else if(this.modal){
+			}else if(this.modal){
 				touch.captured = this
 				touch.modal = true
 			}
@@ -446,6 +456,17 @@ Node = extends FunctionNode {
 		this.y = y
 		this.width = width
 		this.height = height
+	}
+	
+	drawBB = function(color, fill){
+		var points = [
+			[0, 0],
+			[this.width, 0],
+			[this.width, this.height],
+			[0, this.height],
+		]
+		glColor(color)
+		ccDrawPoly(points, true, fill)
 	}
 }
 
@@ -592,7 +613,7 @@ Transition = extends FunctionNode {
 		}
 		var tween
 		var duration = t.endTransitionTime - t.startTransitionTime
-		time = (time - t.startTransitionTime) % duration
+		time = math.fmod(time - t.startTransitionTime,  duration)
 		// print "frame time "..time
 		if(duration <= 0){ // || time >= duration){
 			tween = 1
@@ -617,21 +638,7 @@ ColorNode = extends Node {
 	}
 	
 	paint = function(){
-		// print "RectNode.paint "..this
-		var points = [
-			/*
-			[this.x this.y], 
-			[this.x + this.width this.y],
-			[this.x + this.width this.y + this.height], 
-			[this.x this.y + this.height],
-			*/
-			[0 0], 
-			[this.width 0],
-			[this.width this.height], 
-			[0 this.height],
-		];
-		glColor(this.color)
-		ccDrawPoly(points 4 true)
+		this.drawBB(this.color, true)
 	}
 }
 

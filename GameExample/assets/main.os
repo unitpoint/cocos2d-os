@@ -83,10 +83,107 @@ MyColorNode = extends ColorNode {
 MyScene = extends Scene {
 	__construct = function(){
 		super()
+		glClearColor(0.2 0.2 0.2 1)
 		
 		var function color(){
 			return [math.random(0.2 0.95) math.random(0.2 0.95) math.random(0.2 0.95) 1]
 		}
+		
+		var Sprite = extends Node {
+			__construct = function(filename){
+				super()
+				this.image = Image(filename)
+				this.width = this.image.width
+				this.height = this.image.height
+				this.image.x = this.width * 0.5
+				this.image.y = this.height * 0.5
+				this.insert(this.image, -1)
+				delete this.color
+			}
+			
+			__get@color = function(){ return this.image.color }
+			__set@color = function(a){ this.image.color = a }
+			
+			animation = function(params){
+				var anim = this.image.animation(params)
+				if("rect" in params){
+					var rect = params.rect
+					this.width = this.image.width * rect.width
+					this.height = this.image.height * rect.height
+					var cx, cy = rect.center.x, rect.center.y
+					if("anchor" in rect){
+						cx = cx + rect.width * (rect.anchor.x - 0.5)
+						cy = cy + rect.height * (rect.anchor.y - 0.5)
+					}
+					this.image.anchorX = cx
+					this.image.anchorY = cy
+				}else{
+					this.width = this.image.width
+					this.height = this.image.height
+				}
+				this.image.x = this.width * 0.5
+				this.image.y = this.height * 0.5
+				return anim
+			}
+			
+			stopAnimation = function(t){
+				this.image.stopAnimation(t)
+			}
+			
+			stopAllAnimations = function(){
+				this.image.stopAllAnimations()
+			}
+			
+			paint = function(params){
+				if(CC_SPRITE_DEBUG_DRAW){
+					this.drawBB([1 0 0 1])
+				}
+			}
+		}
+		
+		for(var i = 0; i < 10; i++){
+			var monster = ((i % 2) == 0 ? Sprite : Image)("monster-01.png")
+			// monster.name = "monster"
+			var anim = monster.animation {
+				cols = 9
+				rows = 10
+				delay = 0.05
+				start = 0
+				frames = 17
+				rect = {
+					center = {x=0.48, y:0.45}
+					width = 0.5 * 1.2
+					height = 0.74 * 1.2
+				}
+			}
+			anim.index = math.random(#anim.frames)
+			monster.x = this.width * math.random(0.2, 0.8)
+			monster.y = this.height * math.random(0.2, 0.8)
+			monster.zOrder = monster.y
+			monster.color = color()
+			// monster.scale = math.random(0.2, 2.0)
+			this.insert(monster)
+			
+			function(){
+				var tx, ty, sx, sy
+				this.addEventListener("touch", function(touch){
+					if(touch.phase == "start"){
+						tx, ty, sx, sy = touch.x, touch.y, this.x, this.y
+						this.zOrder = this.y
+						// touch.captured = this
+						// print("start " this.x this.y)
+					}else if(touch.phase == "move"){
+						this.x, this.y = sx + touch.x - tx, sy + touch.y - ty
+						this.zOrder = this.y
+						// print("move " this.x this.y)
+					}else if(touch.phase == "end"){
+						// this.zOrder = 0
+						// print("end " this.x this.y)
+					}
+				})			
+			}.call(monster)
+		}
+		// return this
 		
 		;{
 			// var rect = ColorNode()

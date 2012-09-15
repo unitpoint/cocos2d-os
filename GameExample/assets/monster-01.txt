@@ -1,0 +1,33 @@
+{
+	health: 2.0,
+	speed: 0.7,
+	rect: {
+		center: {x:0.45, y:0.55}, 
+		width: 0.5, 
+		height:0.74,
+	},
+	# anchor: {x: 0.5, y: 0.26},
+	cols: 9, rows: 10,
+	animations: {
+		walk_up: {
+			delay: 0.08,
+			start: 17, frames: 13,
+		},
+		walk_right: {
+			delay: 0.08,
+			start: 0, frames: 17,
+		},
+		walk_down: {
+			delay: 0.08,
+			start: 30, frames: 12,
+		},
+		fight_right: {
+			delay: 0.08,
+			start: 42, frames: 12,
+		},
+		die_right: {
+			delay: 0.08,
+			start: 67, frames: 17,
+		},
+	}
+}

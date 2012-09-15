@@ -102,3 +102,19 @@ function toNumber(a){
 function toString(a){
 	return stringof valueof a
 }
+
+function deepClone(p){
+	p = clone p
+	for(var k, v in p){
+		p[k] = deepClone(v)
+	}
+	return p
+}
+
+function assert(a, message){
+	if(!a){
+		print(message ? message : "assert failed")
+		printBackTrace(1)
+		terminate()
+	}
+}

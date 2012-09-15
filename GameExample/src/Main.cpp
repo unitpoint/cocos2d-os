@@ -213,7 +213,7 @@ public:
 			for(int i = 0; i < 4; i++){
 				pushStackValue(offs);
 				pushNumber(i);
-				getProperty();
+				getProperty(false, false);
 				color[i] = isNull() ? 1.0f : clampUnit(popFloat());
 			}
 			return true;
@@ -259,10 +259,10 @@ public:
 		getProperty(params, "height");
 		float height = popFloat();
 
-		getProperty(params, "frameX");
+		getProperty(params, "frameLeft");
 		float frameX = popFloat();
 
-		getProperty(params, "frameY");
+		getProperty(params, "frameTop");
 		float frameY = popFloat();
 
 		getProperty(params, "frameWidth");

@@ -2606,6 +2606,7 @@ void initOpenGLExt(OS * os)
 			if(params >= 4 && os->isArray(-params+3) && (GLenum)os->toNumber(-params+1) == GL_FLOAT){
 				params = os->getAbsoluteOffs(-params);
 				int count = os->getLen(params+3) & ~1;
+				if(count < 1) return 0;
 				int size = os->toInt(params+0);
 				float * points = (float*)os->pushUserdata(sizeof(float)*count*size);
 				for(int i = 0; i < count; i++){
@@ -2702,7 +2703,7 @@ void initOpenGLExt(OS * os)
 				for(int i = 0; i < 4; i++){
 					os->pushStackValue(-params);
 					os->pushNumber(i);
-					os->getProperty();
+					os->getProperty(false ,false);
 					color[i] = os->isNull() ? 1.0f : clampColor(os->popFloat());
 				}
 			}else if(params == 1 && os->isObject(-params)){
