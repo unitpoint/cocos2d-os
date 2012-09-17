@@ -10890,16 +10890,24 @@ OS::String OS::getFilenamePath(const OS_CHAR * filename, int len)
 	return String(this);
 }
 
-#define OS_IS_UNC_PATH(path, len) \
-	(len >= 2 && OS_IS_SLASH(path[0]) && OS_IS_SLASH(path[1]))
-#define OS_IS_ABSOLUTE_PATH(path, len) \
-	(len >= 2 && ((OS_IS_ALPHA(path[0]) && path[1] == ':') || OS_IS_UNC_PATH(path, len))) 
+bool OS::isAbsolutePath(const String& p_filename)
+{
+	int len = p_filename.getLen();
+	const OS_CHAR * filename = p_filename;
+	if(OS_IS_ALPHA(filename[0])){
+		for(int i = 1; i < len-2; i++){
+			if(!OS_IS_ALPHA(filename[i])){
+				return filename[i] == OS_TEXT(':') && OS_IS_SLASH(filename[i+1]);
+			}
+		}
+	}
+	return len >= 2 && OS_IS_SLASH(filename[0]) && OS_IS_SLASH(filename[1]);
+}
 
 OS::String OS::resolvePath(const String& filename, const String& cur_path)
 {
 	String resolved_path = filename;
-	int len = resolved_path.getLen();
-	if(!OS_IS_ABSOLUTE_PATH(filename, len) && cur_path.getDataSize()){
+	if(!isAbsolutePath(filename) && cur_path.getDataSize()){
 		resolved_path = cur_path + OS_PATH_SEPARATOR + filename;
 	}
 	resolved_path = changeFilenameExt(filename, OS_SOURCECODE_EXT);

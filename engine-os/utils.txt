@@ -1,5 +1,5 @@
 
-[FILE] raw://../../engine-os/raw://../../engine-os/raw://../../engine-os/utils.os
+[FILE] raw://../../engine-os/utils.os
 [2] function ccDrawPoly(points closePolygon fill)
 
 begin function

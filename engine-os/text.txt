@@ -1,5 +1,5 @@
 
-[FILE] raw://../../engine-os/raw://../../engine-os/text.os
+[FILE] raw://../../engine-os/text.os
 [2] Text = extends Node {
 
 begin function

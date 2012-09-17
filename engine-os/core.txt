@@ -1,5 +1,5 @@
 
-[FILE] raw://../../engine-os/raw://../../engine-os/core.os
+[FILE] raw://../../engine-os/core.os
 [1] function __get(name){
 
 begin function

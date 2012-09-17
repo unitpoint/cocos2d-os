@@ -1,5 +1,5 @@
 
-[FILE] raw://../../engine-os/raw://../../engine-os/constants.os
+[FILE] raw://../../engine-os/constants.os
 [1] ORIENTATION_PORTRAIT = 0
 
 begin function

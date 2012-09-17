@@ -1,5 +1,5 @@
 
-[FILE] raw://../../engine-os/raw://../../engine-os/node.os
+[FILE] raw://../../engine-os/node.os
 [1] require("utils")
 
 begin function

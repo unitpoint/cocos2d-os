@@ -2968,6 +2968,7 @@ namespace ObjectScript
 		String getFilenamePath(const OS_CHAR * filename);
 		String getFilenamePath(const OS_CHAR * filename, int len);
 
+		bool isAbsolutePath(const String& filename);
 		String resolvePath(const String& filename);
 		virtual String resolvePath(const String& filename, const String& cur_path);
 		virtual String getCompiledFilename(const String& resolved_filename);
