@@ -20,7 +20,7 @@ begin function
   end set local var director (2 0)
 
 
-[3] print "Hello World!"
+[3] print "Hello World!" // please see all printed messages here: assets-ram/output.txt
 
   begin call method
     get local var _E (0 0)
@@ -47,12 +47,12 @@ begin function
               0 _E
               1 _G
               2 bg
-              3 text
+              3 message
               4 Ball
               5 colors
             end locals
 
-[7] super()
+[7] super() // call constructor of class we extend
 
             begin call
               super
@@ -61,7 +61,7 @@ begin function
             end call ret values 0
 
 
-[9] var bg = Image("bg.jpg")
+[9] var bg = Image("bg.jpg") 	// create background image
 
             begin set local var
               begin call method
@@ -75,7 +75,7 @@ begin function
             end set local var bg (2 0)
 
 
-[10] bg.x = this.width / 2
+[10] bg.x = this.width / 2		// locate it at center of scene
 
             begin set property
               begin operator /
@@ -141,7 +141,7 @@ begin function
             end set property ret values 0
 
 
-[13] this.insert(bg)
+[13] this.insert(bg)				// insert the background image to the scene
 
             begin call method
               push this
@@ -153,7 +153,7 @@ begin function
             end call method ret values 0
 
 
-[15] var text = Text("Football Starter Kit")
+[15] var message = Text("Football Starter Kit")	// create message
 
             begin set local var
               begin call method
@@ -164,10 +164,34 @@ begin function
                   push const string "Football Starter Kit"
                 end params ret values 2
               end call method ret values 1
-            end set local var text (3 0)
+            end set local var message (3 0)
 
 
-[16] text.anchor = {x=1.05 y=1.05}
+[16] message.x = this.width	// locate the message at right bottom corner
+
+            begin set property
+              begin get property
+                push this
+                push const string "width"
+              end get property ret values 1
+              get local var auto create message (3 0)
+              push const string "x"
+            end set property ret values 0
+
+
+[17] message.y = this.height
+
+            begin set property
+              begin get property
+                push this
+                push const string "height"
+              end get property ret values 1
+              get local var auto create message (3 0)
+              push const string "y"
+            end set property ret values 0
+
+
+[18] message.anchor = {x=1.05 y=1.05}
 
             begin set property
               begin object 2
@@ -179,73 +203,49 @@ begin function
                   push const number 1.05
                 end set by name: [y]
               end object
-              get local var auto create text (3 0)
+              get local var auto create message (3 0)
               push const string "anchor"
             end set property ret values 0
 
 
-[17] text.x = this.width
-
-            begin set property
-              begin get property
-                push this
-                push const string "width"
-              end get property ret values 1
-              get local var auto create text (3 0)
-              push const string "x"
-            end set property ret values 0
-
-
-[18] text.y = this.height
-
-            begin set property
-              begin get property
-                push this
-                push const string "height"
-              end get property ret values 1
-              get local var auto create text (3 0)
-              push const string "y"
-            end set property ret values 0
-
-
-[19] text.shadow = true
+[19] message.shadow = true	// we want shadow enabled
 
             begin set property
               const true
-              get local var auto create text (3 0)
+              get local var auto create message (3 0)
               push const string "shadow"
             end set property ret values 0
 
 
-[20] text.zOrder = 1
+[20] message.zOrder = 1		// use zOrder to put the message at front of balls
 
             begin set property
               push const number 1
-              get local var auto create text (3 0)
+              get local var auto create message (3 0)
               push const string "zOrder"
             end set property ret values 0
 
 
-[21] this.insert(text)
+[21] this.insert(message)
 
             begin call method
               push this
               begin params 2
                 push const string "insert"
                 ,
-                get local var text (3 0)
+                get local var message (3 0)
               end params ret values 2
             end call method ret values 0
 
 
-[23] var Ball = extends Image {
+[24] var Ball = extends Image {
 
             begin set local var
               begin extends
                 get env var Image
                 begin object 1
 
-[24] __construct = function(imageFilename){
+[25] __construct = function(imageFilename){
 
                   begin set by name
                     begin function
@@ -265,7 +265,7 @@ begin function
                         12 physUpdate
                       end locals
 
-[25] super(imageFilename || "ball.png")
+[26] super(imageFilename || "ball.png") // call constructor of Image class
 
                       begin call
                         super
@@ -278,7 +278,7 @@ begin function
                       end call ret values 0
 
 
-[27] var screenWidth, screen = director.width, director.height
+[29] var screenWidth, screen = director.width, director.height
 
                       begin set local var
                         begin set local var
@@ -297,7 +297,7 @@ begin function
                       end set local var screenWidth (3 0)
 
 
-[28] var speedX, speedY = math.random(-0.5, 0.5)*screenWidth, math.random(0.5, 1)*screenWidth
+[30] var speedX, speedY = math.random(-0.5, 0.5)*screenWidth, math.random(0.5, 1)*screenWidth
 
                       begin set local var
                         begin set local var
@@ -336,7 +336,7 @@ begin function
                       end set local var speedX (5 0)
 
 
-[29] var prevX, prevY = 0, 0
+[31] var prevX, prevY = 0, 0
 
                       begin set local var
                         begin set local var
@@ -349,7 +349,7 @@ begin function
                       end set local var prevX (7 0)
 
 
-[30] var function trackVelocity(params){
+[32] var function trackVelocity(params){	// track velocity of the ball while dragging
 
                       begin set local var
                         begin function
@@ -359,7 +359,7 @@ begin function
                             2 _G
                           end locals
 
-[31] speedX = (this.x - prevX) / params.deltaTime
+[33] speedX = (this.x - prevX) / params.deltaTime
 
                           begin set local var
                             begin operator /
@@ -378,7 +378,7 @@ begin function
                           end set local var speedX (5 1)
 
 
-[32] speedY = (this.y - prevY) / params.deltaTime
+[34] speedY = (this.y - prevY) / params.deltaTime
 
                           begin set local var
                             begin operator /
@@ -397,7 +397,7 @@ begin function
                           end set local var speedY (6 1)
 
 
-[33] prevX, prevY = this.x, this.y
+[35] prevX, prevY = this.x, this.y
 
                           begin set local var
                             begin set local var
@@ -418,7 +418,7 @@ begin function
                       end set local var trackVelocity (9 0)
 
 
-[36] var friction, gravity = 0.9, 9
+[38] var friction, gravity = 0.9, 9
 
                       begin set local var
                         begin set local var
@@ -431,7 +431,7 @@ begin function
                       end set local var friction (10 0)
 
 
-[37] var function physUpdate(params){
+[39] var function physUpdate(params){	// main ball physics update function
 
                       begin set local var
                         begin function
@@ -444,7 +444,7 @@ begin function
                             5 radius
                           end locals
 
-[38] var parentWidth, parentHeight = this.parent.width, this.parent.height
+[40] var parentWidth, parentHeight = this.parent.width, this.parent.height
 
                           begin set local var
                             begin set local var
@@ -469,7 +469,7 @@ begin function
                           end set local var parentWidth (3 0)
 
 
-[39] var radius = this.width/2
+[41] var radius = this.width/2
 
                           begin set local var
                             begin operator /
@@ -482,7 +482,7 @@ begin function
                           end set local var radius (5 0)
 
 
-[40] speedY = speedY + gravity
+[42] speedY = speedY + gravity
 
                           begin set local var
                             begin operator +
@@ -492,7 +492,7 @@ begin function
                           end set local var speedY (6 1)
 
 
-[41] this.x = this.x + speedX * params.deltaTime
+[43] this.x = this.x + speedX * params.deltaTime
 
                           begin set property
                             begin operator +
@@ -513,7 +513,7 @@ begin function
                           end set property ret values 0
 
 
-[42] this.y = this.y + speedY * params.deltaTime
+[44] this.y = this.y + speedY * params.deltaTime
 
                           begin set property
                             begin operator +
@@ -534,7 +534,7 @@ begin function
                           end set property ret values 0
 
 
-[43] if(this.x >= parentWidth - radius){
+[45] if(this.x >= parentWidth - radius){
 
                           begin if
                             begin bool exp
@@ -551,7 +551,7 @@ begin function
                             end bool exp
                             begin then
 
-[44] this.x = parentWidth - radius
+[46] this.x = parentWidth - radius
 
                               begin scope
                                 begin set property
@@ -564,7 +564,7 @@ begin function
                                 end set property ret values 0
 
 
-[45] speedX = speedX * -friction
+[47] speedX = speedX * -friction	// change dir
 
                                 begin set local var
                                   begin operator *
@@ -578,7 +578,7 @@ begin function
                             end then
                             begin else
 
-[46] }else if(this.x <= radius){
+[48] }else if(this.x <= radius){
 
                               begin if
                                 begin bool exp
@@ -592,7 +592,7 @@ begin function
                                 end bool exp
                                 begin then
 
-[47] this.x = radius
+[49] this.x = radius
 
                                   begin scope
                                     begin set property
@@ -602,7 +602,7 @@ begin function
                                     end set property ret values 0
 
 
-[48] speedX = speedX * -friction
+[50] speedX = speedX * -friction	// change dir
 
                                     begin set local var
                                       begin operator *
@@ -619,7 +619,7 @@ begin function
                           end if ret values 0
 
 
-[50] if(this.y >= parentHeight - radius){
+[52] if(this.y >= parentHeight - radius){
 
                           begin if
                             begin bool exp
@@ -636,7 +636,7 @@ begin function
                             end bool exp
                             begin then
 
-[51] this.y = parentHeight - radius
+[53] this.y = parentHeight - radius
 
                               begin scope
                                 begin set property
@@ -649,7 +649,7 @@ begin function
                                 end set property ret values 0
 
 
-[52] speedY = speedY * -friction
+[54] speedY = speedY * -friction	// change dir
 
                                 begin set local var
                                   begin operator *
@@ -661,7 +661,7 @@ begin function
                                 end set local var speedY (6 1)
 
 
-[53] speedX = speedX * friction
+[55] speedX = speedX * friction
 
                                 begin set local var
                                   begin operator *
@@ -673,7 +673,7 @@ begin function
                             end then
                             begin else
 
-[54] }else if(this.y <= radius){
+[56] }else if(this.y <= radius){
 
                               begin if
                                 begin bool exp
@@ -687,7 +687,7 @@ begin function
                                 end bool exp
                                 begin then
 
-[55] this.y = radius
+[57] this.y = radius
 
                                   begin scope
                                     begin set property
@@ -697,7 +697,7 @@ begin function
                                     end set property ret values 0
 
 
-[56] speedY = speedY * -friction
+[58] speedY = speedY * -friction	// change dir
 
                                     begin set local var
                                       begin operator *
@@ -716,7 +716,7 @@ begin function
                       end set local var physUpdate (12 0)
 
 
-[59] this.addEventListener("enterFrame", physUpdate)
+[61] this.addEventListener("enterFrame", physUpdate)	// add physUpdate as enterFrame listener
 
                       begin call method
                         push this
@@ -730,7 +730,7 @@ begin function
                       end call method ret values 0
 
 
-[61] this.addEventListener("touch", function(touch){
+[63] this.addEventListener("touch", function(touch){	// add touch behavior
 
                       begin call method
                         push this
@@ -746,7 +746,7 @@ begin function
                               2 _G
                             end locals
 
-[62] if(touch.phase == "start"){
+[64] if(touch.phase == "start"){
 
                             begin if
                               begin bool exp
@@ -760,7 +760,7 @@ begin function
                               end bool exp
                               begin then
 
-[63] this.x0, this.y0 = touch.x - this.x, touch.y - this.y
+[65] this.x0, this.y0 = touch.x - this.x, touch.y - this.y
 
                                 begin scope
                                   begin set property
@@ -796,7 +796,7 @@ begin function
                                   end set property ret values 0
 
 
-[64] this.removeEventListener("enterFrame", physUpdate)
+[66] this.removeEventListener("enterFrame", physUpdate)
 
                                   begin call method
                                     push this
@@ -810,7 +810,7 @@ begin function
                                   end call method ret values 0
 
 
-[65] this.addEventListener("enterFrame", trackVelocity)
+[67] this.addEventListener("enterFrame", trackVelocity)
 
                                   begin call method
                                     push this
@@ -826,7 +826,7 @@ begin function
                               end then
                               begin else
 
-[66] }else if(touch.phase == "move"){
+[68] }else if(touch.phase == "move"){
 
                                 begin if
                                   begin bool exp
@@ -840,7 +840,7 @@ begin function
                                   end bool exp
                                   begin then
 
-[67] this.x, this.y = touch.x - this.x0, touch.y - this.y0
+[69] this.x, this.y = touch.x - this.x0, touch.y - this.y0
 
                                     begin scope
                                       begin set property
@@ -878,7 +878,7 @@ begin function
                                   end then
                                   begin else
 
-[68] }else if(touch.phase == "end" || touch.phase == "cancel"){
+[70] }else if(touch.phase == "end" || touch.phase == "cancel"){
 
                                     begin if
                                       begin bool exp
@@ -901,7 +901,7 @@ begin function
                                       end bool exp
                                       begin then
 
-[69] this.addEventListener("enterFrame", physUpdate)
+[71] this.addEventListener("enterFrame", physUpdate)
 
                                         begin scope
                                           begin call method
@@ -916,7 +916,7 @@ begin function
                                           end call method ret values 0
 
 
-[70] this.removeEventListener("enterFrame", trackVelocity)
+[72] this.removeEventListener("enterFrame", trackVelocity)
 
                                           begin call method
                                             push this
@@ -945,7 +945,7 @@ begin function
             end set local var Ball (4 0)
 
 
-[76] var colors = [ [0.9 0.7 0.7], [0.7 0.9 0.7], [0.7 0.7 0.9] ]
+[78] var colors = [ [0.9 0.7 0.7], [0.7 0.9 0.7], [0.7 0.7 0.9] ]
 
             begin set local var
               begin array 3
@@ -1000,7 +1000,7 @@ begin function
             end set local var colors (5 0)
 
 
-[77] for(var i = 0; i < 3; i++){
+[80] for(var i = 0; i < 3; i++){
 
             begin scope
               begin locals 1
@@ -1026,7 +1026,7 @@ begin function
                 end if ret values 0
 
 
-[78] var ball = Ball()
+[81] var ball = Ball()	// create instance of Ball class
 
                 begin scope
                   begin locals 1
@@ -1041,7 +1041,7 @@ begin function
                   end set local var ball (7 0)
 
 
-[79] ball.x = this.width * math.random(0.3, 0.7)
+[82] ball.x = this.width * math.random(0.3, 0.7)
 
                   begin set property
                     begin operator *
@@ -1065,7 +1065,7 @@ begin function
                   end set property ret values 0
 
 
-[80] ball.y = this.height * math.random(0.3, 0.5)
+[83] ball.y = this.height * math.random(0.3, 0.5)
 
                   begin set property
                     begin operator *
@@ -1089,7 +1089,7 @@ begin function
                   end set property ret values 0
 
 
-[81] ball.color = colors[ i % #colors ]
+[84] ball.color = colors[ i % #colors ]
 
                   begin set property
                     begin get property
@@ -1106,7 +1106,7 @@ begin function
                   end set property ret values 0
 
 
-[82] this.insert(ball)
+[85] this.insert(ball)	// insert the ball to the scene
 
                   begin call method
                     push this
@@ -1119,7 +1119,7 @@ begin function
                 end scope ret values 0
 
 
-[77] for(var i = 0; i < 3; i++){
+[80] for(var i = 0; i < 3; i++){
 
                 begin code list
                   begin set local var
@@ -1138,7 +1138,7 @@ begin function
   end set env var MyScene
 
 
-[87] director.scene = MyScene()
+[90] director.scene = MyScene()	// create and set our game scene
 
   begin set property
     begin call method
