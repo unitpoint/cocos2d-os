@@ -1,1 +1,0 @@
-glClearDepth = glClearDepthf

@@ -1,1 +1,0 @@
-start .\build_gameexample_vc10\GameExample_vc10.sln
