@@ -1,0 +1,4 @@
+OS_NUMBER "ObjectScript number type"
+GAME_VERSION_MAJOR "Game major version"
+GAME_VERSION_MINOR "Game minor version"
+GAME_VERSION_REVISION "Game revision version"

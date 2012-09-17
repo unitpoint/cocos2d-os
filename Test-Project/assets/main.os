@@ -97,8 +97,8 @@ MyScene = extends Scene {
 		message.shadow = true
 		this.insert(message)
 
-		
-		var fps = Text("fps")
+		var font = "arial-en-ru-16.fnt"
+		var fps = Text("fps", font)
 		fps.anchor = {x=1.05 y=1.05}
 		fps.x = this.width
 		fps.y = this.height
@@ -106,33 +106,42 @@ MyScene = extends Scene {
 		// fps.shadow = true
 		this.insert(fps)
 		
-		var gcAllocatedBytes = Text("Kb")
+		var gcAllocatedBytes = Text("Kb", font)
 		gcAllocatedBytes.anchor = {x=1.05 y=1.05}
 		gcAllocatedBytes.x = fps.x
-		gcAllocatedBytes.y = fps.y - fps.fontHeight*1.05*2
+		gcAllocatedBytes.y = fps.y - fps.fontHeight*1.05*1
 		gcAllocatedBytes.color = [0.9, 0.9, 0.0, 1]
 		// gcAllocatedBytes.shadow = true
 		this.insert(gcAllocatedBytes)
 		
-		var gcCachedBytes = Text("Kb")
+		var gcUsedBytes = Text("Kb", font)
+		gcUsedBytes.anchor = {x=1.05 y=1.05}
+		gcUsedBytes.x = fps.x
+		gcUsedBytes.y = fps.y - fps.fontHeight*1.05*3
+		gcUsedBytes.color = [0.9, 0.9, 0.0, 1]
+		// gcUsedBytes.shadow = true
+		this.insert(gcUsedBytes)
+		
+		var gcCachedBytes = Text("Kb", font)
 		gcCachedBytes.anchor = {x=1.05 y=1.05}
 		gcCachedBytes.x = fps.x
-		gcCachedBytes.y = fps.y - fps.fontHeight*1.05*1
+		gcCachedBytes.y = fps.y - fps.fontHeight*1.05*2
 		gcCachedBytes.color = [0.9, 0.9, 0.0, 1]
 		// gcAllocatedBytes.shadow = true
 		this.insert(gcCachedBytes)
 		
-		var gcNumValues = Text("0")
+		var gcNumValues = Text("0", font)
 		gcNumValues.anchor = {x=1.05 y=1.05}
 		gcNumValues.x = fps.x
-		gcNumValues.y = fps.y - fps.fontHeight*1.05*3
+		gcNumValues.y = fps.y - fps.fontHeight*1.05*4
 		gcNumValues.color = [0.9, 0.9, 0.0, 1]
 		// gcNumValues.shadow = true
 		this.insert(gcNumValues)
 		
 		this.setTimeout(function(){
 			fps.string = math.round(1 / director.deltaTime, 1).." fps"
-			gcAllocatedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
+			gcAllocatedBytes.string = math.round(GC.allocatedBytes / 1024).." Kb allocated"
+			gcUsedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
 			gcCachedBytes.string = math.round(GC.cachedBytes / 1024).." Kb cached"
 			gcNumValues.string = GC.numValues.." values"
 		}, 0.3, true)
@@ -397,6 +406,68 @@ MyScene = extends Scene {
 				})
 				
 			}()
+		}
+		
+		;{
+			var bg = Image("bg.jpg")
+			bg.x = this.width / 2
+			bg.y = this.height / 2
+			bg.scale = math.max(this.width / bg.width, this.height / bg.height)
+			this.insert(bg, -10)
+			
+			var ball = Image("ball.png")
+			ball.x = this.width / 2
+			ball.y = this.height / 2
+			ball.zOrder = 1000
+			this.insert(ball)
+			
+			var friction, gravity = 0.9, 9
+			var screenWidth, screenHeight = this.width, this.height
+			var speedX, speedY = math.random(-0.5, 0.5)*screenWidth, math.random(0.5, 1)*screenWidth
+			var radius = ball.width/2
+			
+			ball.addEventListener("touch", function(touch){
+				if(touch.phase == "start"){
+					// tx, ty, sx, sy = touch.x, touch.y, this.x, this.y
+					this.x0, this.y0 = touch.x - this.x, touch.y - this.y
+					this.removeEventListener("enterFrame", physUpdate)
+					this.addEventListener("enterFrame", trackVelocity)
+				}else if(touch.phase == "move"){
+					this.x, this.y = touch.x - this.x0, touch.y - this.y0
+				}else if(touch.phase == "end" || touch.phase == "cancel"){
+					this.addEventListener("enterFrame", physUpdate)
+					this.removeEventListener("enterFrame", trackVelocity)
+				}
+			})
+			
+			var prevX, prevY = 0, 0
+			var function trackVelocity(params){
+				speedX = (this.x - prevX) / params.deltaTime
+				speedY = (this.y - prevY) / params.deltaTime
+				prevX, prevY = this.x, this.y
+			}
+				
+			var function physUpdate(params){
+				speedY = speedY + gravity
+				this.x = this.x + speedX * params.deltaTime
+				this.y = this.y + speedY * params.deltaTime
+				if(this.x >= screenWidth - radius){
+					this.x = screenWidth - radius
+					speedX = speedX * -friction
+				}else if(this.x <= radius){
+					this.x = radius
+					speedX = speedX * -friction
+				}
+				if(this.y >= screenHeight - radius){
+					this.y = screenHeight - radius
+					speedY = speedY * -friction
+					speedX = speedX * friction
+				}else if(this.y <= radius){
+					this.y = radius
+					speedY = speedY * -friction
+				}
+			}
+			ball.addEventListener("enterFrame", physUpdate)
 		}
 	}
 }

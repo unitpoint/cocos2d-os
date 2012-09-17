@@ -25,6 +25,7 @@ function registerTouchEvent(x y phase id){
 			processed = false
 			id = id
 			captured = null
+			capturedFunc = null
 		}
 		return
 	}

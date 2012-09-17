@@ -68,7 +68,7 @@ FunctionNode = {
 			zOrder = node.__zOrder
 		
 		var children = zOrder < 0 ? this.__childrenNeg : this.__childrenPos
-		children[node] = [zOrder ++counter]
+		children[node] = [zOrder, ++counter]
 		this.sortChildren(children)
 		node.__parent = this
 		node.__parentChildren = children
@@ -116,9 +116,11 @@ FunctionNode = {
 		return [eventName func]
 	}
 	
-	removeEventListener = function(eventId){
-		if(arrayof eventId){
-			var eventName, func = eventId[0], eventId[1]
+	removeEventListener = function(eventName, func){
+		if(arrayof eventName){
+			eventName, func = eventName[0], eventName[1]
+		}
+		if(eventName in this.__events){
 			delete this.__events[eventName][func]
 		}
 	}
@@ -376,7 +378,7 @@ Node = extends FunctionNode {
 		if("paint" in this.__events){
 			params.target = this
 			for(var func in this.__events["paint"]){
-				func.call(this params)
+				func.call(this, params)
 			}
 		}
 		
@@ -392,16 +394,15 @@ Node = extends FunctionNode {
 	handleTouch = function(touch){
 		if(touch.captured !== this){
 			for(var child in this.__childrenPos){
-				child.handleTouch(touch)
-				if(touch.captured) return;
+				child.handleTouch(touch) && return true;
 			}
-			if("nativeTouch" in this.__events){
+			/* if("nativeTouch" in this.__events){
 				touch.target = this
 				for(var func in this.__events["nativeTouch"]){
 					func.call(this touch)
-					if(touch.captured) return;
 				}
-			}
+				touch.captured && return;
+			} */
 		}
 		var autoCapture
 		if("touch" in this.__events){
@@ -413,10 +414,11 @@ Node = extends FunctionNode {
 					if(this.isLocalPoint(local)){
 						touch.local, touch.target, autoCapture = local, this, true
 						for(var func in this.__events["touch"]){
-							func.call(this touch)
-							if(touch.captured){ 
+							if(func.call(this, touch) === true){
+								touch.captured = this
+								touch.capturedFunc = func
 								delete touch.local
-								return
+								return true
 							}
 						}
 						delete touch.local
@@ -425,30 +427,35 @@ Node = extends FunctionNode {
 			}else if(touch.captured === this){
 				// touch.x, touch.y = touch.nativeX, touch.nativeY
 				touch.local, touch.target = this.pointToNodeSpace(touch), this
-				for(var func in this.__events["touch"]){
-					func.call(this touch)
-					if(touch.captured){ 
-						delete touch.local
-						return
+				if(touch.capturedFunc){
+					if(touch.capturedFunc in this.__events["touch"]){
+						touch.capturedFunc.call(this, touch)
+					}
+				}else{
+					for(var func in this.__events["touch"]){
+						func.call(this, touch)
 					}
 				}
 				delete touch.local
+				touch.captured && return true;
 			}
 		}
 		if(touch.captured !== this){
 			for(var child in this.__childrenNeg){
-				child.handleTouch(touch)
-				if(touch.captured) return;
+				child.handleTouch(touch) && return true;
 			}
 		}
 		if(!touch.captured){
 			if(autoCapture){
 				touch.captured = this
+				return true
 			}else if(this.modal){
 				touch.captured = this
 				touch.modal = true
+				return true
 			}
 		}
+		return false
 	}
 	
 	setRect = function(x y width height){

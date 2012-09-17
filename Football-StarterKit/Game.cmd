@@ -1,0 +1,1 @@
+start .\build_game_vc10\Game_vc10.sln
