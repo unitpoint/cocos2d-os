@@ -1,0 +1,1122 @@
+
+[FILE] raw://../../engine-os/raw://../../engine-os/text.os
+[2] Text = extends Node {
+
+begin function
+  begin locals, total 2
+    0 _E
+    1 _G
+  end locals
+  begin set env var
+    begin extends
+      get env var Node
+      begin object 22
+
+[3] __object = {
+
+        begin set by name
+          begin object 5
+
+[4] __labelBMFont = null
+
+            begin set by name
+              const null
+            end set by name: [__labelBMFont]
+            ,
+
+[5] __shadowText = null
+
+            begin set by name
+              const null
+            end set by name: [__shadowText]
+            ,
+
+[6] __shadowColor = [0 0 0 1]
+
+            begin set by name
+              begin array 4
+                begin set auto index
+                  push const number 0
+                end set auto index
+                ,
+                begin set auto index
+                  push const number 0
+                end set auto index
+                ,
+                begin set auto index
+                  push const number 0
+                end set auto index
+                ,
+                begin set auto index
+                  push const number 1
+                end set auto index
+              end array
+            end set by name: [__shadowColor]
+            ,
+
+[7] __shadowOffsX = 1
+
+            begin set by name
+              push const number 1
+            end set by name: [__shadowOffsX]
+            ,
+
+[8] __shadowOffsY = 1
+
+            begin set by name
+              push const number 1
+            end set by name: [__shadowOffsY]
+          end object
+        end set by name: [__object]
+        ,
+
+[11] __construct = function(text, font, width, align){
+
+        begin set by name
+          begin function
+            begin locals, total 7
+              0 text (param)
+              1 font (param)
+              2 width (param)
+              3 align (param)
+              4 _E
+              5 _G
+              6 offs
+            end locals
+
+[12] super()
+
+            begin call
+              super
+              begin params 0
+              end params ret values 0
+            end call ret values 0
+
+
+[13] this.__labelBMFont = LabelBMFont(text, font, width, align)
+
+            begin set property
+              begin call method
+                get local var _E (4 0)
+                begin params 5
+                  push const string "LabelBMFont"
+                  ,
+                  get local var text (0 0 param)
+                  ,
+                  get local var font (1 0 param)
+                  ,
+                  get local var width (2 0 param)
+                  ,
+                  get local var align (3 0 param)
+                end params ret values 5
+              end call method ret values 1
+              push this
+              push const string "__labelBMFont"
+            end set property ret values 0
+
+
+[14] this.__width = this.__labelBMFont.width
+
+            begin set property
+              begin get property
+                begin get property
+                  push this
+                  push const string "__labelBMFont"
+                end get property ret values 1
+                push const string "width"
+              end get property ret values 1
+              push this
+              push const string "__width"
+            end set property ret values 0
+
+
+[15] this.__height = this.__labelBMFont.height
+
+            begin set property
+              begin get property
+                begin get property
+                  push this
+                  push const string "__labelBMFont"
+                end get property ret values 1
+                push const string "height"
+              end get property ret values 1
+              push this
+              push const string "__height"
+            end set property ret values 0
+
+
+[16] this.__transformDirty, this.__inverseDirty = true, true
+
+            begin set property
+              begin set property
+                begin params 2
+                  const true
+                  ,
+                  const true
+                end params ret values 2
+                push this
+                push const string "__inverseDirty"
+              end set property ret values 1
+              push this
+              push const string "__transformDirty"
+            end set property ret values 0
+
+
+[17] var offs = this.__labelBMFont.fontHeight * 0.05
+
+            begin set local var
+              begin operator *
+                begin get property
+                  begin get property
+                    push this
+                    push const string "__labelBMFont"
+                  end get property ret values 1
+                  push const string "fontHeight"
+                end get property ret values 1
+                push const number 0.05
+              end operator *
+            end set local var offs (6 0)
+
+
+[18] this.__shadowOffsX, this.__shadowOffsY = offs, offs
+
+            begin set property
+              begin set property
+                begin params 2
+                  get local var offs (6 0)
+                  ,
+                  get local var offs (6 0)
+                end params ret values 2
+                push this
+                push const string "__shadowOffsY"
+              end set property ret values 1
+              push this
+              push const string "__shadowOffsX"
+            end set property ret values 0
+
+
+[19] delete this.color
+
+            begin delete
+              push this
+              push const string "color"
+            end delete
+          end function
+        end set by name: [__construct]
+        ,
+
+[22] __get@shadow = function(){
+
+        begin set by name
+          begin function
+            begin locals, total 2
+              0 _E
+              1 _G
+            end locals
+
+[23] return this.__shadowText !== null
+
+            begin return
+              begin logic !==
+                begin get property
+                  push this
+                  push const string "__shadowText"
+                end get property ret values 1
+                const null
+              end logic !==
+            end return values 1
+          end function
+        end set by name: [__get@shadow]
+        ,
+
+[26] __set@shadow = function(a){
+
+        begin set by name
+          begin function
+            begin locals, total 3
+              0 a (param)
+              1 _E
+              2 _G
+            end locals
+
+[27] if(a == this.shadow) return;
+
+            begin if
+              begin bool exp
+                begin logic ==
+                  get local var a (0 0 param)
+                  begin get property
+                    push this
+                    push const string "shadow"
+                  end get property ret values 1
+                end logic ==
+              end bool exp
+              begin then
+                return
+              end then
+            end if ret values 0
+
+
+[28] if(!a){
+
+            begin if
+              begin bool exp
+                begin logic not
+                  get local var a (0 0 param)
+                end logic not
+              end bool exp
+              begin then
+
+[29] this.__shadowText.remove()
+
+                begin scope
+                  begin call method
+                    begin get property
+                      push this
+                      push const string "__shadowText"
+                    end get property ret values 1
+                    begin params 1
+                      push const string "remove"
+                    end params ret values 1
+                  end call method ret values 0
+
+
+[30] this.__shadowText = null
+
+                  begin set property
+                    const null
+                    push this
+                    push const string "__shadowText"
+                  end set property ret values 0
+                end scope ret values 0
+              end then
+              begin else
+
+[32] this.__shadowText = Text(this.string, this.font, this.width, this.align)
+
+                begin scope
+                  begin set property
+                    begin call method
+                      get local var _E (1 0)
+                      begin params 5
+                        push const string "Text"
+                        ,
+                        begin get property
+                          push this
+                          push const string "string"
+                        end get property ret values 1
+                        ,
+                        begin get property
+                          push this
+                          push const string "font"
+                        end get property ret values 1
+                        ,
+                        begin get property
+                          push this
+                          push const string "width"
+                        end get property ret values 1
+                        ,
+                        begin get property
+                          push this
+                          push const string "align"
+                        end get property ret values 1
+                      end params ret values 5
+                    end call method ret values 1
+                    push this
+                    push const string "__shadowText"
+                  end set property ret values 0
+
+
+[33] this.__shadowText.anchor = {x=0 y=0}
+
+                  begin set property
+                    begin object 2
+                      begin set by name
+                        push const number 0
+                      end set by name: [x]
+                      ,
+                      begin set by name
+                        push const number 0
+                      end set by name: [y]
+                    end object
+                    begin get property auto create
+                      push this
+                      push const string "__shadowText"
+                    end get property auto create ret values 1
+                    push const string "anchor"
+                  end set property ret values 0
+
+
+[34] this.__shadowText.x = this.__shadowOffsX
+
+                  begin set property
+                    begin get property
+                      push this
+                      push const string "__shadowOffsX"
+                    end get property ret values 1
+                    begin get property auto create
+                      push this
+                      push const string "__shadowText"
+                    end get property auto create ret values 1
+                    push const string "x"
+                  end set property ret values 0
+
+
+[35] this.__shadowText.y = this.__shadowOffsY
+
+                  begin set property
+                    begin get property
+                      push this
+                      push const string "__shadowOffsY"
+                    end get property ret values 1
+                    begin get property auto create
+                      push this
+                      push const string "__shadowText"
+                    end get property auto create ret values 1
+                    push const string "y"
+                  end set property ret values 0
+
+
+[36] this.__shadowText.color = this.__shadowColor
+
+                  begin set property
+                    begin get property
+                      push this
+                      push const string "__shadowColor"
+                    end get property ret values 1
+                    begin get property auto create
+                      push this
+                      push const string "__shadowText"
+                    end get property auto create ret values 1
+                    push const string "color"
+                  end set property ret values 0
+
+
+[37] this.insert(this.__shadowText, -1)
+
+                  begin call method
+                    push this
+                    begin params 3
+                      push const string "insert"
+                      ,
+                      begin get property
+                        push this
+                        push const string "__shadowText"
+                      end get property ret values 1
+                      ,
+                      begin neg
+                        push const number 1
+                      end neg
+                    end params ret values 3
+                  end call method ret values 0
+                end scope ret values 0
+              end else
+            end if ret values 0
+          end function
+        end set by name: [__set@shadow]
+        ,
+
+[41] __get@color = function(){ return this.__labelBMFont.color }
+
+        begin set by name
+          begin function
+            begin locals, total 2
+              0 _E
+              1 _G
+            end locals
+            begin return
+              begin get property
+                begin get property
+                  push this
+                  push const string "__labelBMFont"
+                end get property ret values 1
+                push const string "color"
+              end get property ret values 1
+            end return values 1
+          end function
+        end set by name: [__get@color]
+        ,
+
+[42] __set@color = function(a){ this.__labelBMFont.color = a }
+
+        begin set by name
+          begin function
+            begin locals, total 3
+              0 a (param)
+              1 _E
+              2 _G
+            end locals
+            begin set property
+              get local var a (0 0 param)
+              begin get property auto create
+                push this
+                push const string "__labelBMFont"
+              end get property auto create ret values 1
+              push const string "color"
+            end set property ret values 0
+          end function
+        end set by name: [__set@color]
+        ,
+
+[44] __get@fontHeight = function(){ return this.__labelBMFont.fontHeight }
+
+        begin set by name
+          begin function
+            begin locals, total 2
+              0 _E
+              1 _G
+            end locals
+            begin return
+              begin get property
+                begin get property
+                  push this
+                  push const string "__labelBMFont"
+                end get property ret values 1
+                push const string "fontHeight"
+              end get property ret values 1
+            end return values 1
+          end function
+        end set by name: [__get@fontHeight]
+        ,
+
+[46] __get@font = function(){ return this.__labelBMFont.font }
+
+        begin set by name
+          begin function
+            begin locals, total 2
+              0 _E
+              1 _G
+            end locals
+            begin return
+              begin get property
+                begin get property
+                  push this
+                  push const string "__labelBMFont"
+                end get property ret values 1
+                push const string "font"
+              end get property ret values 1
+            end return values 1
+          end function
+        end set by name: [__get@font]
+        ,
+
+[47] __set@font = function(a){ this.__labelBMFont.font = a }
+
+        begin set by name
+          begin function
+            begin locals, total 3
+              0 a (param)
+              1 _E
+              2 _G
+            end locals
+            begin set property
+              get local var a (0 0 param)
+              begin get property auto create
+                push this
+                push const string "__labelBMFont"
+              end get property auto create ret values 1
+              push const string "font"
+            end set property ret values 0
+          end function
+        end set by name: [__set@font]
+        ,
+
+[49] __get@align = function(){ return this.__labelBMFont.align }
+
+        begin set by name
+          begin function
+            begin locals, total 2
+              0 _E
+              1 _G
+            end locals
+            begin return
+              begin get property
+                begin get property
+                  push this
+                  push const string "__labelBMFont"
+                end get property ret values 1
+                push const string "align"
+              end get property ret values 1
+            end return values 1
+          end function
+        end set by name: [__get@align]
+        ,
+
+[50] __set@align = function(a){ this.__labelBMFont.align = a }
+
+        begin set by name
+          begin function
+            begin locals, total 3
+              0 a (param)
+              1 _E
+              2 _G
+            end locals
+            begin set property
+              get local var a (0 0 param)
+              begin get property auto create
+                push this
+                push const string "__labelBMFont"
+              end get property auto create ret values 1
+              push const string "align"
+            end set property ret values 0
+          end function
+        end set by name: [__set@align]
+        ,
+
+[52] __get@shadowColor = function(){ return this.__shadowColor }
+
+        begin set by name
+          begin function
+            begin locals, total 2
+              0 _E
+              1 _G
+            end locals
+            begin return
+              begin get property
+                push this
+                push const string "__shadowColor"
+              end get property ret values 1
+            end return values 1
+          end function
+        end set by name: [__get@shadowColor]
+        ,
+
+[53] __set@shadowColor = function(a){ this.__shadowColor = a }
+
+        begin set by name
+          begin function
+            begin locals, total 3
+              0 a (param)
+              1 _E
+              2 _G
+            end locals
+            begin set property
+              get local var a (0 0 param)
+              push this
+              push const string "__shadowColor"
+            end set property ret values 0
+          end function
+        end set by name: [__set@shadowColor]
+        ,
+
+[55] __get@shadowOffsX = function(){ return this.__shadowOffsX }
+
+        begin set by name
+          begin function
+            begin locals, total 2
+              0 _E
+              1 _G
+            end locals
+            begin return
+              begin get property
+                push this
+                push const string "__shadowOffsX"
+              end get property ret values 1
+            end return values 1
+          end function
+        end set by name: [__get@shadowOffsX]
+        ,
+
+[56] __set@shadowOffsX = function(a){
+
+        begin set by name
+          begin function
+            begin locals, total 3
+              0 a (param)
+              1 _E
+              2 _G
+            end locals
+
+[57] if(this.__shadowOffsX !== a){
+
+            begin if
+              begin bool exp
+                begin logic !==
+                  begin get property
+                    push this
+                    push const string "__shadowOffsX"
+                  end get property ret values 1
+                  get local var a (0 0 param)
+                end logic !==
+              end bool exp
+              begin then
+
+[58] this.__shadowOffsX = a
+
+                begin scope
+                  begin set property
+                    get local var a (0 0 param)
+                    push this
+                    push const string "__shadowOffsX"
+                  end set property ret values 0
+
+
+[59] if(this.__shadowText){
+
+                  begin if
+                    begin bool exp
+                      begin get property
+                        push this
+                        push const string "__shadowText"
+                      end get property ret values 1
+                    end bool exp
+                    begin then
+
+[60] this.__shadowText.x = this.__shadowOffsX
+
+                      begin scope
+                        begin set property
+                          begin get property
+                            push this
+                            push const string "__shadowOffsX"
+                          end get property ret values 1
+                          begin get property auto create
+                            push this
+                            push const string "__shadowText"
+                          end get property auto create ret values 1
+                          push const string "x"
+                        end set property ret values 0
+                      end scope ret values 0
+                    end then
+                  end if ret values 0
+                end scope ret values 0
+              end then
+            end if ret values 0
+          end function
+        end set by name: [__set@shadowOffsX]
+        ,
+
+[65] __get@shadowOffsY = function(){ return this.__shadowOffsY }
+
+        begin set by name
+          begin function
+            begin locals, total 2
+              0 _E
+              1 _G
+            end locals
+            begin return
+              begin get property
+                push this
+                push const string "__shadowOffsY"
+              end get property ret values 1
+            end return values 1
+          end function
+        end set by name: [__get@shadowOffsY]
+        ,
+
+[66] __set@shadowOffsY = function(a){
+
+        begin set by name
+          begin function
+            begin locals, total 3
+              0 a (param)
+              1 _E
+              2 _G
+            end locals
+
+[67] if(this.__shadowOffsY !== a){
+
+            begin if
+              begin bool exp
+                begin logic !==
+                  begin get property
+                    push this
+                    push const string "__shadowOffsY"
+                  end get property ret values 1
+                  get local var a (0 0 param)
+                end logic !==
+              end bool exp
+              begin then
+
+[68] this.__shadowOffsY = a
+
+                begin scope
+                  begin set property
+                    get local var a (0 0 param)
+                    push this
+                    push const string "__shadowOffsY"
+                  end set property ret values 0
+
+
+[69] if(this.__shadowText){
+
+                  begin if
+                    begin bool exp
+                      begin get property
+                        push this
+                        push const string "__shadowText"
+                      end get property ret values 1
+                    end bool exp
+                    begin then
+
+[70] this.__shadowText.y = this.__shadowOffsY
+
+                      begin scope
+                        begin set property
+                          begin get property
+                            push this
+                            push const string "__shadowOffsY"
+                          end get property ret values 1
+                          begin get property auto create
+                            push this
+                            push const string "__shadowText"
+                          end get property auto create ret values 1
+                          push const string "y"
+                        end set property ret values 0
+                      end scope ret values 0
+                    end then
+                  end if ret values 0
+                end scope ret values 0
+              end then
+            end if ret values 0
+          end function
+        end set by name: [__set@shadowOffsY]
+        ,
+
+[75] __get@string = function(){ return this.__labelBMFont.string }
+
+        begin set by name
+          begin function
+            begin locals, total 2
+              0 _E
+              1 _G
+            end locals
+            begin return
+              begin get property
+                begin get property
+                  push this
+                  push const string "__labelBMFont"
+                end get property ret values 1
+                push const string "string"
+              end get property ret values 1
+            end return values 1
+          end function
+        end set by name: [__get@string]
+        ,
+
+[76] __set@string = function(a){
+
+        begin set by name
+          begin function
+            begin locals, total 3
+              0 a (param)
+              1 _E
+              2 _G
+            end locals
+
+[77] if(this.__labelBMFont.string !== a){
+
+            begin if
+              begin bool exp
+                begin logic !==
+                  begin get property
+                    begin get property
+                      push this
+                      push const string "__labelBMFont"
+                    end get property ret values 1
+                    push const string "string"
+                  end get property ret values 1
+                  get local var a (0 0 param)
+                end logic !==
+              end bool exp
+              begin then
+
+[78] this.__labelBMFont.string = a
+
+                begin scope
+                  begin set property
+                    get local var a (0 0 param)
+                    begin get property auto create
+                      push this
+                      push const string "__labelBMFont"
+                    end get property auto create ret values 1
+                    push const string "string"
+                  end set property ret values 0
+
+
+[79] this.__width = this.__labelBMFont.width
+
+                  begin set property
+                    begin get property
+                      begin get property
+                        push this
+                        push const string "__labelBMFont"
+                      end get property ret values 1
+                      push const string "width"
+                    end get property ret values 1
+                    push this
+                    push const string "__width"
+                  end set property ret values 0
+
+
+[80] this.__height = this.__labelBMFont.height
+
+                  begin set property
+                    begin get property
+                      begin get property
+                        push this
+                        push const string "__labelBMFont"
+                      end get property ret values 1
+                      push const string "height"
+                    end get property ret values 1
+                    push this
+                    push const string "__height"
+                  end set property ret values 0
+
+
+[81] this.__transformDirty, this.__inverseDirty = true, true
+
+                  begin set property
+                    begin set property
+                      begin params 2
+                        const true
+                        ,
+                        const true
+                      end params ret values 2
+                      push this
+                      push const string "__inverseDirty"
+                    end set property ret values 1
+                    push this
+                    push const string "__transformDirty"
+                  end set property ret values 0
+
+
+[82] if(this.__shadowText){
+
+                  begin if
+                    begin bool exp
+                      begin get property
+                        push this
+                        push const string "__shadowText"
+                      end get property ret values 1
+                    end bool exp
+                    begin then
+
+[83] this.__shadowText.string = a
+
+                      begin scope
+                        begin set property
+                          get local var a (0 0 param)
+                          begin get property auto create
+                            push this
+                            push const string "__shadowText"
+                          end get property auto create ret values 1
+                          push const string "string"
+                        end set property ret values 0
+                      end scope ret values 0
+                    end then
+                  end if ret values 0
+                end scope ret values 0
+              end then
+            end if ret values 0
+          end function
+        end set by name: [__set@string]
+        ,
+
+[88] __set@width = function(a){
+
+        begin set by name
+          begin function
+            begin locals, total 3
+              0 a (param)
+              1 _E
+              2 _G
+            end locals
+
+[89] if(this.__width !== a){
+
+            begin if
+              begin bool exp
+                begin logic !==
+                  begin get property
+                    push this
+                    push const string "__width"
+                  end get property ret values 1
+                  get local var a (0 0 param)
+                end logic !==
+              end bool exp
+              begin then
+
+[90] this.__labelBMFont.width = a
+
+                begin scope
+                  begin set property
+                    get local var a (0 0 param)
+                    begin get property auto create
+                      push this
+                      push const string "__labelBMFont"
+                    end get property auto create ret values 1
+                    push const string "width"
+                  end set property ret values 0
+
+
+[91] this.__width = this.__labelBMFont.width
+
+                  begin set property
+                    begin get property
+                      begin get property
+                        push this
+                        push const string "__labelBMFont"
+                      end get property ret values 1
+                      push const string "width"
+                    end get property ret values 1
+                    push this
+                    push const string "__width"
+                  end set property ret values 0
+
+
+[92] this.__height = this.__labelBMFont.height
+
+                  begin set property
+                    begin get property
+                      begin get property
+                        push this
+                        push const string "__labelBMFont"
+                      end get property ret values 1
+                      push const string "height"
+                    end get property ret values 1
+                    push this
+                    push const string "__height"
+                  end set property ret values 0
+
+
+[93] this.__transformDirty, this.__inverseDirty = true, true
+
+                  begin set property
+                    begin set property
+                      begin params 2
+                        const true
+                        ,
+                        const true
+                      end params ret values 2
+                      push this
+                      push const string "__inverseDirty"
+                    end set property ret values 1
+                    push this
+                    push const string "__transformDirty"
+                  end set property ret values 0
+
+
+[94] if(this.__shadowText) this.__shadowText.width = a
+
+                  begin if
+                    begin bool exp
+                      begin get property
+                        push this
+                        push const string "__shadowText"
+                      end get property ret values 1
+                    end bool exp
+                    begin then
+                      begin set property
+                        get local var a (0 0 param)
+                        begin get property auto create
+                          push this
+                          push const string "__shadowText"
+                        end get property auto create ret values 1
+                        push const string "width"
+                      end set property ret values 0
+                    end then
+                  end if ret values 0
+                end scope ret values 0
+              end then
+            end if ret values 0
+          end function
+        end set by name: [__set@width]
+        ,
+
+[97] __set@height = function(a){
+
+        begin set by name
+          begin function
+            begin locals, total 3
+              0 a (param)
+              1 _E
+              2 _G
+            end locals
+          end function
+        end set by name: [__set@height]
+        ,
+
+[101] paint = function(params){
+
+        begin set by name
+          begin function
+            begin locals, total 3
+              0 params (param)
+              1 _E
+              2 _G
+            end locals
+
+[102] app.drawLabelBMFont(this.__labelBMFont, params.opacity)
+
+            begin call method
+              get env var app
+              begin params 3
+                push const string "drawLabelBMFont"
+                ,
+                begin get property
+                  push this
+                  push const string "__labelBMFont"
+                end get property ret values 1
+                ,
+                begin get property
+                  get local var params (0 0 param)
+                  push const string "opacity"
+                end get property ret values 1
+              end params ret values 3
+            end call method ret values 0
+
+
+[103] if(CC_SPRITE_DEBUG_DRAW){
+
+            begin if
+              begin bool exp
+                get env var CC_SPRITE_DEBUG_DRAW
+              end bool exp
+              begin then
+
+[104] this.drawBB([0 0 0 1])
+
+                begin scope
+                  begin call method
+                    push this
+                    begin params 2
+                      push const string "drawBB"
+                      ,
+                      begin array 4
+                        begin set auto index
+                          push const number 0
+                        end set auto index
+                        ,
+                        begin set auto index
+                          push const number 0
+                        end set auto index
+                        ,
+                        begin set auto index
+                          push const number 0
+                        end set auto index
+                        ,
+                        begin set auto index
+                          push const number 1
+                        end set auto index
+                      end array
+                    end params ret values 2
+                  end call method ret values 0
+                end scope ret values 0
+              end then
+            end if ret values 0
+          end function
+        end set by name: [paint]
+      end object
+    end extends ret values 1
+  end set env var Text
+
+
+[106] }
+
+  begin code list
+    begin return
+      get local var _E (0 0)
+    end return values 1
+  end code list ret values 0
+end function

@@ -1,28 +1,13 @@
 
-[FILE] raw://../../engine-os/node.os
-[1] var app = require("app")
+[FILE] raw://../../engine-os/raw://../../engine-os/node.os
+[1] require("utils")
 
 begin function
-  begin locals, total 4
+  begin locals, total 3
     0 _E
     1 _G
-    2 app
-    3 counter
+    2 counter
   end locals
-  begin set local var
-    begin call method
-      get local var _E (0 0)
-      begin params 2
-        push const string "require"
-        ,
-        push const string "app"
-      end params ret values 2
-    end call method ret values 1
-  end set local var app (2 0)
-
-
-[2] require("utils")
-
   begin call method
     get local var _E (0 0)
     begin params 2
@@ -33,12 +18,12 @@ begin function
   end call method ret values 0
 
 
-[4] Point = {
+[3] Point = {
 
   begin set env var
     begin object 1
 
-[5] __construct = function(x, y){
+[4] __construct = function(x, y){
 
       begin set by name
         begin function
@@ -49,7 +34,7 @@ begin function
             3 _G
           end locals
 
-[6] this.x = x
+[5] this.x = x
 
           begin set property
             get local var x (0 0 param)
@@ -58,7 +43,7 @@ begin function
           end set property ret values 0
 
 
-[7] this.y = y
+[6] this.y = y
 
           begin set property
             get local var y (1 0 param)
@@ -71,12 +56,12 @@ begin function
   end set env var Point
 
 
-[11] Size = {
+[10] Size = {
 
   begin set env var
     begin object 1
 
-[12] __construct = function(width, height){
+[11] __construct = function(width, height){
 
       begin set by name
         begin function
@@ -87,7 +72,7 @@ begin function
             3 _G
           end locals
 
-[13] this.width = width
+[12] this.width = width
 
           begin set property
             get local var width (0 0 param)
@@ -96,7 +81,7 @@ begin function
           end set property ret values 0
 
 
-[14] this.height = height
+[13] this.height = height
 
           begin set property
             get local var height (1 0 param)
@@ -109,38 +94,38 @@ begin function
   end set env var Size
 
 
-[18] var counter = 0
+[17] var counter = 0
 
   begin set local var
     push const number 0
-  end set local var counter (3 0)
+  end set local var counter (2 0)
 
 
-[20] FunctionNode = {
+[19] FunctionNode = {
 
   begin set env var
     begin object 21
 
-[21] __object = {
+[20] __object = {
 
       begin set by name
         begin object 9
 
-[22] time = 0
+[21] time = 0
 
           begin set by name
             push const number 0
           end set by name: [time]
           ,
 
-[23] timeSpeed = 1
+[22] timeSpeed = 1
 
           begin set by name
             push const number 1
           end set by name: [timeSpeed]
           ,
 
-[25] __events = {}
+[24] __events = {}
 
           begin set by name
             begin object 0
@@ -148,7 +133,7 @@ begin function
           end set by name: [__events]
           ,
 
-[26] __childrenNeg = {}
+[25] __childrenNeg = {}
 
           begin set by name
             begin object 0
@@ -156,7 +141,7 @@ begin function
           end set by name: [__childrenNeg]
           ,
 
-[27] __childrenPos = {}
+[26] __childrenPos = {}
 
           begin set by name
             begin object 0
@@ -164,7 +149,7 @@ begin function
           end set by name: [__childrenPos]
           ,
 
-[28] __timers = {}
+[27] __timers = {}
 
           begin set by name
             begin object 0
@@ -172,21 +157,21 @@ begin function
           end set by name: [__timers]
           ,
 
-[29] __parent = null
+[28] __parent = null
 
           begin set by name
             const null
           end set by name: [__parent]
           ,
 
-[30] __parentChildren = null
+[29] __parentChildren = null
 
           begin set by name
             const null
           end set by name: [__parentChildren]
           ,
 
-[31] __zOrder = 0
+[30] __zOrder = 0
 
           begin set by name
             push const number 0
@@ -195,7 +180,7 @@ begin function
       end set by name: [__object]
       ,
 
-[34] __get@parent = function(){return this.__parent}
+[33] __get@parent = function(){return this.__parent}
 
       begin set by name
         begin function
@@ -213,7 +198,7 @@ begin function
       end set by name: [__get@parent]
       ,
 
-[35] __set@parent = function(a){
+[34] __set@parent = function(a){
 
       begin set by name
         begin function
@@ -223,7 +208,7 @@ begin function
             2 _G
           end locals
 
-[36] if(this.__parent !== a){
+[35] if(this.__parent !== a){
 
           begin if
             begin bool exp
@@ -237,7 +222,7 @@ begin function
             end bool exp
             begin then
 
-[37] this.remove()
+[36] this.remove()
 
               begin scope
                 begin call method
@@ -248,7 +233,7 @@ begin function
                 end call method ret values 0
 
 
-[38] if(a) a.insert(this)
+[37] if(a) a.insert(this)
 
                 begin if
                   begin bool exp
@@ -272,7 +257,7 @@ begin function
       end set by name: [__set@parent]
       ,
 
-[42] __get@zOrder = function(){return this.__zOrder}
+[41] __get@zOrder = function(){return this.__zOrder}
 
       begin set by name
         begin function
@@ -290,7 +275,7 @@ begin function
       end set by name: [__get@zOrder]
       ,
 
-[43] __set@zOrder = function(a){
+[42] __set@zOrder = function(a){
 
       begin set by name
         begin function
@@ -300,7 +285,7 @@ begin function
             2 _G
           end locals
 
-[44] a = math.round(a)
+[43] a = math.round(a)
 
           begin set local var
             begin call method
@@ -314,7 +299,7 @@ begin function
           end set local var a (0 0 param)
 
 
-[45] if(this.__zOrder !== a){
+[44] if(this.__zOrder !== a){
 
           begin if
             begin bool exp
@@ -328,7 +313,7 @@ begin function
             end bool exp
             begin then
 
-[46] this.__zOrder = a
+[45] this.__zOrder = a
 
               begin scope
                 begin set property
@@ -338,7 +323,7 @@ begin function
                 end set property ret values 0
 
 
-[47] if(this.__parent){
+[46] if(this.__parent){
 
                 begin if
                   begin bool exp
@@ -349,7 +334,7 @@ begin function
                   end bool exp
                   begin then
 
-[48] this.__parentChildren[this][0] = a
+[47] this.__parentChildren[this][0] = a
 
                     begin scope
                       begin set property
@@ -365,7 +350,7 @@ begin function
                       end set property ret values 0
 
 
-[49] this.__parent.sortChildren(this.__parentChildren)
+[48] this.__parent.sortChildren(this.__parentChildren)
 
                       begin call method
                         begin get property
@@ -391,7 +376,7 @@ begin function
       end set by name: [__set@zOrder]
       ,
 
-[54] sortChildren = function(children){
+[53] sortChildren = function(children){
 
       begin set by name
         begin function
@@ -401,7 +386,7 @@ begin function
             2 _G
           end locals
 
-[55] children.rsort(function(a b){
+[54] children.rsort(function(a b){
 
           begin call method
             get local var children (0 0 param)
@@ -417,7 +402,7 @@ begin function
                   4 z
                 end locals
 
-[56] var z = a[0] - b[0]
+[55] var z = a[0] - b[0]
 
                 begin set local var
                   begin operator -
@@ -433,7 +418,7 @@ begin function
                 end set local var z (4 0)
 
 
-[57] return z != 0 ? z : a[1] - b[1]
+[56] return z != 0 ? z : a[1] - b[1]
 
                 begin code list
                   begin return
@@ -469,7 +454,7 @@ begin function
       end set by name: [sortChildren]
       ,
 
-[61] insert = function(node, zOrder){
+[60] insert = function(node, zOrder){
 
       begin set by name
         begin function
@@ -481,7 +466,7 @@ begin function
             4 children
           end locals
 
-[62] node.remove()
+[61] node.remove()
 
           begin call method
             get local var node (0 0 param)
@@ -491,7 +476,7 @@ begin function
           end call method ret values 0
 
 
-[64] if(zOrder){
+[63] if(zOrder){
 
           begin if
             begin bool exp
@@ -499,7 +484,7 @@ begin function
             end bool exp
             begin then
 
-[65] zOrder = math.round(zOrder)
+[64] zOrder = math.round(zOrder)
 
               begin scope
                 begin set local var
@@ -514,7 +499,7 @@ begin function
                 end set local var zOrder (1 0 param)
 
 
-[66] node.__zOrder = zOrder
+[65] node.__zOrder = zOrder
 
                 begin set property
                   get local var zOrder (1 0 param)
@@ -525,7 +510,7 @@ begin function
             end then
             begin else
 
-[68] zOrder = node.__zOrder
+[67] zOrder = node.__zOrder
 
               begin set local var
                 begin get property
@@ -537,7 +522,7 @@ begin function
           end if ret values 0
 
 
-[70] var children = zOrder < 0 ? this.__childrenNeg : this.__childrenPos
+[69] var children = zOrder < 0 ? this.__childrenNeg : this.__childrenPos
 
           begin set local var
             begin question
@@ -563,7 +548,7 @@ begin function
           end set local var children (4 0)
 
 
-[71] children[node] = [zOrder, ++counter]
+[70] children[node] = [zOrder, ++counter]
 
           begin set property
             begin array 2
@@ -575,12 +560,12 @@ begin function
                 begin code list
                   begin set local var
                     begin operator +
-                      get local var counter (3 1)
+                      get local var counter (2 1)
                       push const number 1
                     end operator +
-                  end set local var counter (3 1)
+                  end set local var counter (2 1)
 
-                  get local var counter (3 1)
+                  get local var counter (2 1)
                 end code list ret values 1
               end set auto index
             end array
@@ -589,7 +574,7 @@ begin function
           end set property ret values 0
 
 
-[72] this.sortChildren(children)
+[71] this.sortChildren(children)
 
           begin call method
             push this
@@ -601,7 +586,7 @@ begin function
           end call method ret values 0
 
 
-[73] node.__parent = this
+[72] node.__parent = this
 
           begin set property
             push this
@@ -610,7 +595,7 @@ begin function
           end set property ret values 0
 
 
-[74] node.__parentChildren = children
+[73] node.__parentChildren = children
 
           begin set property
             get local var children (4 0)
@@ -619,7 +604,7 @@ begin function
           end set property ret values 0
 
 
-[75] node.triggerEvent("onEnter")
+[74] node.triggerEvent("onEnter")
 
           begin call method
             get local var node (0 0 param)
@@ -631,7 +616,7 @@ begin function
           end call method ret values 0
 
 
-[76] return node
+[75] return node
 
           begin code list
             begin return
@@ -642,7 +627,7 @@ begin function
       end set by name: [insert]
       ,
 
-[79] remove = function(node){
+[78] remove = function(node){
 
       begin set by name
         begin function
@@ -652,7 +637,7 @@ begin function
             2 _G
           end locals
 
-[80] node = node || this
+[79] node = node || this
 
           begin set local var
             begin logic ||
@@ -662,7 +647,7 @@ begin function
           end set local var node (0 0 param)
 
 
-[81] if(node.__parent){
+[80] if(node.__parent){
 
           begin if
             begin bool exp
@@ -673,7 +658,7 @@ begin function
             end bool exp
             begin then
 
-[82] node.triggerEvent("onExit")
+[81] node.triggerEvent("onExit")
 
               begin scope
                 begin call method
@@ -686,7 +671,7 @@ begin function
                 end call method ret values 0
 
 
-[83] delete node.__parentChildren[node]
+[82] delete node.__parentChildren[node]
 
                 begin delete
                   begin get property
@@ -697,7 +682,7 @@ begin function
                 end delete
 
 
-[84] node.__parent = null
+[83] node.__parent = null
 
                 begin set property
                   const null
@@ -706,7 +691,7 @@ begin function
                 end set property ret values 0
 
 
-[85] node.__parentChildren = null
+[84] node.__parentChildren = null
 
                 begin set property
                   const null
@@ -720,7 +705,7 @@ begin function
       end set by name: [remove]
       ,
 
-[89] handleUpdate = function(params){
+[88] handleUpdate = function(params){
 
       begin set by name
         begin function
@@ -731,7 +716,7 @@ begin function
             3 deltaTime
           end locals
 
-[90] var deltaTime = params.deltaTime
+[89] var deltaTime = params.deltaTime
 
           begin set local var
             begin get property
@@ -741,7 +726,7 @@ begin function
           end set local var deltaTime (3 0)
 
 
-[91] params.deltaTime = deltaTime * this.timeSpeed
+[90] params.deltaTime = deltaTime * this.timeSpeed
 
           begin set property
             begin operator *
@@ -756,7 +741,7 @@ begin function
           end set property ret values 0
 
 
-[92] this.time = this.time + params.deltaTime
+[91] this.time = this.time + params.deltaTime
 
           begin set property
             begin operator +
@@ -774,7 +759,7 @@ begin function
           end set property ret values 0
 
 
-[93] this.updateTimers(params)
+[92] this.updateTimers(params)
 
           begin call method
             push this
@@ -786,7 +771,7 @@ begin function
           end call method ret values 0
 
 
-[94] for(var child in this.__childrenPos){
+[93] for(var child in this.__childrenPos){
 
           begin scope
             begin locals 3
@@ -836,7 +821,7 @@ begin function
                 end if ret values 0
 
 
-[95] child.handleUpdate(params)
+[94] child.handleUpdate(params)
 
                 begin scope
                   begin call method
@@ -853,7 +838,7 @@ begin function
           end scope ret values 0
 
 
-[97] if("enterFrame" in this.__events){
+[96] if("enterFrame" in this.__events){
 
           begin if
             begin bool exp
@@ -867,7 +852,7 @@ begin function
             end bool exp
             begin then
 
-[98] params.target = this
+[97] params.target = this
 
               begin scope
                 begin set property
@@ -877,7 +862,7 @@ begin function
                 end set property ret values 0
 
 
-[99] for(var func in this.__events["enterFrame"]){
+[98] for(var func in this.__events["enterFrame"]){
 
                 begin scope
                   begin locals 3
@@ -930,7 +915,7 @@ begin function
                       end if ret values 0
 
 
-[100] func.call(this params)
+[99] func.call(this params)
 
                       begin scope
                         begin call method
@@ -952,7 +937,7 @@ begin function
           end if ret values 0
 
 
-[103] for(var child in this.__childrenNeg){
+[102] for(var child in this.__childrenNeg){
 
           begin scope
             begin locals 3
@@ -1002,7 +987,7 @@ begin function
                 end if ret values 0
 
 
-[104] child.handleUpdate(params)
+[103] child.handleUpdate(params)
 
                 begin scope
                   begin call method
@@ -1019,7 +1004,7 @@ begin function
           end scope ret values 0
 
 
-[106] params.deltaTime = deltaTime
+[105] params.deltaTime = deltaTime
 
           begin set property
             get local var deltaTime (3 0)
@@ -1030,7 +1015,7 @@ begin function
       end set by name: [handleUpdate]
       ,
 
-[109] handlePaint = function(){}
+[108] handlePaint = function(){}
 
       begin set by name
         begin function
@@ -1042,7 +1027,7 @@ begin function
       end set by name: [handlePaint]
       ,
 
-[110] handleTouch = function(){}
+[109] handleTouch = function(){}
 
       begin set by name
         begin function
@@ -1054,7 +1039,7 @@ begin function
       end set by name: [handleTouch]
       ,
 
-[112] addEventListener = function(eventName, func, zOrder){
+[111] addEventListener = function(eventName, func, zOrder){
 
       begin set by name
         begin function
@@ -1066,7 +1051,7 @@ begin function
             4 _G
           end locals
 
-[113] functionof func || return;
+[112] functionof func || return;
 
           begin pop
             begin logic ||
@@ -1080,7 +1065,7 @@ begin function
           end pop ret values 0
 
 
-[114] this.__events[eventName][func] = zOrder || 0
+[113] this.__events[eventName][func] = zOrder || 0
 
           begin set property
             begin logic ||
@@ -1098,7 +1083,7 @@ begin function
           end set property ret values 0
 
 
-[115] this.__events[eventName].rsort()
+[114] this.__events[eventName].rsort()
 
           begin call method
             begin get property
@@ -1114,7 +1099,7 @@ begin function
           end call method ret values 0
 
 
-[116] return [eventName func]
+[115] return [eventName func]
 
           begin code list
             begin return
@@ -1133,7 +1118,7 @@ begin function
       end set by name: [addEventListener]
       ,
 
-[119] removeEventListener = function(eventName, func){
+[118] removeEventListener = function(eventName, func){
 
       begin set by name
         begin function
@@ -1144,7 +1129,7 @@ begin function
             3 _G
           end locals
 
-[120] if(arrayof eventName){
+[119] if(arrayof eventName){
 
           begin if
             begin bool exp
@@ -1154,7 +1139,7 @@ begin function
             end bool exp
             begin then
 
-[121] eventName, func = eventName[0], eventName[1]
+[120] eventName, func = eventName[0], eventName[1]
 
               begin scope
                 begin set local var
@@ -1177,7 +1162,7 @@ begin function
           end if ret values 0
 
 
-[123] if(eventName in this.__events){
+[122] if(eventName in this.__events){
 
           begin if
             begin bool exp
@@ -1191,7 +1176,7 @@ begin function
             end bool exp
             begin then
 
-[124] delete this.__events[eventName][func]
+[123] delete this.__events[eventName][func]
 
               begin scope
                 begin delete
@@ -1211,7 +1196,7 @@ begin function
       end set by name: [removeEventListener]
       ,
 
-[128] triggerEvent = function(eventName, params){
+[127] triggerEvent = function(eventName, params){
 
       begin set by name
         begin function
@@ -1222,7 +1207,7 @@ begin function
             3 _G
           end locals
 
-[129] for(var child in this.__childrenPos){
+[128] for(var child in this.__childrenPos){
 
           begin scope
             begin locals 3
@@ -1272,7 +1257,7 @@ begin function
                 end if ret values 0
 
 
-[130] child.triggerEvent(eventName, params)
+[129] child.triggerEvent(eventName, params)
 
                 begin scope
                   begin call method
@@ -1291,7 +1276,7 @@ begin function
           end scope ret values 0
 
 
-[132] if(eventName in this.__events){
+[131] if(eventName in this.__events){
 
           begin if
             begin bool exp
@@ -1305,7 +1290,7 @@ begin function
             end bool exp
             begin then
 
-[133] params.target = this
+[132] params.target = this
 
               begin scope
                 begin set property
@@ -1315,7 +1300,7 @@ begin function
                 end set property ret values 0
 
 
-[134] for(var func in this.__events[eventName]){
+[133] for(var func in this.__events[eventName]){
 
                 begin scope
                   begin locals 3
@@ -1368,7 +1353,7 @@ begin function
                       end if ret values 0
 
 
-[135] func.call(this, params)
+[134] func.call(this, params)
 
                       begin scope
                         begin call method
@@ -1390,7 +1375,7 @@ begin function
           end if ret values 0
 
 
-[138] for(var child in this.__childrenNeg){
+[137] for(var child in this.__childrenNeg){
 
           begin scope
             begin locals 3
@@ -1440,7 +1425,7 @@ begin function
                 end if ret values 0
 
 
-[139] child.triggerEvent(eventName, params)
+[138] child.triggerEvent(eventName, params)
 
                 begin scope
                   begin call method
@@ -1461,7 +1446,7 @@ begin function
       end set by name: [triggerEvent]
       ,
 
-[143] setTimeout = function(func, delay, count, priority){
+[142] setTimeout = function(func, delay, count, priority){
 
       begin set by name
         begin function
@@ -1475,7 +1460,7 @@ begin function
             6 i
           end locals
 
-[144] count = count || 1
+[143] count = count || 1
 
           begin set local var
             begin logic ||
@@ -1485,7 +1470,7 @@ begin function
           end set local var count (2 0 param)
 
 
-[145] count > 0 && functionof func || return;
+[144] count > 0 && functionof func || return;
 
           begin pop
             begin logic ||
@@ -1505,19 +1490,19 @@ begin function
           end pop ret values 0
 
 
-[146] var i = func
+[145] var i = func
 
           begin set local var
             get local var func (0 0 param)
           end set local var i (6 0)
 
 
-[147] this.__timers[i] = {
+[146] this.__timers[i] = {
 
           begin set property
             begin object 5
 
-[148] nextTime = this.time + delay
+[147] nextTime = this.time + delay
 
               begin set by name
                 begin operator +
@@ -1530,28 +1515,28 @@ begin function
               end set by name: [nextTime]
               ,
 
-[149] delay = delay
+[148] delay = delay
 
               begin set by name
                 get local var delay (1 0 param)
               end set by name: [delay]
               ,
 
-[150] func = func
+[149] func = func
 
               begin set by name
                 get local var func (0 0 param)
               end set by name: [func]
               ,
 
-[151] count = count
+[150] count = count
 
               begin set by name
                 get local var count (2 0 param)
               end set by name: [count]
               ,
 
-[152] priority = priority || 0
+[151] priority = priority || 0
 
               begin set by name
                 begin logic ||
@@ -1561,7 +1546,7 @@ begin function
               end set by name: [priority]
             end object
 
-[147] this.__timers[i] = {
+[146] this.__timers[i] = {
 
             begin get property auto create
               push this
@@ -1571,7 +1556,7 @@ begin function
           end set property ret values 0
 
 
-[154] this.__timers.rsort "priority"
+[153] this.__timers.rsort "priority"
 
           begin call method
             begin get property
@@ -1586,7 +1571,7 @@ begin function
           end call method ret values 0
 
 
-[155] return i
+[154] return i
 
           begin code list
             begin return
@@ -1597,7 +1582,7 @@ begin function
       end set by name: [setTimeout]
       ,
 
-[158] clearTimeout = function(t){
+[157] clearTimeout = function(t){
 
       begin set by name
         begin function
@@ -1607,7 +1592,7 @@ begin function
             2 _G
           end locals
 
-[159] delete this.__timers[t]
+[158] delete this.__timers[t]
 
           begin delete
             begin get property
@@ -1620,7 +1605,7 @@ begin function
       end set by name: [clearTimeout]
       ,
 
-[162] updateTimers = function(){
+[161] updateTimers = function(){
 
       begin set by name
         begin function
@@ -1630,7 +1615,7 @@ begin function
             2 time
           end locals
 
-[163] var time = this.time
+[162] var time = this.time
 
           begin set local var
             begin get property
@@ -1640,7 +1625,7 @@ begin function
           end set local var time (2 0)
 
 
-[164] for(var i, t in this.__timers){
+[163] for(var i, t in this.__timers){
 
           begin scope
             begin locals 4
@@ -1695,7 +1680,7 @@ begin function
                 end if ret values 0
 
 
-[165] if(t.nextTime <= time){
+[164] if(t.nextTime <= time){
 
                 begin scope
                   begin if
@@ -1710,7 +1695,7 @@ begin function
                     end bool exp
                     begin then
 
-[167] t.nextTime = time + t.delay
+[166] t.nextTime = time + t.delay
 
                       begin scope
                         begin set property
@@ -1726,7 +1711,7 @@ begin function
                         end set property ret values 0
 
 
-[168] if(t.count === true){
+[167] if(t.count === true){
 
                         begin if
                           begin bool exp
@@ -1740,7 +1725,7 @@ begin function
                           end bool exp
                           begin then
 
-[169] t.func.call(this)
+[168] t.func.call(this)
 
                             begin scope
                               begin call method
@@ -1758,7 +1743,7 @@ begin function
                           end then
                           begin else
 
-[171] if(t.count <= 1){
+[170] if(t.count <= 1){
 
                             begin scope
                               begin if
@@ -1773,7 +1758,7 @@ begin function
                                 end bool exp
                                 begin then
 
-[172] delete this.__timers[i]
+[171] delete this.__timers[i]
 
                                   begin scope
                                     begin delete
@@ -1787,7 +1772,7 @@ begin function
                                 end then
                                 begin else
 
-[174] t.count = t.count - 1
+[173] t.count = t.count - 1
 
                                   begin scope
                                     begin set property
@@ -1806,7 +1791,7 @@ begin function
                               end if ret values 0
 
 
-[176] t.func.call(this)
+[175] t.func.call(this)
 
                               begin call method
                                 begin get property
@@ -1833,7 +1818,7 @@ begin function
       end set by name: [updateTimers]
       ,
 
-[182] transition = function(t){
+[181] transition = function(t){
 
       begin set by name
         begin function
@@ -1843,7 +1828,7 @@ begin function
             2 _G
           end locals
 
-[183] return this.insert(Transition(t, this))
+[182] return this.insert(Transition(t, this))
 
           begin tail call method
             push this
@@ -1866,7 +1851,7 @@ begin function
       end set by name: [transition]
       ,
 
-[186] stopTransition = function(t){
+[185] stopTransition = function(t){
 
       begin set by name
         begin function
@@ -1876,7 +1861,7 @@ begin function
             2 _G
           end locals
 
-[187] t.remove()
+[186] t.remove()
 
           begin call method
             get local var t (0 0 param)
@@ -1888,7 +1873,7 @@ begin function
       end set by name: [stopTransition]
       ,
 
-[190] stopAllTransitions = function(){
+[189] stopAllTransitions = function(){
 
       begin set by name
         begin function
@@ -1897,7 +1882,7 @@ begin function
             1 _G
           end locals
 
-[191] this.removeAllInstancesOf(Transition)
+[190] this.removeAllInstancesOf(Transition)
 
           begin call method
             push this
@@ -1911,7 +1896,7 @@ begin function
       end set by name: [stopAllTransitions]
       ,
 
-[194] removeAllInstancesOf = function(type){
+[193] removeAllInstancesOf = function(type){
 
       begin set by name
         begin function
@@ -1921,7 +1906,7 @@ begin function
             2 _G
           end locals
 
-[195] for(var t in this.__childrenPos){
+[194] for(var t in this.__childrenPos){
 
           begin scope
             begin locals 3
@@ -1971,7 +1956,7 @@ begin function
                 end if ret values 0
 
 
-[196] if(t is type)
+[195] if(t is type)
 
                 begin scope
                   begin if
@@ -1983,7 +1968,7 @@ begin function
                     end bool exp
                     begin then
 
-[197] t.remove()
+[196] t.remove()
 
                       begin call method
                         get local var t (3 0)
@@ -1999,7 +1984,7 @@ begin function
           end scope ret values 0
 
 
-[199] for(var t in this.__childrenNeg){
+[198] for(var t in this.__childrenNeg){
 
           begin scope
             begin locals 3
@@ -2049,7 +2034,7 @@ begin function
                 end if ret values 0
 
 
-[200] if(t is type)
+[199] if(t is type)
 
                 begin scope
                   begin if
@@ -2061,7 +2046,7 @@ begin function
                     end bool exp
                     begin then
 
-[201] t.remove()
+[200] t.remove()
 
                       begin call method
                         get local var t (6 0)
@@ -2081,159 +2066,159 @@ begin function
   end set env var FunctionNode
 
 
-[206] Node = extends FunctionNode {
+[205] Node = extends FunctionNode {
 
   begin set env var
     begin extends
       get env var FunctionNode
       begin object 46
 
-[207] __object = {
+[206] __object = {
 
         begin set by name
           begin object 21
 
-[208] visible = true
+[207] visible = true
 
             begin set by name
               const true
             end set by name: [visible]
             ,
 
-[209] modal = false
+[208] modal = false
 
             begin set by name
               const false
             end set by name: [modal]
             ,
 
-[210] opacity = 1
+[209] opacity = 1
 
             begin set by name
               push const number 1
             end set by name: [opacity]
             ,
 
-[211] color = null
+[210] color = null
 
             begin set by name
               const null
             end set by name: [color]
             ,
 
-[213] __isRelativeAnchor = true
+[212] __isRelativeAnchor = true
 
             begin set by name
               const true
             end set by name: [__isRelativeAnchor]
             ,
 
-[214] __x = 0
+[213] __x = 0
 
             begin set by name
               push const number 0
             end set by name: [__x]
             ,
 
-[215] __y = 0
+[214] __y = 0
 
             begin set by name
               push const number 0
             end set by name: [__y]
             ,
 
-[216] __width = 0
+[215] __width = 0
 
             begin set by name
               push const number 0
             end set by name: [__width]
             ,
 
-[217] __height = 0
+[216] __height = 0
 
             begin set by name
               push const number 0
             end set by name: [__height]
             ,
 
-[218] __scaleX = 1
+[217] __scaleX = 1
 
             begin set by name
               push const number 1
             end set by name: [__scaleX]
             ,
 
-[219] __scaleY = 1
+[218] __scaleY = 1
 
             begin set by name
               push const number 1
             end set by name: [__scaleY]
             ,
 
-[220] __skewX = 0
+[219] __skewX = 0
 
             begin set by name
               push const number 0
             end set by name: [__skewX]
             ,
 
-[221] __skewY = 0
+[220] __skewY = 0
 
             begin set by name
               push const number 0
             end set by name: [__skewY]
             ,
 
-[222] __anchorX = 0.5
+[221] __anchorX = 0.5
 
             begin set by name
               push const number 0.5
             end set by name: [__anchorX]
             ,
 
-[223] __anchorY = 0.5
+[222] __anchorY = 0.5
 
             begin set by name
               push const number 0.5
             end set by name: [__anchorY]
             ,
 
-[224] __rotation = 0
+[223] __rotation = 0
 
             begin set by name
               push const number 0
             end set by name: [__rotation]
             ,
 
-[226] __transformDirty = true
+[225] __transformDirty = true
 
             begin set by name
               const true
             end set by name: [__transformDirty]
             ,
 
-[227] __transform = null // node to parent
+[226] __transform = null // node to parent
 
             begin set by name
               const null
             end set by name: [__transform]
             ,
 
-[228] __inverseDirty = true
+[227] __inverseDirty = true
 
             begin set by name
               const true
             end set by name: [__inverseDirty]
             ,
 
-[229] __inverseTransform = null // parent to node
+[228] __inverseTransform = null // parent to node
 
             begin set by name
               const null
             end set by name: [__inverseTransform]
             ,
 
-[230] __transformGL = null // node to parent (GL)
+[229] __transformGL = null // node to parent (GL)
 
             begin set by name
               const null
@@ -2242,7 +2227,7 @@ begin function
         end set by name: [__object]
         ,
 
-[233] __get@x = function(){return this.__x}
+[232] __get@x = function(){return this.__x}
 
         begin set by name
           begin function
@@ -2260,7 +2245,7 @@ begin function
         end set by name: [__get@x]
         ,
 
-[234] __set@x = function(a){if(this.__x !== a){ this.__x = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[233] __set@x = function(a){if(this.__x !== a){ this.__x = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -2307,7 +2292,7 @@ begin function
         end set by name: [__set@x]
         ,
 
-[236] __get@y = function(){return this.__y}
+[235] __get@y = function(){return this.__y}
 
         begin set by name
           begin function
@@ -2325,7 +2310,7 @@ begin function
         end set by name: [__get@y]
         ,
 
-[237] __set@y = function(a){if(this.__y !== a){ this.__y = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[236] __set@y = function(a){if(this.__y !== a){ this.__y = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -2372,7 +2357,7 @@ begin function
         end set by name: [__set@y]
         ,
 
-[239] __get@position = function(){return Point(this.__x this.__y)}
+[238] __get@position = function(){return Point(this.__x this.__y)}
 
         begin set by name
           begin function
@@ -2400,7 +2385,7 @@ begin function
         end set by name: [__get@position]
         ,
 
-[240] __set@position = function(a){ this.x, this.y = a.x, a.y }
+[239] __set@position = function(a){ this.x, this.y = a.x, a.y }
 
         begin set by name
           begin function
@@ -2432,7 +2417,7 @@ begin function
         end set by name: [__set@position]
         ,
 
-[242] __get@width = function(){return this.__width}
+[241] __get@width = function(){return this.__width}
 
         begin set by name
           begin function
@@ -2450,7 +2435,7 @@ begin function
         end set by name: [__get@width]
         ,
 
-[243] __set@width = function(a){if(this.__width !== a){ this.__width = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[242] __set@width = function(a){if(this.__width !== a){ this.__width = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -2497,7 +2482,7 @@ begin function
         end set by name: [__set@width]
         ,
 
-[245] __get@height = function(){return this.__height}
+[244] __get@height = function(){return this.__height}
 
         begin set by name
           begin function
@@ -2515,7 +2500,7 @@ begin function
         end set by name: [__get@height]
         ,
 
-[246] __set@height = function(a){if(this.__height !== a){ this.__height = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[245] __set@height = function(a){if(this.__height !== a){ this.__height = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -2562,7 +2547,7 @@ begin function
         end set by name: [__set@height]
         ,
 
-[248] __get@scaleX = function(){return this.__scaleX}
+[247] __get@scaleX = function(){return this.__scaleX}
 
         begin set by name
           begin function
@@ -2580,7 +2565,7 @@ begin function
         end set by name: [__get@scaleX]
         ,
 
-[249] __set@scaleX = function(a){if(this.__scaleX !== a){ this.__scaleX = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[248] __set@scaleX = function(a){if(this.__scaleX !== a){ this.__scaleX = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -2627,7 +2612,7 @@ begin function
         end set by name: [__set@scaleX]
         ,
 
-[251] __get@scaleY = function(){return this.__scaleY}
+[250] __get@scaleY = function(){return this.__scaleY}
 
         begin set by name
           begin function
@@ -2645,7 +2630,7 @@ begin function
         end set by name: [__get@scaleY]
         ,
 
-[252] __set@scaleY = function(a){if(this.__scaleY !== a){ this.__scaleY = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[251] __set@scaleY = function(a){if(this.__scaleY !== a){ this.__scaleY = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -2692,7 +2677,7 @@ begin function
         end set by name: [__set@scaleY]
         ,
 
-[254] __get@scale = function(){return this.__scaleX} // Point(this.__scaleX this.__scaleY)}
+[253] __get@scale = function(){return this.__scaleX} // Point(this.__scaleX this.__scaleY)}
 
         begin set by name
           begin function
@@ -2710,7 +2695,7 @@ begin function
         end set by name: [__get@scale]
         ,
 
-[255] __set@scale = function(a){
+[254] __set@scale = function(a){
 
         begin set by name
           begin function
@@ -2720,7 +2705,7 @@ begin function
               2 _G
             end locals
 
-[256] if(numberof a){
+[255] if(numberof a){
 
             begin if
               begin bool exp
@@ -2730,7 +2715,7 @@ begin function
               end bool exp
               begin then
 
-[257] this.scaleX, this.scaleY = a, a
+[256] this.scaleX, this.scaleY = a, a
 
                 begin scope
                   begin set property
@@ -2750,7 +2735,7 @@ begin function
               end then
               begin else
 
-[259] this.scaleX, this.scaleY = a.x, a.y
+[258] this.scaleX, this.scaleY = a.x, a.y
 
                 begin scope
                   begin set property
@@ -2779,7 +2764,7 @@ begin function
         end set by name: [__set@scale]
         ,
 
-[263] __get@skewX = function(){return this.__skewX}
+[262] __get@skewX = function(){return this.__skewX}
 
         begin set by name
           begin function
@@ -2797,7 +2782,7 @@ begin function
         end set by name: [__get@skewX]
         ,
 
-[264] __set@skewX = function(a){if(this.__skewX !== a){ this.__skewX = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[263] __set@skewX = function(a){if(this.__skewX !== a){ this.__skewX = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -2844,7 +2829,7 @@ begin function
         end set by name: [__set@skewX]
         ,
 
-[266] __get@skewY = function(){return this.__skewY}
+[265] __get@skewY = function(){return this.__skewY}
 
         begin set by name
           begin function
@@ -2862,7 +2847,7 @@ begin function
         end set by name: [__get@skewY]
         ,
 
-[267] __set@skewY = function(a){if(this.__skewY !== a){ this.__skewY = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[266] __set@skewY = function(a){if(this.__skewY !== a){ this.__skewY = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -2909,7 +2894,7 @@ begin function
         end set by name: [__set@skewY]
         ,
 
-[269] __get@skew = function(){return Point(this.__skewX this.__skewY)}
+[268] __get@skew = function(){return Point(this.__skewX this.__skewY)}
 
         begin set by name
           begin function
@@ -2937,7 +2922,7 @@ begin function
         end set by name: [__get@skew]
         ,
 
-[270] __set@skew = function(a){ this.skewX, this.skewY = a.x, a.y }
+[269] __set@skew = function(a){ this.skewX, this.skewY = a.x, a.y }
 
         begin set by name
           begin function
@@ -2969,7 +2954,7 @@ begin function
         end set by name: [__set@skew]
         ,
 
-[272] __get@anchorX = function(){return this.__anchorX}
+[271] __get@anchorX = function(){return this.__anchorX}
 
         begin set by name
           begin function
@@ -2987,7 +2972,7 @@ begin function
         end set by name: [__get@anchorX]
         ,
 
-[273] __set@anchorX = function(a){if(this.__anchorX !== a){ this.__anchorX = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[272] __set@anchorX = function(a){if(this.__anchorX !== a){ this.__anchorX = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -3034,7 +3019,7 @@ begin function
         end set by name: [__set@anchorX]
         ,
 
-[275] __get@anchorY = function(){return this.__anchorY}
+[274] __get@anchorY = function(){return this.__anchorY}
 
         begin set by name
           begin function
@@ -3052,7 +3037,7 @@ begin function
         end set by name: [__get@anchorY]
         ,
 
-[276] __set@anchorY = function(a){if(this.__anchorY !== a){ this.__anchorY = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[275] __set@anchorY = function(a){if(this.__anchorY !== a){ this.__anchorY = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -3099,7 +3084,7 @@ begin function
         end set by name: [__set@anchorY]
         ,
 
-[278] __get@anchor = function(){return Point(this.__anchorX this.__anchorY)}
+[277] __get@anchor = function(){return Point(this.__anchorX this.__anchorY)}
 
         begin set by name
           begin function
@@ -3127,7 +3112,7 @@ begin function
         end set by name: [__get@anchor]
         ,
 
-[279] __set@anchor = function(a){ this.anchorX, this.anchorY = a.x, a.y }
+[278] __set@anchor = function(a){ this.anchorX, this.anchorY = a.x, a.y }
 
         begin set by name
           begin function
@@ -3159,7 +3144,7 @@ begin function
         end set by name: [__set@anchor]
         ,
 
-[281] __get@rotation = function(){return this.__rotation}
+[280] __get@rotation = function(){return this.__rotation}
 
         begin set by name
           begin function
@@ -3177,7 +3162,7 @@ begin function
         end set by name: [__get@rotation]
         ,
 
-[282] __set@rotation = function(a){if(this.__rotation !== a){ this.__rotation = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[281] __set@rotation = function(a){if(this.__rotation !== a){ this.__rotation = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -3224,7 +3209,7 @@ begin function
         end set by name: [__set@rotation]
         ,
 
-[284] __get@isRelativeAnchor = function(){return this.__isRelativeAnchor}
+[283] __get@isRelativeAnchor = function(){return this.__isRelativeAnchor}
 
         begin set by name
           begin function
@@ -3242,7 +3227,7 @@ begin function
         end set by name: [__get@isRelativeAnchor]
         ,
 
-[285] __set@isRelativeAnchor = function(a){if(this.__isRelativeAnchor !== a){ this.__isRelativeAnchor = a; this.__transformDirty, this.__inverseDirty = true, true }}
+[284] __set@isRelativeAnchor = function(a){if(this.__isRelativeAnchor !== a){ this.__isRelativeAnchor = a; this.__transformDirty, this.__inverseDirty = true, true }}
 
         begin set by name
           begin function
@@ -3289,7 +3274,7 @@ begin function
         end set by name: [__set@isRelativeAnchor]
         ,
 
-[287] __construct = function(){
+[286] __construct = function(){
 
         begin set by name
           begin function
@@ -3298,7 +3283,7 @@ begin function
               1 _G
             end locals
 
-[288] super()
+[287] super()
 
             begin call
               super
@@ -3307,7 +3292,7 @@ begin function
             end call ret values 0
 
 
-[289] this.width = director.width
+[288] this.width = director.width
 
             begin set property
               begin get property
@@ -3319,7 +3304,7 @@ begin function
             end set property ret values 0
 
 
-[290] this.height = director.height
+[289] this.height = director.height
 
             begin set property
               begin get property
@@ -3333,7 +3318,7 @@ begin function
         end set by name: [__construct]
         ,
 
-[293] paint = function(){}
+[292] paint = function(){}
 
         begin set by name
           begin function
@@ -3345,7 +3330,7 @@ begin function
         end set by name: [paint]
         ,
 
-[295] nodeToParentTransform = function(){
+[294] nodeToParentTransform = function(){
 
         begin set by name
           begin function
@@ -3354,7 +3339,7 @@ begin function
               1 _G
             end locals
 
-[296] if(this.__transformDirty){
+[295] if(this.__transformDirty){
 
             begin if
               begin bool exp
@@ -3365,7 +3350,7 @@ begin function
               end bool exp
               begin then
 
-[297] var t = Matrix()
+[296] var t = Matrix()
 
                 begin scope
                   begin locals 3
@@ -3383,7 +3368,7 @@ begin function
                   end set local var t (2 0)
 
 
-[298] var anchorX, anchorY
+[297] var anchorX, anchorY
 
                   begin params 2
                     new local var anchorX (3 0)
@@ -3392,7 +3377,7 @@ begin function
                   end params ret values 0
 
 
-[299] if(this.__anchorX !== 0 || this.__anchorY !== 0){
+[298] if(this.__anchorX !== 0 || this.__anchorY !== 0){
 
                   begin if
                     begin bool exp
@@ -3415,7 +3400,7 @@ begin function
                     end bool exp
                     begin then
 
-[300] anchorX = this.__anchorX * this.__width
+[299] anchorX = this.__anchorX * this.__width
 
                       begin scope
                         begin set local var
@@ -3432,7 +3417,7 @@ begin function
                         end set local var anchorX (3 0)
 
 
-[301] anchorY = this.__anchorY * this.__height
+[300] anchorY = this.__anchorY * this.__height
 
                         begin set local var
                           begin operator *
@@ -3451,7 +3436,7 @@ begin function
                   end if ret values 0
 
 
-[303] if(anchorX && !this.__isRelativeAnchor){
+[302] if(anchorX && !this.__isRelativeAnchor){
 
                   begin if
                     begin bool exp
@@ -3467,7 +3452,7 @@ begin function
                     end bool exp
                     begin then
 
-[304] t = t.translate(anchorX, anchorY)
+[303] t = t.translate(anchorX, anchorY)
 
                       begin scope
                         begin set local var
@@ -3487,7 +3472,7 @@ begin function
                   end if ret values 0
 
 
-[306] if(this.__x !== 0 || this.__y !== 0){
+[305] if(this.__x !== 0 || this.__y !== 0){
 
                   begin if
                     begin bool exp
@@ -3510,7 +3495,7 @@ begin function
                     end bool exp
                     begin then
 
-[307] t = t.translate(this.__x, this.__y)
+[306] t = t.translate(this.__x, this.__y)
 
                       begin scope
                         begin set local var
@@ -3536,7 +3521,7 @@ begin function
                   end if ret values 0
 
 
-[309] if(this.__rotation !== 0){
+[308] if(this.__rotation !== 0){
 
                   begin if
                     begin bool exp
@@ -3550,7 +3535,7 @@ begin function
                     end bool exp
                     begin then
 
-[310] t = t.rotate(this.__rotation)
+[309] t = t.rotate(this.__rotation)
 
                       begin scope
                         begin set local var
@@ -3571,7 +3556,7 @@ begin function
                   end if ret values 0
 
 
-[312] if(this.__skewX !== 0 || this.__skewY !== 0){
+[311] if(this.__skewX !== 0 || this.__skewY !== 0){
 
                   begin if
                     begin bool exp
@@ -3594,7 +3579,7 @@ begin function
                     end bool exp
                     begin then
 
-[313] t = t.skew(this.__skewX, this.__skewY)
+[312] t = t.skew(this.__skewX, this.__skewY)
 
                       begin scope
                         begin set local var
@@ -3620,7 +3605,7 @@ begin function
                   end if ret values 0
 
 
-[315] if(this.__scaleX !== 0 || this.__scaleY !== 0){
+[314] if(this.__scaleX !== 0 || this.__scaleY !== 0){
 
                   begin if
                     begin bool exp
@@ -3643,7 +3628,7 @@ begin function
                     end bool exp
                     begin then
 
-[316] t = t.scale(this.__scaleX, this.__scaleY)
+[315] t = t.scale(this.__scaleX, this.__scaleY)
 
                       begin scope
                         begin set local var
@@ -3669,7 +3654,7 @@ begin function
                   end if ret values 0
 
 
-[318] if(anchorX){
+[317] if(anchorX){
 
                   begin if
                     begin bool exp
@@ -3677,7 +3662,7 @@ begin function
                     end bool exp
                     begin then
 
-[319] t = t.translate(-anchorX, -anchorY)
+[318] t = t.translate(-anchorX, -anchorY)
 
                       begin scope
                         begin set local var
@@ -3701,7 +3686,7 @@ begin function
                   end if ret values 0
 
 
-[321] this.__transform = t
+[320] this.__transform = t
 
                   begin set property
                     get local var t (2 0)
@@ -3710,7 +3695,7 @@ begin function
                   end set property ret values 0
 
 
-[322] this.__transformGL = t.toGL()
+[321] this.__transformGL = t.toGL()
 
                   begin set property
                     begin call method
@@ -3724,7 +3709,7 @@ begin function
                   end set property ret values 0
 
 
-[323] this.__transformDirty = false
+[322] this.__transformDirty = false
 
                   begin set property
                     const false
@@ -3736,7 +3721,7 @@ begin function
             end if ret values 0
 
 
-[325] return this.__transform
+[324] return this.__transform
 
             begin code list
               begin return
@@ -3750,7 +3735,7 @@ begin function
         end set by name: [nodeToParentTransform]
         ,
 
-[328] parentToNodeTransform = function(){
+[327] parentToNodeTransform = function(){
 
         begin set by name
           begin function
@@ -3759,7 +3744,7 @@ begin function
               1 _G
             end locals
 
-[329] if(this.__inverseDirty){
+[328] if(this.__inverseDirty){
 
             begin if
               begin bool exp
@@ -3770,7 +3755,7 @@ begin function
               end bool exp
               begin then
 
-[330] this.__inverseTransform = (clone this.nodeToParentTransform()).inverse()
+[329] this.__inverseTransform = (clone this.nodeToParentTransform()).inverse()
 
                 begin scope
                   begin set property
@@ -3792,7 +3777,7 @@ begin function
                   end set property ret values 0
 
 
-[331] this.__inverseDirty = false
+[330] this.__inverseDirty = false
 
                   begin set property
                     const false
@@ -3806,7 +3791,7 @@ begin function
         end set by name: [parentToNodeTransform]
         ,
 
-[335] nodeToWorldTransform = function(){
+[334] nodeToWorldTransform = function(){
 
         begin set by name
           begin function
@@ -3816,7 +3801,7 @@ begin function
               2 t
             end locals
 
-[337] var t = clone this.nodeToParentTransform()
+[336] var t = clone this.nodeToParentTransform()
 
             begin set local var
               begin clone
@@ -3830,7 +3815,7 @@ begin function
             end set local var t (2 0)
 
 
-[338] for(var p = this.__parent; p;){
+[337] for(var p = this.__parent; p;){
 
             begin scope
               begin locals 1
@@ -3856,7 +3841,7 @@ begin function
                 end if ret values 0
 
 
-[339] t = t.mult( p.nodeToParentTransform() )
+[338] t = t.mult( p.nodeToParentTransform() )
 
                 begin scope
                   begin set local var
@@ -3876,7 +3861,7 @@ begin function
                   end set local var t (2 0)
 
 
-[340] p = p.__parent
+[339] p = p.__parent
 
                   begin set local var
                     begin get property
@@ -3887,14 +3872,14 @@ begin function
                 end scope ret values 0
 
 
-[338] for(var p = this.__parent; p;){
+[337] for(var p = this.__parent; p;){
 
                 nop
               end loop ret values 0
             end scope ret values 0
 
 
-[343] return t
+[342] return t
 
             begin code list
               begin return
@@ -3905,7 +3890,7 @@ begin function
         end set by name: [nodeToWorldTransform]
         ,
 
-[346] worldToNodeTransform = function(){
+[345] worldToNodeTransform = function(){
 
         begin set by name
           begin function
@@ -3914,7 +3899,7 @@ begin function
               1 _G
             end locals
 
-[347] return this.nodeToWorldTransform().inverse()
+[346] return this.nodeToWorldTransform().inverse()
 
             begin tail call method
               begin call method
@@ -3931,7 +3916,7 @@ begin function
         end set by name: [worldToNodeTransform]
         ,
 
-[350] pointToNodeSpace = function(point){
+[349] pointToNodeSpace = function(point){
 
         begin set by name
           begin function
@@ -3941,7 +3926,7 @@ begin function
               2 _G
             end locals
 
-[351] return this.worldToNodeTransform().transform(point)
+[350] return this.worldToNodeTransform().transform(point)
 
             begin tail call method
               begin call method
@@ -3960,7 +3945,7 @@ begin function
         end set by name: [pointToNodeSpace]
         ,
 
-[354] isLocalPoint = function(point){
+[353] isLocalPoint = function(point){
 
         begin set by name
           begin function
@@ -3970,16 +3955,16 @@ begin function
               2 _G
             end locals
 
-[355] return point.x >= 0 && point.x < this.__width
+[354] return point.x >= 0 && point.x < this.__width
 
             begin return
 
-[356] && point.y >= 0 && point.y < this.__height
+[355] && point.y >= 0 && point.y < this.__height
 
               begin logic &&
                 begin logic &&
 
-[355] return point.x >= 0 && point.x < this.__width
+[354] return point.x >= 0 && point.x < this.__width
 
                   begin logic &&
                     begin logic >=
@@ -4001,7 +3986,7 @@ begin function
                     end logic <
                   end logic &&
 
-[356] && point.y >= 0 && point.y < this.__height
+[355] && point.y >= 0 && point.y < this.__height
 
                   begin logic >=
                     begin get property
@@ -4027,7 +4012,7 @@ begin function
         end set by name: [isLocalPoint]
         ,
 
-[359] transform = function(){
+[358] transform = function(){
 
         begin set by name
           begin function
@@ -4036,7 +4021,7 @@ begin function
               1 _G
             end locals
 
-[360] this.nodeToParentTransform()
+[359] this.nodeToParentTransform()
 
             begin call method
               push this
@@ -4046,7 +4031,7 @@ begin function
             end call method ret values 0
 
 
-[361] glMultMatrix(this.__transformGL)
+[360] glMultMatrix(this.__transformGL)
 
             begin call method
               get local var _E (0 0)
@@ -4063,7 +4048,7 @@ begin function
         end set by name: [transform]
         ,
 
-[364] handlePaint = function(params){
+[363] handlePaint = function(params){
 
         begin set by name
           begin function
@@ -4074,7 +4059,7 @@ begin function
               3 saveOpacity
             end locals
 
-[365] this.visible || return;
+[364] this.visible || return;
 
             begin pop
               begin logic ||
@@ -4089,7 +4074,7 @@ begin function
             end pop ret values 0
 
 
-[367] var saveOpacity = params.opacity
+[366] var saveOpacity = params.opacity
 
             begin set local var
               begin get property
@@ -4099,7 +4084,7 @@ begin function
             end set local var saveOpacity (3 0)
 
 
-[368] params.opacity = params.opacity * this.opacity
+[367] params.opacity = params.opacity * this.opacity
 
             begin set property
               begin operator *
@@ -4117,7 +4102,7 @@ begin function
             end set property ret values 0
 
 
-[370] glPushMatrix()
+[369] glPushMatrix()
 
             begin call method
               get local var _E (1 0)
@@ -4127,7 +4112,7 @@ begin function
             end call method ret values 0
 
 
-[371] this.transform()
+[370] this.transform()
 
             begin call method
               push this
@@ -4137,7 +4122,7 @@ begin function
             end call method ret values 0
 
 
-[373] for(var child in this.__childrenNeg.reverseIter()){
+[372] for(var child in this.__childrenNeg.reverseIter()){
 
             begin scope
               begin locals 3
@@ -4192,7 +4177,7 @@ begin function
                   end if ret values 0
 
 
-[374] child.handlePaint(params)
+[373] child.handlePaint(params)
 
                   begin scope
                     begin call method
@@ -4209,7 +4194,7 @@ begin function
             end scope ret values 0
 
 
-[377] this.paint(params)
+[376] this.paint(params)
 
             begin call method
               push this
@@ -4221,7 +4206,7 @@ begin function
             end call method ret values 0
 
 
-[378] if("paint" in this.__events){
+[377] if("paint" in this.__events){
 
             begin if
               begin bool exp
@@ -4235,7 +4220,7 @@ begin function
               end bool exp
               begin then
 
-[379] params.target = this
+[378] params.target = this
 
                 begin scope
                   begin set property
@@ -4245,7 +4230,7 @@ begin function
                   end set property ret values 0
 
 
-[380] for(var func in this.__events["paint"]){
+[379] for(var func in this.__events["paint"]){
 
                   begin scope
                     begin locals 3
@@ -4298,7 +4283,7 @@ begin function
                         end if ret values 0
 
 
-[381] func.call(this, params)
+[380] func.call(this, params)
 
                         begin scope
                           begin call method
@@ -4320,7 +4305,7 @@ begin function
             end if ret values 0
 
 
-[385] for(var child in this.__childrenPos.reverseIter()){
+[384] for(var child in this.__childrenPos.reverseIter()){
 
             begin scope
               begin locals 3
@@ -4375,7 +4360,7 @@ begin function
                   end if ret values 0
 
 
-[386] child.handlePaint(params)
+[385] child.handlePaint(params)
 
                   begin scope
                     begin call method
@@ -4392,7 +4377,7 @@ begin function
             end scope ret values 0
 
 
-[389] glPopMatrix()
+[388] glPopMatrix()
 
             begin call method
               get local var _E (1 0)
@@ -4402,7 +4387,7 @@ begin function
             end call method ret values 0
 
 
-[391] params.opacity = saveOpacity
+[390] params.opacity = saveOpacity
 
             begin set property
               get local var saveOpacity (3 0)
@@ -4413,7 +4398,7 @@ begin function
         end set by name: [handlePaint]
         ,
 
-[394] handleTouch = function(touch){
+[393] handleTouch = function(touch){
 
         begin set by name
           begin function
@@ -4424,7 +4409,7 @@ begin function
               9 autoCapture
             end locals
 
-[395] if(touch.captured !== this){
+[394] if(touch.captured !== this){
 
             begin if
               begin bool exp
@@ -4438,7 +4423,7 @@ begin function
               end bool exp
               begin then
 
-[396] for(var child in this.__childrenPos){
+[395] for(var child in this.__childrenPos){
 
                 begin scope
                   begin scope
@@ -4489,7 +4474,7 @@ begin function
                         end if ret values 0
 
 
-[397] child.handleTouch(touch) && return true;
+[396] child.handleTouch(touch) && return true;
 
                         begin scope
                           begin pop
@@ -4516,7 +4501,7 @@ begin function
             end if ret values 0
 
 
-[400] if("nativeTouch" in this.__events){
+[399] if("nativeTouch" in this.__events){
 
             begin if
               begin bool exp
@@ -4530,7 +4515,7 @@ begin function
               end bool exp
               begin then
 
-[401] touch.target = this
+[400] touch.target = this
 
                 begin scope
                   begin set property
@@ -4540,7 +4525,7 @@ begin function
                   end set property ret values 0
 
 
-[402] for(var func in this.__events["nativeTouch"]){
+[401] for(var func in this.__events["nativeTouch"]){
 
                   begin scope
                     begin locals 3
@@ -4593,7 +4578,7 @@ begin function
                         end if ret values 0
 
 
-[403] func.call(this touch)
+[402] func.call(this touch)
 
                         begin scope
                           begin call method
@@ -4615,14 +4600,14 @@ begin function
             end if ret values 0
 
 
-[406] var autoCapture
+[405] var autoCapture
 
             begin params 1
               new local var autoCapture (9 0)
             end params ret values 0
 
 
-[407] if("touch" in this.__events){
+[406] if("touch" in this.__events){
 
             begin if
               begin bool exp
@@ -4636,7 +4621,7 @@ begin function
               end bool exp
               begin then
 
-[408] if(touch.phase == "start"){
+[407] if(touch.phase == "start"){
 
                 begin scope
                   begin if
@@ -4651,7 +4636,7 @@ begin function
                     end bool exp
                     begin then
 
-[409] if(!touch.captured){
+[408] if(!touch.captured){
 
                       begin scope
                         begin if
@@ -4665,7 +4650,7 @@ begin function
                           end bool exp
                           begin then
 
-[411] var local = this.pointToNodeSpace(touch)
+[410] var local = this.pointToNodeSpace(touch)
 
                             begin scope
                               begin locals 1
@@ -4683,7 +4668,7 @@ begin function
                               end set local var local (10 0)
 
 
-[413] if(this.isLocalPoint(local)){
+[412] if(this.isLocalPoint(local)){
 
                               begin if
                                 begin bool exp
@@ -4698,7 +4683,7 @@ begin function
                                 end bool exp
                                 begin then
 
-[414] touch.local, touch.target, autoCapture = local, this, true
+[413] touch.local, touch.target, autoCapture = local, this, true
 
                                   begin scope
                                     begin set property
@@ -4720,7 +4705,7 @@ begin function
                                     end set property ret values 0
 
 
-[415] for(var func in this.__events["touch"]){
+[414] for(var func in this.__events["touch"]){
 
                                     begin scope
                                       begin locals 3
@@ -4773,7 +4758,7 @@ begin function
                                           end if ret values 0
 
 
-[416] if(func.call(this, touch) === true){
+[415] if(func.call(this, touch) === true){
 
                                           begin scope
                                             begin if
@@ -4794,7 +4779,7 @@ begin function
                                               end bool exp
                                               begin then
 
-[417] touch.captured = this
+[416] touch.captured = this
 
                                                 begin scope
                                                   begin set property
@@ -4804,7 +4789,7 @@ begin function
                                                   end set property ret values 0
 
 
-[418] touch.capturedFunc = func
+[417] touch.capturedFunc = func
 
                                                   begin set property
                                                     get local var func (11 0)
@@ -4813,7 +4798,7 @@ begin function
                                                   end set property ret values 0
 
 
-[419] delete touch.local
+[418] delete touch.local
 
                                                   begin delete
                                                     get local var touch (0 0 param)
@@ -4821,7 +4806,7 @@ begin function
                                                   end delete
 
 
-[420] return true
+[419] return true
 
                                                   begin code list
                                                     begin return
@@ -4837,7 +4822,7 @@ begin function
                                     end scope ret values 0
 
 
-[423] delete touch.local
+[422] delete touch.local
 
                                     begin delete
                                       get local var touch (0 0 param)
@@ -4853,7 +4838,7 @@ begin function
                     end then
                     begin else
 
-[426] }else if(touch.captured === this){
+[425] }else if(touch.captured === this){
 
                       begin if
                         begin bool exp
@@ -4867,7 +4852,7 @@ begin function
                         end bool exp
                         begin then
 
-[428] touch.local, touch.target = this.pointToNodeSpace(touch), this
+[427] touch.local, touch.target = this.pointToNodeSpace(touch), this
 
                           begin scope
                             begin pop
@@ -4894,7 +4879,7 @@ begin function
                                 end set property ret values 0
 
 
-[429] if(touch.capturedFunc){
+[428] if(touch.capturedFunc){
 
                                 begin if
                                   begin bool exp
@@ -4905,7 +4890,7 @@ begin function
                                   end bool exp
                                   begin then
 
-[430] if(touch.capturedFunc in this.__events["touch"]){
+[429] if(touch.capturedFunc in this.__events["touch"]){
 
                                     begin scope
                                       begin if
@@ -4926,7 +4911,7 @@ begin function
                                         end bool exp
                                         begin then
 
-[431] touch.capturedFunc.call(this, touch)
+[430] touch.capturedFunc.call(this, touch)
 
                                           begin scope
                                             begin call method
@@ -4949,7 +4934,7 @@ begin function
                                   end then
                                   begin else
 
-[434] for(var func in this.__events["touch"]){
+[433] for(var func in this.__events["touch"]){
 
                                     begin scope
                                       begin scope
@@ -5003,7 +4988,7 @@ begin function
                                             end if ret values 0
 
 
-[435] func.call(this, touch)
+[434] func.call(this, touch)
 
                                             begin scope
                                               begin call method
@@ -5025,7 +5010,7 @@ begin function
                                 end if ret values 0
 
 
-[438] delete touch.local
+[437] delete touch.local
 
                                 begin delete
                                   get local var touch (0 0 param)
@@ -5033,7 +5018,7 @@ begin function
                                 end delete
 
 
-[439] touch.captured && return true;
+[438] touch.captured && return true;
 
                                 begin logic &&
                                   begin get property
@@ -5056,7 +5041,7 @@ begin function
             end if ret values 0
 
 
-[442] if(touch.captured !== this){
+[441] if(touch.captured !== this){
 
             begin if
               begin bool exp
@@ -5070,7 +5055,7 @@ begin function
               end bool exp
               begin then
 
-[443] for(var child in this.__childrenNeg){
+[442] for(var child in this.__childrenNeg){
 
                 begin scope
                   begin scope
@@ -5121,7 +5106,7 @@ begin function
                         end if ret values 0
 
 
-[444] child.handleTouch(touch) && return true;
+[443] child.handleTouch(touch) && return true;
 
                         begin scope
                           begin pop
@@ -5148,7 +5133,7 @@ begin function
             end if ret values 0
 
 
-[447] if(!touch.captured){
+[446] if(!touch.captured){
 
             begin if
               begin bool exp
@@ -5161,7 +5146,7 @@ begin function
               end bool exp
               begin then
 
-[448] if(autoCapture){
+[447] if(autoCapture){
 
                 begin scope
                   begin if
@@ -5170,7 +5155,7 @@ begin function
                     end bool exp
                     begin then
 
-[449] touch.captured = this
+[448] touch.captured = this
 
                       begin scope
                         begin set property
@@ -5180,7 +5165,7 @@ begin function
                         end set property ret values 0
 
 
-[450] return true
+[449] return true
 
                         begin code list
                           begin return
@@ -5191,7 +5176,7 @@ begin function
                     end then
                     begin else
 
-[451] }else if(this.modal){
+[450] }else if(this.modal){
 
                       begin if
                         begin bool exp
@@ -5202,7 +5187,7 @@ begin function
                         end bool exp
                         begin then
 
-[452] touch.captured = this
+[451] touch.captured = this
 
                           begin scope
                             begin set property
@@ -5212,7 +5197,7 @@ begin function
                             end set property ret values 0
 
 
-[453] touch.modal = true
+[452] touch.modal = true
 
                             begin set property
                               const true
@@ -5221,7 +5206,7 @@ begin function
                             end set property ret values 0
 
 
-[454] return true
+[453] return true
 
                             begin code list
                               begin return
@@ -5238,7 +5223,7 @@ begin function
             end if ret values 0
 
 
-[457] return false
+[456] return false
 
             begin code list
               begin return
@@ -5249,7 +5234,7 @@ begin function
         end set by name: [handleTouch]
         ,
 
-[460] setRect = function(x y width height){
+[459] setRect = function(x y width height){
 
         begin set by name
           begin function
@@ -5262,7 +5247,7 @@ begin function
               5 _G
             end locals
 
-[461] this.x = x
+[460] this.x = x
 
             begin set property
               get local var x (0 0 param)
@@ -5271,7 +5256,7 @@ begin function
             end set property ret values 0
 
 
-[462] this.y = y
+[461] this.y = y
 
             begin set property
               get local var y (1 0 param)
@@ -5280,7 +5265,7 @@ begin function
             end set property ret values 0
 
 
-[463] this.width = width
+[462] this.width = width
 
             begin set property
               get local var width (2 0 param)
@@ -5289,7 +5274,7 @@ begin function
             end set property ret values 0
 
 
-[464] this.height = height
+[463] this.height = height
 
             begin set property
               get local var height (3 0 param)
@@ -5300,7 +5285,7 @@ begin function
         end set by name: [setRect]
         ,
 
-[467] drawBB = function(color, fill){
+[466] drawBB = function(color, fill){
 
         begin set by name
           begin function
@@ -5312,12 +5297,12 @@ begin function
               4 points
             end locals
 
-[468] var points = [
+[467] var points = [
 
             begin set local var
               begin array 4
 
-[469] [0, 0],
+[468] [0, 0],
 
                 begin set auto index
                   begin array 2
@@ -5332,7 +5317,7 @@ begin function
                 end set auto index
                 ,
 
-[470] [this.width, 0],
+[469] [this.width, 0],
 
                 begin set auto index
                   begin array 2
@@ -5350,7 +5335,7 @@ begin function
                 end set auto index
                 ,
 
-[471] [this.width, this.height],
+[470] [this.width, this.height],
 
                 begin set auto index
                   begin array 2
@@ -5371,7 +5356,7 @@ begin function
                 end set auto index
                 ,
 
-[472] [0, this.height],
+[471] [0, this.height],
 
                 begin set auto index
                   begin array 2
@@ -5391,7 +5376,7 @@ begin function
             end set local var points (4 0)
 
 
-[474] glColor(color)
+[473] glColor(color)
 
             begin call method
               get local var _E (2 0)
@@ -5403,7 +5388,7 @@ begin function
             end call method ret values 0
 
 
-[475] ccDrawPoly(points, true, fill)
+[474] ccDrawPoly(points, true, fill)
 
             begin call method
               get local var _E (2 0)
@@ -5424,26 +5409,26 @@ begin function
   end set env var Node
 
 
-[479] Transition = extends FunctionNode {
+[478] Transition = extends FunctionNode {
 
   begin set env var
     begin extends
       get env var FunctionNode
       begin object 6
 
-[480] __object = {
+[479] __object = {
 
         begin set by name
           begin object 2
 
-[481] duration = 0
+[480] duration = 0
 
             begin set by name
               push const number 0
             end set by name: [duration]
             ,
 
-[482] list = []
+[481] list = []
 
             begin set by name
               begin array 0
@@ -5453,7 +5438,7 @@ begin function
         end set by name: [__object]
         ,
 
-[485] __construct = function(params, target){
+[484] __construct = function(params, target){
 
         begin set by name
           begin function
@@ -5465,7 +5450,7 @@ begin function
               4 t
             end locals
 
-[486] super()
+[485] super()
 
             begin call
               super
@@ -5474,7 +5459,7 @@ begin function
             end call ret values 0
 
 
-[487] this.target = target
+[486] this.target = target
 
             begin set property
               get local var target (1 0 param)
@@ -5483,7 +5468,7 @@ begin function
             end set property ret values 0
 
 
-[488] var t = this.calculateTransition(this.list, params, 0, 1)
+[487] var t = this.calculateTransition(this.list, params, 0, 1)
 
             begin set local var
               begin call method
@@ -5506,7 +5491,7 @@ begin function
             end set local var t (4 0)
 
 
-[489] this.duration = t.endTime
+[488] this.duration = t.endTime
 
             begin set property
               begin get property
@@ -5518,7 +5503,7 @@ begin function
             end set property ret values 0
 
 
-[491] this.addEventListener("enterFrame", this.update, true)
+[490] this.addEventListener("enterFrame", this.update, true)
 
             begin call method
               push this
@@ -5539,7 +5524,7 @@ begin function
         end set by name: [__construct]
         ,
 
-[494] calculateTransition = function(list, params, startTime, speed){
+[493] calculateTransition = function(list, params, startTime, speed){
 
         begin set by name
           begin function
@@ -5555,7 +5540,7 @@ begin function
               8 duration
             end locals
 
-[495] var t = {}
+[494] var t = {}
 
             begin set local var
               begin object 0
@@ -5563,14 +5548,14 @@ begin function
             end set local var t (6 0)
 
 
-[496] var delay = 0
+[495] var delay = 0
 
             begin set local var
               push const number 0
             end set local var delay (7 0)
 
 
-[497] if("delay" in params){
+[496] if("delay" in params){
 
             begin if
               begin bool exp
@@ -5581,7 +5566,7 @@ begin function
               end bool exp
               begin then
 
-[498] delay = math.max(0, params.delay)
+[497] delay = math.max(0, params.delay)
 
                 begin scope
                   begin set local var
@@ -5601,7 +5586,7 @@ begin function
                   end set local var delay (7 0)
 
 
-[499] delete params.delay
+[498] delete params.delay
 
                   begin delete
                     get local var params (1 0 param)
@@ -5612,14 +5597,14 @@ begin function
             end if ret values 0
 
 
-[501] var duration = 0
+[500] var duration = 0
 
             begin set local var
               push const number 0
             end set local var duration (8 0)
 
 
-[502] if("duration" in params){
+[501] if("duration" in params){
 
             begin if
               begin bool exp
@@ -5630,7 +5615,7 @@ begin function
               end bool exp
               begin then
 
-[503] duration = math.max(0, params.duration)
+[502] duration = math.max(0, params.duration)
 
                 begin scope
                   begin set local var
@@ -5650,7 +5635,7 @@ begin function
                   end set local var duration (8 0)
 
 
-[504] delete params.duration
+[503] delete params.duration
 
                   begin delete
                     get local var params (1 0 param)
@@ -5661,7 +5646,7 @@ begin function
             end if ret values 0
 
 
-[506] if("speed" in params){
+[505] if("speed" in params){
 
             begin if
               begin bool exp
@@ -5672,7 +5657,7 @@ begin function
               end bool exp
               begin then
 
-[507] speed = speed * params.speed
+[506] speed = speed * params.speed
 
                 begin scope
                   begin set local var
@@ -5686,7 +5671,7 @@ begin function
                   end set local var speed (3 0 param)
 
 
-[508] delete params.speed
+[507] delete params.speed
 
                   begin delete
                     get local var params (1 0 param)
@@ -5697,7 +5682,7 @@ begin function
             end if ret values 0
 
 
-[510] if(speed > 0){
+[509] if(speed > 0){
 
             begin if
               begin bool exp
@@ -5708,7 +5693,7 @@ begin function
               end bool exp
               begin then
 
-[511] duration = duration / speed
+[510] duration = duration / speed
 
                 begin scope
                   begin set local var
@@ -5719,7 +5704,7 @@ begin function
                   end set local var duration (8 0)
 
 
-[512] delay = delay / speed
+[511] delay = delay / speed
 
                   begin set local var
                     begin operator /
@@ -5731,7 +5716,7 @@ begin function
               end then
               begin else
 
-[514] duration, delay = 0, 0
+[513] duration, delay = 0, 0
 
                 begin scope
                   begin set local var
@@ -5748,7 +5733,7 @@ begin function
             end if ret values 0
 
 
-[516] t.easy = null
+[515] t.easy = null
 
             begin set property
               const null
@@ -5757,7 +5742,7 @@ begin function
             end set property ret values 0
 
 
-[517] if("easy" in params){
+[516] if("easy" in params){
 
             begin if
               begin bool exp
@@ -5768,7 +5753,7 @@ begin function
               end bool exp
               begin then
 
-[518] t.easy = functionof params.easy
+[517] t.easy = functionof params.easy
 
                 begin scope
                   begin set property
@@ -5783,7 +5768,7 @@ begin function
                   end set property ret values 0
 
 
-[519] delete params.easy
+[518] delete params.easy
 
                   begin delete
                     get local var params (1 0 param)
@@ -5794,7 +5779,7 @@ begin function
             end if ret values 0
 
 
-[521] t.repeat = 1
+[520] t.repeat = 1
 
             begin set property
               push const number 1
@@ -5803,7 +5788,7 @@ begin function
             end set property ret values 0
 
 
-[522] if("repeat" in params){
+[521] if("repeat" in params){
 
             begin if
               begin bool exp
@@ -5814,7 +5799,7 @@ begin function
               end bool exp
               begin then
 
-[523] t.repeat = params.repeat
+[522] t.repeat = params.repeat
 
                 begin scope
                   begin set property
@@ -5827,7 +5812,7 @@ begin function
                   end set property ret values 0
 
 
-[524] delete params.repeat
+[523] delete params.repeat
 
                   begin delete
                     get local var params (1 0 param)
@@ -5838,7 +5823,7 @@ begin function
             end if ret values 0
 
 
-[526] t.infinite = t.repeat === true
+[525] t.infinite = t.repeat === true
 
             begin set property
               begin logic ===
@@ -5853,7 +5838,7 @@ begin function
             end set property ret values 0
 
 
-[527] t.repeat = math.max(0, numberof t.repeat)
+[526] t.repeat = math.max(0, numberof t.repeat)
 
             begin set property
               begin call method
@@ -5876,7 +5861,7 @@ begin function
             end set property ret values 0
 
 
-[530] t.startTime = startTime
+[529] t.startTime = startTime
 
             begin set property
               get local var startTime (2 0 param)
@@ -5885,7 +5870,7 @@ begin function
             end set property ret values 0
 
 
-[531] t.startTransitionTime = startTime + delay
+[530] t.startTransitionTime = startTime + delay
 
             begin set property
               begin operator +
@@ -5897,7 +5882,7 @@ begin function
             end set property ret values 0
 
 
-[532] t.endTime = t.startTransitionTime + duration
+[531] t.endTime = t.startTransitionTime + duration
 
             begin set property
               begin operator +
@@ -5912,7 +5897,7 @@ begin function
             end set property ret values 0
 
 
-[533] list.push(t)
+[532] list.push(t)
 
             begin call method
               get local var list (0 0 param)
@@ -5924,7 +5909,7 @@ begin function
             end call method ret values 0
 
 
-[535] t.startValues = null
+[534] t.startValues = null
 
             begin set property
               const null
@@ -5933,7 +5918,7 @@ begin function
             end set property ret values 0
 
 
-[536] t.endValues = {}
+[535] t.endValues = {}
 
             begin set property
               begin object 0
@@ -5943,7 +5928,7 @@ begin function
             end set property ret values 0
 
 
-[537] t.subTransitions = []
+[536] t.subTransitions = []
 
             begin set property
               begin array 0
@@ -5953,7 +5938,7 @@ begin function
             end set property ret values 0
 
 
-[538] for(var name, value in params){
+[537] for(var name, value in params){
 
             begin scope
               begin locals 4
@@ -6005,7 +5990,7 @@ begin function
                   end if ret values 0
 
 
-[539] if(name === "sequence"){
+[538] if(name === "sequence"){
 
                   begin scope
                     begin if
@@ -6017,7 +6002,7 @@ begin function
                       end bool exp
                       begin then
 
-[541] var sequenceStartTime = t.startTransitionTime
+[540] var sequenceStartTime = t.startTransitionTime
 
                         begin scope
                           begin locals 1
@@ -6031,7 +6016,7 @@ begin function
                           end set local var sequenceStartTime (11 0)
 
 
-[542] for(var i, sub in value){
+[541] for(var i, sub in value){
 
                           begin scope
                             begin locals 4
@@ -6083,7 +6068,7 @@ begin function
                                 end if ret values 0
 
 
-[543] if(objectof sub){
+[542] if(objectof sub){
 
                                 begin scope
                                   begin if
@@ -6094,7 +6079,7 @@ begin function
                                     end bool exp
                                     begin then
 
-[544] sub = this.calculateTransition(t.subTransitions, sub, sequenceStartTime, speed)
+[543] sub = this.calculateTransition(t.subTransitions, sub, sequenceStartTime, speed)
 
                                       begin scope
                                         begin set local var
@@ -6118,7 +6103,7 @@ begin function
                                         end set local var sub (13 0)
 
 
-[545] sequenceStartTime = sub.endTime
+[544] sequenceStartTime = sub.endTime
 
                                         begin set local var
                                           begin get property
@@ -6128,7 +6113,7 @@ begin function
                                         end set local var sequenceStartTime (11 0)
 
 
-[546] t.endTime = math.max(t.endTime, sub.endTime)
+[545] t.endTime = math.max(t.endTime, sub.endTime)
 
                                         begin set property
                                           begin call method
@@ -6159,7 +6144,7 @@ begin function
                           end scope ret values 0
 
 
-[549] continue
+[548] continue
 
                           continue
                         end scope ret values 0
@@ -6167,7 +6152,7 @@ begin function
                     end if ret values 0
 
 
-[551] if(name === "spawn"){
+[550] if(name === "spawn"){
 
                     begin if
                       begin bool exp
@@ -6178,7 +6163,7 @@ begin function
                       end bool exp
                       begin then
 
-[553] for(var i, sub in value){
+[552] for(var i, sub in value){
 
                         begin scope
                           begin scope
@@ -6231,7 +6216,7 @@ begin function
                                 end if ret values 0
 
 
-[554] if(objectof sub){
+[553] if(objectof sub){
 
                                 begin scope
                                   begin if
@@ -6242,7 +6227,7 @@ begin function
                                     end bool exp
                                     begin then
 
-[555] sub = this.calculateTransition(t.subTransitions, sub, t.startTransitionTime, speed)
+[554] sub = this.calculateTransition(t.subTransitions, sub, t.startTransitionTime, speed)
 
                                       begin scope
                                         begin set local var
@@ -6269,7 +6254,7 @@ begin function
                                         end set local var sub (17 0)
 
 
-[556] t.endTime = math.max(t.endTime, sub.endTime)
+[555] t.endTime = math.max(t.endTime, sub.endTime)
 
                                         begin set property
                                           begin call method
@@ -6300,7 +6285,7 @@ begin function
                           end scope ret values 0
 
 
-[559] continue
+[558] continue
 
                           continue
                         end scope ret values 0
@@ -6308,7 +6293,7 @@ begin function
                     end if ret values 0
 
 
-[561] if(name == "endValues"){
+[560] if(name == "endValues"){
 
                     begin if
                       begin bool exp
@@ -6319,7 +6304,7 @@ begin function
                       end bool exp
                       begin then
 
-[563] continue
+[562] continue
 
                         begin scope
                           continue
@@ -6328,7 +6313,7 @@ begin function
                     end if ret values 0
 
 
-[566] t.endValues[name] = value
+[565] t.endValues[name] = value
 
                     begin set property
                       get local var value (10 0)
@@ -6344,7 +6329,7 @@ begin function
             end scope ret values 0
 
 
-[568] t.endTransitionTime = t.endTime
+[567] t.endTransitionTime = t.endTime
 
             begin set property
               begin get property
@@ -6356,7 +6341,7 @@ begin function
             end set property ret values 0
 
 
-[569] if(t.infinite){
+[568] if(t.infinite){
 
             begin if
               begin bool exp
@@ -6367,7 +6352,7 @@ begin function
               end bool exp
               begin then
 
-[570] t.endTime = math.MAX_NUMBER
+[569] t.endTime = math.MAX_NUMBER
 
                 begin scope
                   begin set property
@@ -6382,7 +6367,7 @@ begin function
               end then
               begin else
 
-[572] t.endTime = t.startTime + (t.endTime - t.startTime) * t.repeat
+[571] t.endTime = t.startTime + (t.endTime - t.startTime) * t.repeat
 
                 begin scope
                   begin set property
@@ -6416,7 +6401,7 @@ begin function
             end if ret values 0
 
 
-[574] if(#t.subTransitions == 0){
+[573] if(#t.subTransitions == 0){
 
             begin if
               begin bool exp
@@ -6432,7 +6417,7 @@ begin function
               end bool exp
               begin then
 
-[575] t.subTransitions = null
+[574] t.subTransitions = null
 
                 begin scope
                   begin set property
@@ -6445,7 +6430,7 @@ begin function
             end if ret values 0
 
 
-[577] return t
+[576] return t
 
             begin code list
               begin return
@@ -6456,7 +6441,7 @@ begin function
         end set by name: [calculateTransition]
         ,
 
-[580] update = function(){
+[579] update = function(){
 
         begin set by name
           begin function
@@ -6467,7 +6452,7 @@ begin function
               3 duration
             end locals
 
-[581] var time, duration = this.time, this.duration
+[580] var time, duration = this.time, this.duration
 
             begin set local var
               begin set local var
@@ -6486,7 +6471,7 @@ begin function
             end set local var time (2 0)
 
 
-[582] if(time >= duration){
+[581] if(time >= duration){
 
             begin if
               begin bool exp
@@ -6497,7 +6482,7 @@ begin function
               end bool exp
               begin then
 
-[584] this.remove()
+[583] this.remove()
 
                 begin scope
                   begin call method
@@ -6508,7 +6493,7 @@ begin function
                   end call method ret values 0
 
 
-[587] time = duration
+[586] time = duration
 
                   begin set local var
                     get local var duration (3 0)
@@ -6518,7 +6503,7 @@ begin function
             end if ret values 0
 
 
-[589] this.applyTimeToList(time, this.list)
+[588] this.applyTimeToList(time, this.list)
 
             begin call method
               push this
@@ -6537,7 +6522,7 @@ begin function
         end set by name: [update]
         ,
 
-[592] applyTimeToList = function(time, list){
+[591] applyTimeToList = function(time, list){
 
         begin set by name
           begin function
@@ -6549,14 +6534,14 @@ begin function
               4 prev
             end locals
 
-[593] var prev
+[592] var prev
 
             begin params 1
               new local var prev (4 0)
             end params ret values 0
 
 
-[594] for(var i, t in list){
+[593] for(var i, t in list){
 
             begin scope
               begin locals 4
@@ -6608,7 +6593,7 @@ begin function
                   end if ret values 0
 
 
-[595] this.applyTimeToItem(time, t, prev)
+[594] this.applyTimeToItem(time, t, prev)
 
                   begin scope
                     begin call method
@@ -6625,7 +6610,7 @@ begin function
                     end call method ret values 0
 
 
-[596] prev = t
+[595] prev = t
 
                     begin set local var
                       get local var t (6 0)
@@ -6638,7 +6623,7 @@ begin function
         end set by name: [applyTimeToList]
         ,
 
-[600] applyTimeToItem = function(time, t, prev){
+[599] applyTimeToItem = function(time, t, prev){
 
         begin set by name
           begin function
@@ -6653,7 +6638,7 @@ begin function
               11 duration
             end locals
 
-[601] if(time < t.startTransitionTime){
+[600] if(time < t.startTransitionTime){
 
             begin if
               begin bool exp
@@ -6667,7 +6652,7 @@ begin function
               end bool exp
               begin then
 
-[602] return
+[601] return
 
                 begin scope
                   return
@@ -6676,7 +6661,7 @@ begin function
             end if ret values 0
 
 
-[604] if(!t.infinite && time > t.endTime){
+[603] if(!t.infinite && time > t.endTime){
 
             begin if
               begin bool exp
@@ -6698,7 +6683,7 @@ begin function
               end bool exp
               begin then
 
-[605] return
+[604] return
 
                 begin scope
                   return
@@ -6707,7 +6692,7 @@ begin function
             end if ret values 0
 
 
-[608] var target = this.target
+[607] var target = this.target
 
             begin set local var
               begin get property
@@ -6717,7 +6702,7 @@ begin function
             end set local var target (5 0)
 
 
-[609] if(!t.startValues){
+[608] if(!t.startValues){
 
             begin if
               begin bool exp
@@ -6730,7 +6715,7 @@ begin function
               end bool exp
               begin then
 
-[610] t.startValues = {}
+[609] t.startValues = {}
 
                 begin scope
                   begin set property
@@ -6741,7 +6726,7 @@ begin function
                   end set property ret values 0
 
 
-[611] for(var name, value in t.endValues){
+[610] for(var name, value in t.endValues){
 
                   begin scope
                     begin locals 4
@@ -6796,7 +6781,7 @@ begin function
                         end if ret values 0
 
 
-[612] if(numberof value && name in target && numberof target[name]){
+[611] if(numberof value && name in target && numberof target[name]){
 
                         begin scope
                           begin if
@@ -6821,7 +6806,7 @@ begin function
                             end bool exp
                             begin then
 
-[613] t.startValues[name] = name in prev ? prev[name] : target[name]
+[612] t.startValues[name] = name in prev ? prev[name] : target[name]
 
                               begin scope
                                 begin set property
@@ -6855,7 +6840,7 @@ begin function
                             end then
                             begin else
 
-[615] delete t.endValues[name]
+[614] delete t.endValues[name]
 
                               begin scope
                                 begin delete
@@ -6877,14 +6862,14 @@ begin function
             end if ret values 0
 
 
-[620] var tween
+[619] var tween
 
             begin params 1
               new local var tween (10 0)
             end params ret values 0
 
 
-[621] var duration = t.endTransitionTime - t.startTransitionTime
+[620] var duration = t.endTransitionTime - t.startTransitionTime
 
             begin set local var
               begin operator -
@@ -6900,7 +6885,7 @@ begin function
             end set local var duration (11 0)
 
 
-[622] time = math.fmod(time - t.startTransitionTime,  duration)
+[621] time = math.fmod(time - t.startTransitionTime,  duration)
 
             begin set local var
               begin call method
@@ -6922,7 +6907,7 @@ begin function
             end set local var time (0 0 param)
 
 
-[624] if(duration <= 0){ // || time >= duration){
+[623] if(duration <= 0){ // || time >= duration){
 
             begin if
               begin bool exp
@@ -6933,7 +6918,7 @@ begin function
               end bool exp
               begin then
 
-[625] tween = 1
+[624] tween = 1
 
                 begin scope
                   begin set local var
@@ -6943,7 +6928,7 @@ begin function
               end then
               begin else
 
-[626] }else if(t.easy){
+[625] }else if(t.easy){
 
                 begin if
                   begin bool exp
@@ -6954,7 +6939,7 @@ begin function
                   end bool exp
                   begin then
 
-[627] tween = t.easy(time / duration)
+[626] tween = t.easy(time / duration)
 
                     begin scope
                       begin set local var
@@ -6972,7 +6957,7 @@ begin function
                       end set local var tween (10 0)
 
 
-[628] time = tween * duration
+[627] time = tween * duration
 
                       begin set local var
                         begin operator *
@@ -6984,7 +6969,7 @@ begin function
                   end then
                   begin else
 
-[630] tween = time / duration
+[629] tween = time / duration
 
                     begin scope
                       begin set local var
@@ -7000,7 +6985,7 @@ begin function
             end if ret values 0
 
 
-[632] for(var name, endValue in t.endValues){
+[631] for(var name, endValue in t.endValues){
 
             begin scope
               begin locals 4
@@ -7055,7 +7040,7 @@ begin function
                   end if ret values 0
 
 
-[633] target[name] = t.startValues[name] * (1 - tween) + endValue * tween
+[632] target[name] = t.startValues[name] * (1 - tween) + endValue * tween
 
                   begin scope
                     begin set property
@@ -7087,7 +7072,7 @@ begin function
             end scope ret values 0
 
 
-[636] if(t.subTransitions)
+[635] if(t.subTransitions)
 
             begin if
               begin bool exp
@@ -7098,7 +7083,7 @@ begin function
               end bool exp
               begin then
 
-[637] this.applyTimeToList(time + t.startTransitionTime, t.subTransitions)
+[636] this.applyTimeToList(time + t.startTransitionTime, t.subTransitions)
 
                 begin call method
                   push this
@@ -7128,19 +7113,19 @@ begin function
   end set env var Transition
 
 
-[641] ColorNode = extends Node {
+[640] ColorNode = extends Node {
 
   begin set env var
     begin extends
       get env var Node
       begin object 2
 
-[642] __object = {
+[641] __object = {
 
         begin set by name
           begin object 1
 
-[643] color: [0.5 0.7 0.5 1]
+[642] color: [0.5 0.7 0.5 1]
 
             begin set by name
               begin array 4
@@ -7165,7 +7150,7 @@ begin function
         end set by name: [__object]
         ,
 
-[646] paint = function(){
+[645] paint = function(){
 
         begin set by name
           begin function
@@ -7174,7 +7159,7 @@ begin function
               1 _G
             end locals
 
-[647] this.drawBB(this.color, true)
+[646] this.drawBB(this.color, true)
 
             begin call method
               push this
@@ -7196,19 +7181,19 @@ begin function
   end set env var ColorNode
 
 
-[651] Scene = extends Node {
+[650] Scene = extends Node {
 
   begin set env var
     begin extends
       get env var Node
       begin object 1
 
-[652] __object = {
+[651] __object = {
 
         begin set by name
           begin object 1
 
-[653] __isRelativeAnchor = false
+[652] __isRelativeAnchor = false
 
             begin set by name
               const false
@@ -7220,7 +7205,7 @@ begin function
   end set env var Scene
 
 
-[656] }
+[655] }
 
   begin code list
     begin return

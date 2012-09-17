@@ -1,4 +1,3 @@
-var app = require("app")
 require("utils")
 
 Point = {

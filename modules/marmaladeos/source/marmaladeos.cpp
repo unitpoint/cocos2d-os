@@ -708,7 +708,7 @@ void MarmaladeOS::initLabelBMFontClass()
 				label->offs[0] = offs.x;
 				label->offs[1] = offs.y;
 
-				float color[4] = {0, 0, 0, 1};
+				float color[4] = {1, 1, 1, 1};
 				label->setColor(color);
 
 				os->pushStackValue(-1);

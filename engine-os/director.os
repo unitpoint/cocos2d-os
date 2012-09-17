@@ -2,6 +2,8 @@ var core = require("core")
 var app = require("app")
 require("constants")
 require("node")
+require("image")
+require("text")
 require("utils")
 
 _E = extends _G {}

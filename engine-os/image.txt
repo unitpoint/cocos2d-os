@@ -1,5 +1,5 @@
 
-[FILE] raw://../../engine-os/image.os
+[FILE] raw://../../engine-os/raw://../../engine-os/image.os
 [2] Image = extends Node {
 
 begin function

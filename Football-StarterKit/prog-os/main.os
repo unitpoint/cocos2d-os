@@ -1,7 +1,3 @@
-var core = require("core")
-var app = require("app")
-var node = require("node")
-var image = require("image")
 var director = require("director")
 
 print "Hello World!"
@@ -16,27 +12,20 @@ MyScene = extends Scene {
 		bg.scale = math.max(this.width / bg.width, this.height / bg.height)
 		this.insert(bg)
 
+		var text = Text("Football Starter Kit")
+		text.anchor = {x=1.05 y=1.05}
+		text.x = this.width
+		text.y = this.height
+		text.shadow = true
+		text.zOrder = 1
+		this.insert(text)
+		
 		var Ball = extends Image {
 			__construct = function(imageFilename){
 				super(imageFilename || "ball.png")
 
 				var screenWidth, screen = director.width, director.height
 				var speedX, speedY = math.random(-0.5, 0.5)*screenWidth, math.random(0.5, 1)*screenWidth
-				
-				var x0, y0
-				this.addEventListener("touch", function(touch){
-					if(touch.phase == "start"){
-						x0, y0 = touch.x - this.x, touch.y - this.y
-						this.removeEventListener("enterFrame", physUpdate)
-						this.addEventListener("enterFrame", trackVelocity)
-					}else if(touch.phase == "move"){
-						this.x, this.y = touch.x - x0, touch.y - y0
-					}else if(touch.phase == "end" || touch.phase == "cancel"){
-						this.addEventListener("enterFrame", physUpdate)
-						this.removeEventListener("enterFrame", trackVelocity)
-					}
-				})
-				
 				var prevX, prevY = 0, 0
 				var function trackVelocity(params){
 					speedX = (this.x - prevX) / params.deltaTime
@@ -68,6 +57,19 @@ MyScene = extends Scene {
 					}
 				}
 				this.addEventListener("enterFrame", physUpdate)
+				
+				this.addEventListener("touch", function(touch){
+					if(touch.phase == "start"){
+						this.x0, this.y0 = touch.x - this.x, touch.y - this.y
+						this.removeEventListener("enterFrame", physUpdate)
+						this.addEventListener("enterFrame", trackVelocity)
+					}else if(touch.phase == "move"){
+						this.x, this.y = touch.x - this.x0, touch.y - this.y0
+					}else if(touch.phase == "end" || touch.phase == "cancel"){
+						this.addEventListener("enterFrame", physUpdate)
+						this.removeEventListener("enterFrame", trackVelocity)
+					}
+				})				
 			}
 		}
 		
