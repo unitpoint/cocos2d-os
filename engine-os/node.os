@@ -479,6 +479,7 @@ Transition = extends FunctionNode {
 	__object = {
 		duration = 0
 		list = []
+		finished = false
 	}
 
 	__construct = function(params, target){
@@ -581,6 +582,7 @@ Transition = extends FunctionNode {
 		if(time >= duration){
 			// this.addEventListener("enterFrame", function(){
 				this.remove()
+				this.finished = true
 				// print("transition finished", time, duration)
 			// })
 			time = duration
@@ -618,7 +620,10 @@ Transition = extends FunctionNode {
 		}
 		var tween
 		var duration = t.endTransitionTime - t.startTransitionTime
-		time = math.fmod(time - t.startTransitionTime,  duration)
+		if(this.finished)
+			time = time - t.startTransitionTime
+		else
+			time = math.fmod(time - t.startTransitionTime,  duration)
 		// print "frame time "..time
 		if(duration <= 0){ // || time >= duration){
 			tween = 1

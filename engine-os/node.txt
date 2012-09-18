@@ -5419,7 +5419,7 @@ begin function
 [479] __object = {
 
         begin set by name
-          begin object 2
+          begin object 3
 
 [480] duration = 0
 
@@ -5434,11 +5434,18 @@ begin function
               begin array 0
               end array
             end set by name: [list]
+            ,
+
+[482] finished = false
+
+            begin set by name
+              const false
+            end set by name: [finished]
           end object
         end set by name: [__object]
         ,
 
-[484] __construct = function(params, target){
+[485] __construct = function(params, target){
 
         begin set by name
           begin function
@@ -5450,7 +5457,7 @@ begin function
               4 t
             end locals
 
-[485] super()
+[486] super()
 
             begin call
               super
@@ -5459,7 +5466,7 @@ begin function
             end call ret values 0
 
 
-[486] this.target = target
+[487] this.target = target
 
             begin set property
               get local var target (1 0 param)
@@ -5468,7 +5475,7 @@ begin function
             end set property ret values 0
 
 
-[487] var t = this.calculateTransition(this.list, params, 0, 1)
+[488] var t = this.calculateTransition(this.list, params, 0, 1)
 
             begin set local var
               begin call method
@@ -5491,7 +5498,7 @@ begin function
             end set local var t (4 0)
 
 
-[488] this.duration = t.endTime
+[489] this.duration = t.endTime
 
             begin set property
               begin get property
@@ -5503,7 +5510,7 @@ begin function
             end set property ret values 0
 
 
-[490] this.addEventListener("enterFrame", this.update, true)
+[491] this.addEventListener("enterFrame", this.update, true)
 
             begin call method
               push this
@@ -5524,7 +5531,7 @@ begin function
         end set by name: [__construct]
         ,
 
-[493] calculateTransition = function(list, params, startTime, speed){
+[494] calculateTransition = function(list, params, startTime, speed){
 
         begin set by name
           begin function
@@ -5540,7 +5547,7 @@ begin function
               8 duration
             end locals
 
-[494] var t = {}
+[495] var t = {}
 
             begin set local var
               begin object 0
@@ -5548,14 +5555,14 @@ begin function
             end set local var t (6 0)
 
 
-[495] var delay = 0
+[496] var delay = 0
 
             begin set local var
               push const number 0
             end set local var delay (7 0)
 
 
-[496] if("delay" in params){
+[497] if("delay" in params){
 
             begin if
               begin bool exp
@@ -5566,7 +5573,7 @@ begin function
               end bool exp
               begin then
 
-[497] delay = math.max(0, params.delay)
+[498] delay = math.max(0, params.delay)
 
                 begin scope
                   begin set local var
@@ -5586,7 +5593,7 @@ begin function
                   end set local var delay (7 0)
 
 
-[498] delete params.delay
+[499] delete params.delay
 
                   begin delete
                     get local var params (1 0 param)
@@ -5597,14 +5604,14 @@ begin function
             end if ret values 0
 
 
-[500] var duration = 0
+[501] var duration = 0
 
             begin set local var
               push const number 0
             end set local var duration (8 0)
 
 
-[501] if("duration" in params){
+[502] if("duration" in params){
 
             begin if
               begin bool exp
@@ -5615,7 +5622,7 @@ begin function
               end bool exp
               begin then
 
-[502] duration = math.max(0, params.duration)
+[503] duration = math.max(0, params.duration)
 
                 begin scope
                   begin set local var
@@ -5635,7 +5642,7 @@ begin function
                   end set local var duration (8 0)
 
 
-[503] delete params.duration
+[504] delete params.duration
 
                   begin delete
                     get local var params (1 0 param)
@@ -5646,7 +5653,7 @@ begin function
             end if ret values 0
 
 
-[505] if("speed" in params){
+[506] if("speed" in params){
 
             begin if
               begin bool exp
@@ -5657,7 +5664,7 @@ begin function
               end bool exp
               begin then
 
-[506] speed = speed * params.speed
+[507] speed = speed * params.speed
 
                 begin scope
                   begin set local var
@@ -5671,7 +5678,7 @@ begin function
                   end set local var speed (3 0 param)
 
 
-[507] delete params.speed
+[508] delete params.speed
 
                   begin delete
                     get local var params (1 0 param)
@@ -5682,7 +5689,7 @@ begin function
             end if ret values 0
 
 
-[509] if(speed > 0){
+[510] if(speed > 0){
 
             begin if
               begin bool exp
@@ -5693,7 +5700,7 @@ begin function
               end bool exp
               begin then
 
-[510] duration = duration / speed
+[511] duration = duration / speed
 
                 begin scope
                   begin set local var
@@ -5704,7 +5711,7 @@ begin function
                   end set local var duration (8 0)
 
 
-[511] delay = delay / speed
+[512] delay = delay / speed
 
                   begin set local var
                     begin operator /
@@ -5716,7 +5723,7 @@ begin function
               end then
               begin else
 
-[513] duration, delay = 0, 0
+[514] duration, delay = 0, 0
 
                 begin scope
                   begin set local var
@@ -5733,7 +5740,7 @@ begin function
             end if ret values 0
 
 
-[515] t.easy = null
+[516] t.easy = null
 
             begin set property
               const null
@@ -5742,7 +5749,7 @@ begin function
             end set property ret values 0
 
 
-[516] if("easy" in params){
+[517] if("easy" in params){
 
             begin if
               begin bool exp
@@ -5753,7 +5760,7 @@ begin function
               end bool exp
               begin then
 
-[517] t.easy = functionof params.easy
+[518] t.easy = functionof params.easy
 
                 begin scope
                   begin set property
@@ -5768,7 +5775,7 @@ begin function
                   end set property ret values 0
 
 
-[518] delete params.easy
+[519] delete params.easy
 
                   begin delete
                     get local var params (1 0 param)
@@ -5779,7 +5786,7 @@ begin function
             end if ret values 0
 
 
-[520] t.repeat = 1
+[521] t.repeat = 1
 
             begin set property
               push const number 1
@@ -5788,7 +5795,7 @@ begin function
             end set property ret values 0
 
 
-[521] if("repeat" in params){
+[522] if("repeat" in params){
 
             begin if
               begin bool exp
@@ -5799,7 +5806,7 @@ begin function
               end bool exp
               begin then
 
-[522] t.repeat = params.repeat
+[523] t.repeat = params.repeat
 
                 begin scope
                   begin set property
@@ -5812,7 +5819,7 @@ begin function
                   end set property ret values 0
 
 
-[523] delete params.repeat
+[524] delete params.repeat
 
                   begin delete
                     get local var params (1 0 param)
@@ -5823,7 +5830,7 @@ begin function
             end if ret values 0
 
 
-[525] t.infinite = t.repeat === true
+[526] t.infinite = t.repeat === true
 
             begin set property
               begin logic ===
@@ -5838,7 +5845,7 @@ begin function
             end set property ret values 0
 
 
-[526] t.repeat = math.max(0, numberof t.repeat)
+[527] t.repeat = math.max(0, numberof t.repeat)
 
             begin set property
               begin call method
@@ -5861,7 +5868,7 @@ begin function
             end set property ret values 0
 
 
-[529] t.startTime = startTime
+[530] t.startTime = startTime
 
             begin set property
               get local var startTime (2 0 param)
@@ -5870,7 +5877,7 @@ begin function
             end set property ret values 0
 
 
-[530] t.startTransitionTime = startTime + delay
+[531] t.startTransitionTime = startTime + delay
 
             begin set property
               begin operator +
@@ -5882,7 +5889,7 @@ begin function
             end set property ret values 0
 
 
-[531] t.endTime = t.startTransitionTime + duration
+[532] t.endTime = t.startTransitionTime + duration
 
             begin set property
               begin operator +
@@ -5897,7 +5904,7 @@ begin function
             end set property ret values 0
 
 
-[532] list.push(t)
+[533] list.push(t)
 
             begin call method
               get local var list (0 0 param)
@@ -5909,7 +5916,7 @@ begin function
             end call method ret values 0
 
 
-[534] t.startValues = null
+[535] t.startValues = null
 
             begin set property
               const null
@@ -5918,7 +5925,7 @@ begin function
             end set property ret values 0
 
 
-[535] t.endValues = {}
+[536] t.endValues = {}
 
             begin set property
               begin object 0
@@ -5928,7 +5935,7 @@ begin function
             end set property ret values 0
 
 
-[536] t.subTransitions = []
+[537] t.subTransitions = []
 
             begin set property
               begin array 0
@@ -5938,7 +5945,7 @@ begin function
             end set property ret values 0
 
 
-[537] for(var name, value in params){
+[538] for(var name, value in params){
 
             begin scope
               begin locals 4
@@ -5990,7 +5997,7 @@ begin function
                   end if ret values 0
 
 
-[538] if(name === "sequence"){
+[539] if(name === "sequence"){
 
                   begin scope
                     begin if
@@ -6002,7 +6009,7 @@ begin function
                       end bool exp
                       begin then
 
-[540] var sequenceStartTime = t.startTransitionTime
+[541] var sequenceStartTime = t.startTransitionTime
 
                         begin scope
                           begin locals 1
@@ -6016,7 +6023,7 @@ begin function
                           end set local var sequenceStartTime (11 0)
 
 
-[541] for(var i, sub in value){
+[542] for(var i, sub in value){
 
                           begin scope
                             begin locals 4
@@ -6068,7 +6075,7 @@ begin function
                                 end if ret values 0
 
 
-[542] if(objectof sub){
+[543] if(objectof sub){
 
                                 begin scope
                                   begin if
@@ -6079,7 +6086,7 @@ begin function
                                     end bool exp
                                     begin then
 
-[543] sub = this.calculateTransition(t.subTransitions, sub, sequenceStartTime, speed)
+[544] sub = this.calculateTransition(t.subTransitions, sub, sequenceStartTime, speed)
 
                                       begin scope
                                         begin set local var
@@ -6103,7 +6110,7 @@ begin function
                                         end set local var sub (13 0)
 
 
-[544] sequenceStartTime = sub.endTime
+[545] sequenceStartTime = sub.endTime
 
                                         begin set local var
                                           begin get property
@@ -6113,7 +6120,7 @@ begin function
                                         end set local var sequenceStartTime (11 0)
 
 
-[545] t.endTime = math.max(t.endTime, sub.endTime)
+[546] t.endTime = math.max(t.endTime, sub.endTime)
 
                                         begin set property
                                           begin call method
@@ -6144,7 +6151,7 @@ begin function
                           end scope ret values 0
 
 
-[548] continue
+[549] continue
 
                           continue
                         end scope ret values 0
@@ -6152,7 +6159,7 @@ begin function
                     end if ret values 0
 
 
-[550] if(name === "spawn"){
+[551] if(name === "spawn"){
 
                     begin if
                       begin bool exp
@@ -6163,7 +6170,7 @@ begin function
                       end bool exp
                       begin then
 
-[552] for(var i, sub in value){
+[553] for(var i, sub in value){
 
                         begin scope
                           begin scope
@@ -6216,7 +6223,7 @@ begin function
                                 end if ret values 0
 
 
-[553] if(objectof sub){
+[554] if(objectof sub){
 
                                 begin scope
                                   begin if
@@ -6227,7 +6234,7 @@ begin function
                                     end bool exp
                                     begin then
 
-[554] sub = this.calculateTransition(t.subTransitions, sub, t.startTransitionTime, speed)
+[555] sub = this.calculateTransition(t.subTransitions, sub, t.startTransitionTime, speed)
 
                                       begin scope
                                         begin set local var
@@ -6254,7 +6261,7 @@ begin function
                                         end set local var sub (17 0)
 
 
-[555] t.endTime = math.max(t.endTime, sub.endTime)
+[556] t.endTime = math.max(t.endTime, sub.endTime)
 
                                         begin set property
                                           begin call method
@@ -6285,7 +6292,7 @@ begin function
                           end scope ret values 0
 
 
-[558] continue
+[559] continue
 
                           continue
                         end scope ret values 0
@@ -6293,7 +6300,7 @@ begin function
                     end if ret values 0
 
 
-[560] if(name == "endValues"){
+[561] if(name == "endValues"){
 
                     begin if
                       begin bool exp
@@ -6304,7 +6311,7 @@ begin function
                       end bool exp
                       begin then
 
-[562] continue
+[563] continue
 
                         begin scope
                           continue
@@ -6313,7 +6320,7 @@ begin function
                     end if ret values 0
 
 
-[565] t.endValues[name] = value
+[566] t.endValues[name] = value
 
                     begin set property
                       get local var value (10 0)
@@ -6329,7 +6336,7 @@ begin function
             end scope ret values 0
 
 
-[567] t.endTransitionTime = t.endTime
+[568] t.endTransitionTime = t.endTime
 
             begin set property
               begin get property
@@ -6341,7 +6348,7 @@ begin function
             end set property ret values 0
 
 
-[568] if(t.infinite){
+[569] if(t.infinite){
 
             begin if
               begin bool exp
@@ -6352,7 +6359,7 @@ begin function
               end bool exp
               begin then
 
-[569] t.endTime = math.MAX_NUMBER
+[570] t.endTime = math.MAX_NUMBER
 
                 begin scope
                   begin set property
@@ -6367,7 +6374,7 @@ begin function
               end then
               begin else
 
-[571] t.endTime = t.startTime + (t.endTime - t.startTime) * t.repeat
+[572] t.endTime = t.startTime + (t.endTime - t.startTime) * t.repeat
 
                 begin scope
                   begin set property
@@ -6401,7 +6408,7 @@ begin function
             end if ret values 0
 
 
-[573] if(#t.subTransitions == 0){
+[574] if(#t.subTransitions == 0){
 
             begin if
               begin bool exp
@@ -6417,7 +6424,7 @@ begin function
               end bool exp
               begin then
 
-[574] t.subTransitions = null
+[575] t.subTransitions = null
 
                 begin scope
                   begin set property
@@ -6430,7 +6437,7 @@ begin function
             end if ret values 0
 
 
-[576] return t
+[577] return t
 
             begin code list
               begin return
@@ -6441,7 +6448,7 @@ begin function
         end set by name: [calculateTransition]
         ,
 
-[579] update = function(){
+[580] update = function(){
 
         begin set by name
           begin function
@@ -6452,7 +6459,7 @@ begin function
               3 duration
             end locals
 
-[580] var time, duration = this.time, this.duration
+[581] var time, duration = this.time, this.duration
 
             begin set local var
               begin set local var
@@ -6471,7 +6478,7 @@ begin function
             end set local var time (2 0)
 
 
-[581] if(time >= duration){
+[582] if(time >= duration){
 
             begin if
               begin bool exp
@@ -6482,7 +6489,7 @@ begin function
               end bool exp
               begin then
 
-[583] this.remove()
+[584] this.remove()
 
                 begin scope
                   begin call method
@@ -6493,7 +6500,16 @@ begin function
                   end call method ret values 0
 
 
-[586] time = duration
+[585] this.finished = true
+
+                  begin set property
+                    const true
+                    push this
+                    push const string "finished"
+                  end set property ret values 0
+
+
+[588] time = duration
 
                   begin set local var
                     get local var duration (3 0)
@@ -6503,7 +6519,7 @@ begin function
             end if ret values 0
 
 
-[588] this.applyTimeToList(time, this.list)
+[590] this.applyTimeToList(time, this.list)
 
             begin call method
               push this
@@ -6522,7 +6538,7 @@ begin function
         end set by name: [update]
         ,
 
-[591] applyTimeToList = function(time, list){
+[593] applyTimeToList = function(time, list){
 
         begin set by name
           begin function
@@ -6534,14 +6550,14 @@ begin function
               4 prev
             end locals
 
-[592] var prev
+[594] var prev
 
             begin params 1
               new local var prev (4 0)
             end params ret values 0
 
 
-[593] for(var i, t in list){
+[595] for(var i, t in list){
 
             begin scope
               begin locals 4
@@ -6593,7 +6609,7 @@ begin function
                   end if ret values 0
 
 
-[594] this.applyTimeToItem(time, t, prev)
+[596] this.applyTimeToItem(time, t, prev)
 
                   begin scope
                     begin call method
@@ -6610,7 +6626,7 @@ begin function
                     end call method ret values 0
 
 
-[595] prev = t
+[597] prev = t
 
                     begin set local var
                       get local var t (6 0)
@@ -6623,7 +6639,7 @@ begin function
         end set by name: [applyTimeToList]
         ,
 
-[599] applyTimeToItem = function(time, t, prev){
+[601] applyTimeToItem = function(time, t, prev){
 
         begin set by name
           begin function
@@ -6638,7 +6654,7 @@ begin function
               11 duration
             end locals
 
-[600] if(time < t.startTransitionTime){
+[602] if(time < t.startTransitionTime){
 
             begin if
               begin bool exp
@@ -6652,7 +6668,7 @@ begin function
               end bool exp
               begin then
 
-[601] return
+[603] return
 
                 begin scope
                   return
@@ -6661,7 +6677,7 @@ begin function
             end if ret values 0
 
 
-[603] if(!t.infinite && time > t.endTime){
+[605] if(!t.infinite && time > t.endTime){
 
             begin if
               begin bool exp
@@ -6683,7 +6699,7 @@ begin function
               end bool exp
               begin then
 
-[604] return
+[606] return
 
                 begin scope
                   return
@@ -6692,7 +6708,7 @@ begin function
             end if ret values 0
 
 
-[607] var target = this.target
+[609] var target = this.target
 
             begin set local var
               begin get property
@@ -6702,7 +6718,7 @@ begin function
             end set local var target (5 0)
 
 
-[608] if(!t.startValues){
+[610] if(!t.startValues){
 
             begin if
               begin bool exp
@@ -6715,7 +6731,7 @@ begin function
               end bool exp
               begin then
 
-[609] t.startValues = {}
+[611] t.startValues = {}
 
                 begin scope
                   begin set property
@@ -6726,7 +6742,7 @@ begin function
                   end set property ret values 0
 
 
-[610] for(var name, value in t.endValues){
+[612] for(var name, value in t.endValues){
 
                   begin scope
                     begin locals 4
@@ -6781,7 +6797,7 @@ begin function
                         end if ret values 0
 
 
-[611] if(numberof value && name in target && numberof target[name]){
+[613] if(numberof value && name in target && numberof target[name]){
 
                         begin scope
                           begin if
@@ -6806,7 +6822,7 @@ begin function
                             end bool exp
                             begin then
 
-[612] t.startValues[name] = name in prev ? prev[name] : target[name]
+[614] t.startValues[name] = name in prev ? prev[name] : target[name]
 
                               begin scope
                                 begin set property
@@ -6840,7 +6856,7 @@ begin function
                             end then
                             begin else
 
-[614] delete t.endValues[name]
+[616] delete t.endValues[name]
 
                               begin scope
                                 begin delete
@@ -6862,14 +6878,14 @@ begin function
             end if ret values 0
 
 
-[619] var tween
+[621] var tween
 
             begin params 1
               new local var tween (10 0)
             end params ret values 0
 
 
-[620] var duration = t.endTransitionTime - t.startTransitionTime
+[622] var duration = t.endTransitionTime - t.startTransitionTime
 
             begin set local var
               begin operator -
@@ -6885,14 +6901,20 @@ begin function
             end set local var duration (11 0)
 
 
-[621] time = math.fmod(time - t.startTransitionTime,  duration)
+[623] if(this.finished)
 
-            begin set local var
-              begin call method
-                get env var math
-                begin params 3
-                  push const string "fmod"
-                  ,
+            begin if
+              begin bool exp
+                begin get property
+                  push this
+                  push const string "finished"
+                end get property ret values 1
+              end bool exp
+              begin then
+
+[624] time = time - t.startTransitionTime
+
+                begin set local var
                   begin operator -
                     get local var time (0 0 param)
                     begin get property
@@ -6900,14 +6922,35 @@ begin function
                       push const string "startTransitionTime"
                     end get property ret values 1
                   end operator -
-                  ,
-                  get local var duration (11 0)
-                end params ret values 3
-              end call method ret values 1
-            end set local var time (0 0 param)
+                end set local var time (0 0 param)
+              end then
+              begin else
+
+[626] time = math.fmod(time - t.startTransitionTime,  duration)
+
+                begin set local var
+                  begin call method
+                    get env var math
+                    begin params 3
+                      push const string "fmod"
+                      ,
+                      begin operator -
+                        get local var time (0 0 param)
+                        begin get property
+                          get local var t (1 0 param)
+                          push const string "startTransitionTime"
+                        end get property ret values 1
+                      end operator -
+                      ,
+                      get local var duration (11 0)
+                    end params ret values 3
+                  end call method ret values 1
+                end set local var time (0 0 param)
+              end else
+            end if ret values 0
 
 
-[623] if(duration <= 0){ // || time >= duration){
+[628] if(duration <= 0){ // || time >= duration){
 
             begin if
               begin bool exp
@@ -6918,7 +6961,7 @@ begin function
               end bool exp
               begin then
 
-[624] tween = 1
+[629] tween = 1
 
                 begin scope
                   begin set local var
@@ -6928,7 +6971,7 @@ begin function
               end then
               begin else
 
-[625] }else if(t.easy){
+[630] }else if(t.easy){
 
                 begin if
                   begin bool exp
@@ -6939,7 +6982,7 @@ begin function
                   end bool exp
                   begin then
 
-[626] tween = t.easy(time / duration)
+[631] tween = t.easy(time / duration)
 
                     begin scope
                       begin set local var
@@ -6957,7 +7000,7 @@ begin function
                       end set local var tween (10 0)
 
 
-[627] time = tween * duration
+[632] time = tween * duration
 
                       begin set local var
                         begin operator *
@@ -6969,7 +7012,7 @@ begin function
                   end then
                   begin else
 
-[629] tween = time / duration
+[634] tween = time / duration
 
                     begin scope
                       begin set local var
@@ -6985,7 +7028,7 @@ begin function
             end if ret values 0
 
 
-[631] for(var name, endValue in t.endValues){
+[636] for(var name, endValue in t.endValues){
 
             begin scope
               begin locals 4
@@ -7040,7 +7083,7 @@ begin function
                   end if ret values 0
 
 
-[632] target[name] = t.startValues[name] * (1 - tween) + endValue * tween
+[637] target[name] = t.startValues[name] * (1 - tween) + endValue * tween
 
                   begin scope
                     begin set property
@@ -7072,7 +7115,7 @@ begin function
             end scope ret values 0
 
 
-[635] if(t.subTransitions)
+[640] if(t.subTransitions)
 
             begin if
               begin bool exp
@@ -7083,7 +7126,7 @@ begin function
               end bool exp
               begin then
 
-[636] this.applyTimeToList(time + t.startTransitionTime, t.subTransitions)
+[641] this.applyTimeToList(time + t.startTransitionTime, t.subTransitions)
 
                 begin call method
                   push this
@@ -7113,19 +7156,19 @@ begin function
   end set env var Transition
 
 
-[640] ColorNode = extends Node {
+[645] ColorNode = extends Node {
 
   begin set env var
     begin extends
       get env var Node
       begin object 2
 
-[641] __object = {
+[646] __object = {
 
         begin set by name
           begin object 1
 
-[642] color: [0.5 0.7 0.5 1]
+[647] color: [0.5 0.7 0.5 1]
 
             begin set by name
               begin array 4
@@ -7150,7 +7193,7 @@ begin function
         end set by name: [__object]
         ,
 
-[645] paint = function(){
+[650] paint = function(){
 
         begin set by name
           begin function
@@ -7159,7 +7202,7 @@ begin function
               1 _G
             end locals
 
-[646] this.drawBB(this.color, true)
+[651] this.drawBB(this.color, true)
 
             begin call method
               push this
@@ -7181,19 +7224,19 @@ begin function
   end set env var ColorNode
 
 
-[650] Scene = extends Node {
+[655] Scene = extends Node {
 
   begin set env var
     begin extends
       get env var Node
       begin object 1
 
-[651] __object = {
+[656] __object = {
 
         begin set by name
           begin object 1
 
-[652] __isRelativeAnchor = false
+[657] __isRelativeAnchor = false
 
             begin set by name
               const false
@@ -7205,7 +7248,7 @@ begin function
   end set env var Scene
 
 
-[655] }
+[660] }
 
   begin code list
     begin return
