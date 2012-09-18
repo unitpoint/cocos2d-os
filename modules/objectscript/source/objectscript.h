@@ -2418,6 +2418,7 @@ namespace ObjectScript
 			
 			float gc_start_values_mult;
 			float gc_step_size_mult;
+			float gc_step_size_auto_mult;
 			int gc_start_next_values;
 			int gc_step_size;
 

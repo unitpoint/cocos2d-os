@@ -9776,6 +9776,7 @@ void OS::Core::registerValue(GCValue * value)
 		if(old_heads){
 			for(int i = 0; i <= old_mask; i++){
 				for(GCValue * value = old_heads[i], * next; value; value = next){
+					gcAddToGreyList(value);
 					next = value->hash_next;
 					int slot = value->value_id & values.head_mask;
 					value->hash_next = values.heads[slot];
@@ -9785,11 +9786,13 @@ void OS::Core::registerValue(GCValue * value)
 			// delete [] old_heads;
 			free(old_heads);
 		}
-		/* if(gc_values_head_index >= 0){
-		// restart gc ASAP
-		gc_values_head_index = -1;
-		gc_start_next_values = 0;
-		} */
+		if(gc_values_head_index >= 0){
+			// restart gc ASAP
+			gc_values_head_index = -1;
+			gc_start_next_values = 0;
+			gc_continuous = false;
+			gc_step_size_auto_mult *= 2.0f;
+		}
 	}
 
 	int slot = value->value_id & values.head_mask;
@@ -11028,13 +11031,9 @@ void OS::Core::gcInitGreyList()
 	gc_in_process = false;
 	gc_grey_added_count = 0;
 	// gc_grey_removed_count = 0;
-#if 0
-	gc_start_values_mult = 1.1f;
-	gc_step_size_mult = 1.0f;
-#else
 	gc_start_values_mult = 1.5f;
-	gc_step_size_mult = 0.2f; // 0.05f;
-#endif
+	gc_step_size_mult = 0.01f;
+	gc_step_size_auto_mult = 1.0f;
 	gc_start_next_values = 16;
 	gc_step_size = 0;
 }
@@ -11284,7 +11283,7 @@ int OS::Core::gcStep()
 		}
 		if(i <= values.head_mask){
 			gc_values_head_index = i;
-			gc_step_size = (int)((float)values.count * gc_step_size_mult * 2);
+			gc_step_size = (int)((float)values.count * gc_step_size_mult * gc_step_size_auto_mult * 2);
 			return OS_GC_PHASE_SWEEP;
 		}
 		gc_values_head_index = -1;
@@ -11295,6 +11294,10 @@ int OS::Core::gcStep()
 		if(gc_start_allocated_bytes == end_allocated_bytes){
 			if(++gc_keep_heap_count >= 2){
 				gc_continuous = false;
+				gc_step_size_auto_mult *= 0.5f;
+				if(gc_step_size_auto_mult < 1){
+					gc_step_size_auto_mult = 1.0f;
+				}
 			}
 		}else{
 			gc_start_allocated_bytes = end_allocated_bytes;
@@ -11310,7 +11313,7 @@ int OS::Core::gcStep()
 	}
 	if(!gc_grey_root_initialized){
 		gc_grey_root_initialized = true;
-		gc_step_size = (int)((float)values.count * gc_step_size_mult * 2);
+		gc_step_size = (int)((float)values.count * gc_step_size_mult * gc_step_size_auto_mult * 2);
 		gc_time++;
 
 		if(!gc_continuous){
@@ -11344,7 +11347,7 @@ int OS::Core::gcStep()
 		gcMarkStackFunction(&call_stack_funcs[i]);
 	}
 	gcMarkList(step_size);
-	gc_step_size = (int)((float)values.count * gc_step_size_mult * 2);
+	gc_step_size = (int)((float)values.count * gc_step_size_mult * gc_step_size_auto_mult * 2);
 	if(!gc_grey_list_first){
 		gc_grey_root_initialized = false;
 		gc_values_head_index = 0;
