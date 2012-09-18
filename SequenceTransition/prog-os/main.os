@@ -26,7 +26,7 @@ MyScene = extends Scene {
 		// so it's equal to fan.transition({...})
 		fan.transition { // start rotation transition of the fan
 			rotation = 360*2 // rotate to 720 degs
-			duration = 2.5	 // in 2.5 seconds
+			duration = 3.5	 // in 3.5 seconds
 			easy = Easy.outBack // use non linear transition
 			repeat = true // repeat it forever
 		}
