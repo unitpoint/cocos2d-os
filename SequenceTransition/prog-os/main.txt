@@ -296,7 +296,7 @@ begin function
                   end set by name: [rotation]
                   ,
 
-[29] duration = 3.5	 // in 2.5 seconds
+[29] duration = 3.5	 // in 3.5 seconds
 
                   begin set by name
                     push const number 3.5
