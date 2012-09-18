@@ -865,11 +865,6 @@ bool MarmaladeOS::isFileExist(const OS_CHAR * filename)
 	return s3eFileCheckExists(filename) ? true : false;
 }
 
-#define OS_IS_UNC_PATH(path, len) \
-	(len >= 2 && OS_IS_SLASH(path[0]) && OS_IS_SLASH(path[1]))
-#define OS_IS_ABSOLUTE_PATH(path, len) \
-	(len >= 2 && ((OS_IS_ALPHA(path[0]) && path[1] == ':') || OS_IS_UNC_PATH(path, len))) 
-
 OS::String MarmaladeOS::resolvePath(const String& p_filename, const String& cur_path)
 {
 	String resolved_path = p_filename;
