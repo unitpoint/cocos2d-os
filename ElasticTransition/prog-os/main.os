@@ -49,7 +49,6 @@ MyScene = extends Scene {
 		message.y = this.height
 		message.anchor = {x=1.05 y=1.05}
 		message.shadow = true	// we want shadow enabled		
-		message.zOrder = 1
 		this.insert(message)		
 	}
 }
