@@ -336,12 +336,12 @@ begin function
                         end set property ret values 0
 
 
-[27] this.scale0 = this.scale
+[27] this.scale0 = this.scaleX
 
                         begin set property
                           begin get property
                             push this
-                            push const string "scale"
+                            push const string "scaleX"
                           end get property ret values 1
                           push this
                           push const string "scale0"
