@@ -525,6 +525,12 @@ Transition = extends FunctionNode {
 		}
 		t.infinite = t.repeat === true
 		t.repeat = math.max(0, numberof t.repeat)
+
+		t.alignRotation = false
+		if("alignRotation" in params){
+			t.alignRotation = params.alignRotation
+			delete params.alignRotation
+		}
 		
 		// t.duration = duration
 		t.startTime = startTime
@@ -539,8 +545,22 @@ Transition = extends FunctionNode {
 			if(name === "sequence"){
 				// delete params[name]
 				var sequenceStartTime = t.startTransitionTime
+				var closed = false
+				if("closed" in value){
+					closed = value.closed
+					delete value.closed
+					if(closed){
+						value.push(clone value[0])
+					}
+				}
+				var alignRotation = t.alignRotation
+				if("alignRotation" in value){
+					alignRotation = value.alignRotation
+					delete value.alignRotation
+				}
 				for(var i, sub in value){
 					if(objectof sub){
+						sub.alignRotation = alignRotation
 						sub = this.calculateTransition(t.subTransitions, sub, sequenceStartTime, speed)
 						sequenceStartTime = sub.endTime
 						t.endTime = math.max(t.endTime, sub.endTime)
@@ -550,8 +570,14 @@ Transition = extends FunctionNode {
 			}
 			if(name === "spawn"){
 				// delete params[name]
+				var alignRotation = t.alignRotation
+				if("alignRotation" in value){
+					alignRotation = value.alignRotation
+					delete value.alignRotation
+				}
 				for(var i, sub in value){
 					if(objectof sub){
+						sub.alignRotation = alignRotation
 						sub = this.calculateTransition(t.subTransitions, sub, t.startTransitionTime, speed)
 						t.endTime = math.max(t.endTime, sub.endTime)
 					}
@@ -594,7 +620,7 @@ Transition = extends FunctionNode {
 		var prev
 		for(var i, t in list){
 			this.applyTimeToItem(time, t, prev)
-			prev = t
+			prev = t.endValues
 		}
 	}
 	
@@ -614,6 +640,22 @@ Transition = extends FunctionNode {
 					t.startValues[name] = name in prev ? prev[name] : target[name]
 				}else{
 					delete t.endValues[name]
+				}
+			}
+			if(t.alignRotation && "rotation" in t.endValues){
+				var start = t.startValues.rotation
+				var end = t.endValues.rotation
+				var diff = end - start
+				if(math.abs(diff) > 180){
+					if(diff < 0){
+						diff = 360 + diff - math.floor(diff / 360) * 360
+					}else if(diff > 360){
+						diff = diff - math.floor(diff / 360) * 360
+					}
+					if(diff > 180){
+						diff = diff - 360
+					}
+					t.endValues.rotation = start + diff
 				}
 			}
 			// print("startValues "..t.startValues, "endValues "..t.endValues)
