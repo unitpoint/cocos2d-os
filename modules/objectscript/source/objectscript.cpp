@@ -7253,7 +7253,7 @@ OS::Core::Program::Program(OS * allocator): filename(allocator)
 	const_strings = NULL;
 	num_numbers = 0;
 	num_strings = 0;
-	gc_time = -1;
+	// gc_time = -1;
 }
 
 OS::Core::Program::~Program()
@@ -7264,6 +7264,10 @@ OS::Core::Program::~Program()
 	allocator->free(const_numbers);
 	const_numbers = NULL;
 
+	for(i = 0; i < num_strings; i++){
+		OS_ASSERT(const_strings[i]->external_ref_count > 0);
+		const_strings[i]->external_ref_count--;
+	}
 	allocator->free(const_strings);
 	const_strings = NULL;
 
@@ -7460,7 +7464,7 @@ bool OS::Core::Program::loadFromStream(StreamReader * reader, StreamReader * deb
 			int cached_name_index = reader->readUVariable();
 			OS_ASSERT(cached_name_index >= 0 && cached_name_index < num_strings);
 			FunctionDecl::LocalVar * local_var = func->locals + j;
-			String var_name = allocator->core->valueToString(const_strings[cached_name_index]);
+			String var_name(const_strings[cached_name_index]);
 			new (local_var) FunctionDecl::LocalVar(var_name);
 			local_var->start_code_pos = reader->readUVariable() + func->opcodes_pos;
 			local_var->end_code_pos = reader->readUVariable() + func->opcodes_pos;
@@ -7534,17 +7538,6 @@ OS::Core::Program::DebugInfoItem::DebugInfoItem(int p_opcode_pos, int p_line, in
 
 void OS::Core::Program::pushStartFunction()
 {
-	struct Lib {
-		Program * prog;
-		~Lib()
-		{
-			for(int i = 0; i <  prog->num_strings; i++){
-				OS_ASSERT(prog->const_strings[i]->external_ref_count > 0);
-				prog->const_strings[i]->external_ref_count--;
-			}
-		}
-	} lib = {this};
-
 	int opcode = opcodes->readByte();
 	if(opcode != OP_PUSH_FUNCTION){
 		OS_ASSERT(false);
@@ -9016,6 +9009,7 @@ OS::Core::Upvalues ** OS::Core::Upvalues::getParents()
 
 OS::Core::Upvalues * OS::Core::Upvalues::getParent(int i)
 {
+	OS_ASSERT(i >= 0 && i < num_parents);
 	return ((Upvalues**)(this+1))[i];
 }
 
@@ -10090,7 +10084,7 @@ OS::SmartMemoryManager::SmartMemoryManager()
 	registerPageDesc(sizeof(Core::GCCFunctionValue), OS_MEMORY_MANAGER_PAGE_BLOCKS);
 	registerPageDesc(sizeof(Core::GCCFunctionValue) + sizeof(Core::Value)*4, OS_MEMORY_MANAGER_PAGE_BLOCKS);
 	registerPageDesc(sizeof(Core::Property), OS_MEMORY_MANAGER_PAGE_BLOCKS);
-	registerPageDesc(sizeof(Core::StackFunction), OS_MEMORY_MANAGER_PAGE_BLOCKS);
+	// registerPageDesc(sizeof(Core::StackFunction), OS_MEMORY_MANAGER_PAGE_BLOCKS);
 	registerPageDesc(sizeof(Core::Upvalues), OS_MEMORY_MANAGER_PAGE_BLOCKS);
 	registerPageDesc(sizeof(Core::Upvalues) + sizeof(void*)*4, OS_MEMORY_MANAGER_PAGE_BLOCKS);
 	registerPageDesc(sizeof(Core::Upvalues) + sizeof(void*)*8, OS_MEMORY_MANAGER_PAGE_BLOCKS);
@@ -10959,7 +10953,7 @@ OS::EFileUseType OS::checkFileUsage(const String& sourcecode_filename, const Str
 
 void OS::Core::errorDivisionByZero()
 {
-	error(OS_E_WARNING, "division by zero");
+	error(OS_E_WARNING, OS_TEXT("division by zero"));
 }
 
 void OS::Core::error(int code, const OS_CHAR * message)
@@ -11092,13 +11086,13 @@ void OS::Core::gcMarkTable(Table * table)
 
 void OS::Core::gcMarkProgram(Program * prog)
 {
-	if(prog->gc_time == gc_time){
+	/* if(prog->gc_time == gc_time){
 		return;
 	}
-	prog->gc_time = gc_time;
-	for(int i = 0; i < prog->num_strings; i++){
+	prog->gc_time = gc_time; */
+	/* for(int i = 0; i < prog->num_strings; i++){
 		gcAddToGreyList(prog->const_strings[i]);
-	}
+	} */
 }
 
 void OS::Core::gcMarkUpvalues(Upvalues * upvalues)
@@ -12593,7 +12587,7 @@ void OS::Core::pushOpResultValue(int opcode, Value value)
 		{
 			switch(opcode){
 			case Program::OP_BIT_NOT:
-				return core->pushNumber((OS_FLOAT)(~core->valueToInt(value)));
+				return core->pushNumber(~core->valueToInt(value));
 
 			case Program::OP_PLUS:
 				if(value.type == OS_VALUE_TYPE_NUMBER){
@@ -12703,7 +12697,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 			return false;
 		}
 
-		int compareNumbers(OS_FLOAT num1, OS_FLOAT num2)
+		int compareNumbers(OS_NUMBER num1, OS_NUMBER num2)
 		{
 			if(num1 > num2){
 				return 1;
@@ -12714,7 +12708,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 			return 0;
 		}
 
-		int compareStrings(GCStringValue * left_string_data, OS_FLOAT right_number)
+		int compareStrings(GCStringValue * left_string_data, OS_NUMBER right_number)
 		{
 			OS_CHAR buf[128];
 			Utils::numToStr(buf, right_number);
@@ -12809,7 +12803,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 			return 1; // left->value_id - (int)right_value;
 		}
 
-		int compareNumberToValue(Value left_value, OS_FLOAT left_number, Value right_value)
+		int compareNumberToValue(Value left_value, OS_NUMBER left_number, Value right_value)
 		{
 			switch(right_value.type){
 			case OS_VALUE_TYPE_NULL:
@@ -12819,7 +12813,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 				return compareNumbers(left_number, right_value.v.number);
 
 			case OS_VALUE_TYPE_BOOL:
-				return compareNumbers(left_number, right_value.v.boolean);
+				return compareNumbers(left_number, (OS_NUMBER)right_value.v.boolean);
 
 			case OS_VALUE_TYPE_STRING:
 				return -compareStrings(right_value.v.string, left_number);
@@ -12837,7 +12831,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 				return compareStrings(left_string_data, right_value.v.number);
 
 			case OS_VALUE_TYPE_BOOL:
-				return compareStrings(left_string_data, right_value.v.boolean);
+				return compareStrings(left_string_data, (OS_NUMBER)right_value.v.boolean);
 
 			case OS_VALUE_TYPE_STRING:
 				return compareStrings(left_string_data, right_value.v.string);
@@ -12855,7 +12849,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 				return compareNumberToValue(left_value, left_value.v.number, right_value);
 
 			case OS_VALUE_TYPE_BOOL:
-				return compareNumberToValue(left_value, left_value.v.boolean, right_value);
+				return compareNumberToValue(left_value, (OS_NUMBER)left_value.v.boolean, right_value);
 
 				// case OS_VALUE_TYPE_STRING:
 				// 	return compareStringToValue(left_value->v.string_data, right_value);
@@ -14210,7 +14204,7 @@ void OS::Core::opDebugger()
 		OS_ASSERT(offs >= 0 && offs < prog_num_strings);
 		OS_ASSERT(prog_strings[offs]->type == OS_VALUE_TYPE_STRING);
 		if(i < OS_DEBUGGER_SAVE_NUM_LINES){
-			lines[i] = valueToString(prog_strings[offs]).toChar();
+			lines[i] = prog_strings[offs]->toChar();
 		}
 	}
 	DEBUG_BREAK;

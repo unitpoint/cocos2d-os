@@ -2130,7 +2130,7 @@ namespace ObjectScript
 				};
 				Vector<DebugInfoItem> debug_info;
 
-				int gc_time;
+				// int gc_time;
 
 				Program(OS * allocator);
 
