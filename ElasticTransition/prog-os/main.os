@@ -23,7 +23,7 @@ MyScene = extends Scene {
 				}
 				var dx = touch.x - this.x
 				var dy = touch.y - this.y
-				this.len0 = (dx*dx + dy*dy)**0.5
+				this.len0 = (dx*dx + dy*dy)**0.5 // sqrt is equal to the power of 0.5
 				this.scale0 = this.scale
 				this.r0 = math.deg(math.atan2(dy, dx)) - this.rotation
 			}else if(touch.phase == "move"){
@@ -33,9 +33,10 @@ MyScene = extends Scene {
 				var rotation = math.deg(math.atan2(dy, dx))
 				this.rotation = rotation - this.r0
 				this.scaleX = this.scale0 * len / this.len0
-			}else{
+			}else{ // end or cancel
 				this.elasticTransition = this.transition {
 					scaleX = 1
+					rotation = math.round(this.rotation / 90) * 90 // snap to angle
 					duration = 0.5
 					easy = Easy.outBack
 				}

@@ -315,7 +315,7 @@ begin function
                         end set local var dy (4 0)
 
 
-[26] this.len0 = (dx*dx + dy*dy)**0.5
+[26] this.len0 = (dx*dx + dy*dy)**0.5 // sqrt is equal to the power of 0.5
 
                         begin set property
                           begin operator **
@@ -523,7 +523,7 @@ begin function
                                 begin params 2
                                   push const string "transition"
                                   ,
-                                  begin object 3
+                                  begin object 4
 
 [38] scaleX = 1
 
@@ -532,14 +532,37 @@ begin function
                                     end set by name: [scaleX]
                                     ,
 
-[39] duration = 0.5
+[39] rotation = math.round(this.rotation / 90) * 90 // snap to angle
+
+                                    begin set by name
+                                      begin operator *
+                                        begin call method
+                                          get env var math
+                                          begin params 2
+                                            push const string "round"
+                                            ,
+                                            begin operator /
+                                              begin get property
+                                                push this
+                                                push const string "rotation"
+                                              end get property ret values 1
+                                              push const number 90
+                                            end operator /
+                                          end params ret values 2
+                                        end call method ret values 1
+                                        push const number 90
+                                      end operator *
+                                    end set by name: [rotation]
+                                    ,
+
+[40] duration = 0.5
 
                                     begin set by name
                                       push const number 0.5
                                     end set by name: [duration]
                                     ,
 
-[40] easy = Easy.outBack
+[41] easy = Easy.outBack
 
                                     begin set by name
                                       begin get property
@@ -566,7 +589,7 @@ begin function
             end call method ret values 0
 
 
-[44] this.insert(spring)
+[45] this.insert(spring)
 
             begin call method
               push this
@@ -578,7 +601,7 @@ begin function
             end call method ret values 0
 
 
-[46] var message = Text("Elastic Transition")	// create message
+[47] var message = Text("Elastic Transition")	// create message
 
             begin set local var
               begin call method
@@ -592,7 +615,7 @@ begin function
             end set local var message (4 0)
 
 
-[47] message.x = this.width	// locate the message at right bottom corner
+[48] message.x = this.width	// locate the message at right bottom corner
 
             begin set property
               begin get property
@@ -604,7 +627,7 @@ begin function
             end set property ret values 0
 
 
-[48] message.y = this.height
+[49] message.y = this.height
 
             begin set property
               begin get property
@@ -616,7 +639,7 @@ begin function
             end set property ret values 0
 
 
-[49] message.anchor = {x=1.05 y=1.05}
+[50] message.anchor = {x=1.05 y=1.05}
 
             begin set property
               begin object 2
@@ -633,7 +656,7 @@ begin function
             end set property ret values 0
 
 
-[50] message.shadow = true	// we want shadow enabled
+[51] message.shadow = true	// we want shadow enabled
 
             begin set property
               const true
@@ -642,7 +665,7 @@ begin function
             end set property ret values 0
 
 
-[51] message.zOrder = 1
+[52] message.zOrder = 1
 
             begin set property
               push const number 1
@@ -651,7 +674,7 @@ begin function
             end set property ret values 0
 
 
-[52] this.insert(message)
+[53] this.insert(message)
 
             begin call method
               push this
@@ -668,7 +691,7 @@ begin function
   end set env var MyScene
 
 
-[56] director.scene = MyScene()	// create and set our game scene
+[57] director.scene = MyScene()	// create and set our game scene
 
   begin set property
     begin call method
