@@ -3,6 +3,6 @@ Football-StarterKit
 
 Football-StarterKit is game example made with ObjectScript and Marmalade SDK. 
 
-Main program file of this example: prog-os\main.os
+Main program file of this example is located here: prog-os\main.os
 
-You could view video: http://youtu.be/P5KPJOVSs3E
+You could view video of the example here: http://youtu.be/P5KPJOVSs3E

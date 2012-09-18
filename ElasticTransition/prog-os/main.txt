@@ -665,16 +665,7 @@ begin function
             end set property ret values 0
 
 
-[52] message.zOrder = 1
-
-            begin set property
-              push const number 1
-              get local var auto create message (4 0)
-              push const string "zOrder"
-            end set property ret values 0
-
-
-[53] this.insert(message)
+[52] this.insert(message)
 
             begin call method
               push this
@@ -691,7 +682,7 @@ begin function
   end set env var MyScene
 
 
-[57] director.scene = MyScene()	// create and set our game scene
+[56] director.scene = MyScene()	// create and set our game scene
 
   begin set property
     begin call method
