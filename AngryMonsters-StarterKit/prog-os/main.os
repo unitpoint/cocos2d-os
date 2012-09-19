@@ -135,6 +135,7 @@ MyScene = extends Scene {
 			die = function(){
 				this.clearTimeout(this.trackMove)
 				this.flipX = this.x > this.fighting.x
+				this.timeSpeed = 1
 				this.runAnimation("dieRight", function(){
 					this.stopAnimation(this.curAnim)
 					this.curAnim = null
@@ -152,6 +153,7 @@ MyScene = extends Scene {
 				this.flipX = this.x > this.fighting.x
 				this.runAnimation("fightRight", function(){
 					this.fighting.health = this.fighting.health - this.health * 0.3
+					this.fighting.timeSpeed = math.max(0.5, this.fighting.timeSpeed * 0.8)
 					if(this.fighting.health <= 0){
 						this.fighting.die()
 						this.fighting = null
@@ -195,7 +197,7 @@ MyScene = extends Scene {
 			})
 		}
 		
-		for(var i = 0; i < 10; i++){
+		for(var i = 0; i < 30; i++){
 			createMonster()
 		}
 		

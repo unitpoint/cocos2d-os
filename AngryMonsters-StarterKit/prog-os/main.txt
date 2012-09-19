@@ -1515,7 +1515,16 @@ begin function
                       end set property ret values 0
 
 
-[138] this.runAnimation("dieRight", function(){
+[138] this.timeSpeed = 1
+
+                      begin set property
+                        push const number 1
+                        push this
+                        push const string "timeSpeed"
+                      end set property ret values 0
+
+
+[139] this.runAnimation("dieRight", function(){
 
                       begin call method
                         push this
@@ -1530,7 +1539,7 @@ begin function
                               1 _G
                             end locals
 
-[139] this.stopAnimation(this.curAnim)
+[140] this.stopAnimation(this.curAnim)
 
                             begin call method
                               push this
@@ -1545,7 +1554,7 @@ begin function
                             end call method ret values 0
 
 
-[140] this.curAnim = null
+[141] this.curAnim = null
 
                             begin set property
                               const null
@@ -1554,7 +1563,7 @@ begin function
                             end set property ret values 0
 
 
-[141] this.transition {
+[142] this.transition {
 
                             begin call method
                               push this
@@ -1563,21 +1572,21 @@ begin function
                                 ,
                                 begin object 3
 
-[142] opacity = 0
+[143] opacity = 0
 
                                   begin set by name
                                     push const number 0
                                   end set by name: [opacity]
                                   ,
 
-[143] duration = 1
+[144] duration = 1
 
                                   begin set by name
                                     push const number 1
                                   end set by name: [duration]
                                   ,
 
-[144] onComplete = function(){
+[145] onComplete = function(){
 
                                   begin set by name
                                     begin function
@@ -1586,7 +1595,7 @@ begin function
                                         1 _G
                                       end locals
 
-[145] this.remove()
+[146] this.remove()
 
                                       begin call method
                                         push this
@@ -1606,7 +1615,7 @@ begin function
                   end set by name: [die]
                   ,
 
-[151] startFightingAnimation = function(){
+[152] startFightingAnimation = function(){
 
                   begin set by name
                     begin function
@@ -1615,7 +1624,7 @@ begin function
                         1 _G
                       end locals
 
-[152] this.flipX = this.x > this.fighting.x
+[153] this.flipX = this.x > this.fighting.x
 
                       begin set property
                         begin logic >
@@ -1636,7 +1645,7 @@ begin function
                       end set property ret values 0
 
 
-[153] this.runAnimation("fightRight", function(){
+[154] this.runAnimation("fightRight", function(){
 
                       begin call method
                         push this
@@ -1651,7 +1660,7 @@ begin function
                               1 _G
                             end locals
 
-[154] this.fighting.health = this.fighting.health - this.health * 0.3
+[155] this.fighting.health = this.fighting.health - this.health * 0.3
 
                             begin set property
                               begin operator -
@@ -1678,7 +1687,37 @@ begin function
                             end set property ret values 0
 
 
-[155] if(this.fighting.health <= 0){
+[156] this.fighting.timeSpeed = math.max(0.5, this.fighting.timeSpeed * 0.8)
+
+                            begin set property
+                              begin call method
+                                get env var math
+                                begin params 3
+                                  push const string "max"
+                                  ,
+                                  push const number 0.5
+                                  ,
+                                  begin operator *
+                                    begin get property
+                                      begin get property
+                                        push this
+                                        push const string "fighting"
+                                      end get property ret values 1
+                                      push const string "timeSpeed"
+                                    end get property ret values 1
+                                    push const number 0.8
+                                  end operator *
+                                end params ret values 3
+                              end call method ret values 1
+                              begin get property auto create
+                                push this
+                                push const string "fighting"
+                              end get property auto create ret values 1
+                              push const string "timeSpeed"
+                            end set property ret values 0
+
+
+[157] if(this.fighting.health <= 0){
 
                             begin if
                               begin bool exp
@@ -1695,7 +1734,7 @@ begin function
                               end bool exp
                               begin then
 
-[156] this.fighting.die()
+[158] this.fighting.die()
 
                                 begin scope
                                   begin call method
@@ -1709,7 +1748,7 @@ begin function
                                   end call method ret values 0
 
 
-[157] this.fighting = null
+[159] this.fighting = null
 
                                   begin set property
                                     const null
@@ -1718,7 +1757,7 @@ begin function
                                   end set property ret values 0
 
 
-[158] this.move(this.x + math.random(-1, 1) * this.width, this.y + math.random(-1, 1) * this.width)
+[160] this.move(this.x + math.random(-1, 1) * this.width, this.y + math.random(-1, 1) * this.width)
 
                                   begin call method
                                     push this
@@ -1786,7 +1825,7 @@ begin function
                   end set by name: [startFightingAnimation]
                   ,
 
-[163] __set@y = function(y){
+[165] __set@y = function(y){
 
                   begin set by name
                     begin function
@@ -1796,7 +1835,7 @@ begin function
                         2 _G
                       end locals
 
-[164] super(y)
+[166] super(y)
 
                       begin call
                         super
@@ -1806,7 +1845,7 @@ begin function
                       end call ret values 0
 
 
-[165] this.zOrder = y
+[167] this.zOrder = y
 
                       begin set property
                         get local var y (0 0 param)
@@ -1820,7 +1859,7 @@ begin function
             end set local var Monster (14 0)
 
 
-[169] var function color(){
+[171] var function color(){
 
             begin set local var
               begin function
@@ -1829,7 +1868,7 @@ begin function
                   1 _G
                 end locals
 
-[170] return [math.random(0.8, 1), math.random(0.8, 1), math.random(0.8, 1)]
+[172] return [math.random(0.8, 1), math.random(0.8, 1), math.random(0.8, 1)]
 
                 begin return
                   begin array 3
@@ -1877,7 +1916,7 @@ begin function
             end set local var color (15 0)
 
 
-[173] var monsters = []
+[175] var monsters = []
 
             begin set local var
               begin array 0
@@ -1885,14 +1924,14 @@ begin function
             end set local var monsters (16 0)
 
 
-[174] var scene = this
+[176] var scene = this
 
             begin set local var
               push this
             end set local var scene (17 0)
 
 
-[175] var monsterNames = animations.keys
+[177] var monsterNames = animations.keys
 
             begin set local var
               begin get property
@@ -1902,7 +1941,7 @@ begin function
             end set local var monsterNames (18 0)
 
 
-[176] var function createMonster(i){
+[178] var function createMonster(i){
 
             begin set local var
               begin function
@@ -1913,7 +1952,7 @@ begin function
                   3 monster
                 end locals
 
-[177] i = i || math.random(#monsterNames)
+[179] i = i || math.random(#monsterNames)
 
                 begin set local var
                   begin logic ||
@@ -1932,7 +1971,7 @@ begin function
                 end set local var i (0 0 param)
 
 
-[178] var monster = Monster(monsterNames[ i % #monsterNames ])
+[180] var monster = Monster(monsterNames[ i % #monsterNames ])
 
                 begin set local var
                   begin call
@@ -1952,7 +1991,7 @@ begin function
                 end set local var monster (3 0)
 
 
-[179] monster.x = scene.width * math.random(0.2, 0.8)
+[181] monster.x = scene.width * math.random(0.2, 0.8)
 
                 begin set property
                   begin operator *
@@ -1976,7 +2015,7 @@ begin function
                 end set property ret values 0
 
 
-[180] monster.y = scene.height * math.random(0.2, 0.8)
+[182] monster.y = scene.height * math.random(0.2, 0.8)
 
                 begin set property
                   begin operator *
@@ -2000,7 +2039,7 @@ begin function
                 end set property ret values 0
 
 
-[181] monster.timeSpeed = math.random(0.7, 3.0)
+[183] monster.timeSpeed = math.random(0.7, 3.0)
 
                 begin set property
                   begin call method
@@ -2018,7 +2057,7 @@ begin function
                 end set property ret values 0
 
 
-[182] monster.color = color() // colors[ i % #colors ]
+[184] monster.color = color() // colors[ i % #colors ]
 
                 begin set property
                   begin call
@@ -2031,7 +2070,7 @@ begin function
                 end set property ret values 0
 
 
-[183] monster.opacity = 0
+[185] monster.opacity = 0
 
                 begin set property
                   push const number 0
@@ -2040,7 +2079,7 @@ begin function
                 end set property ret values 0
 
 
-[184] monster.transition { opacity = 1, duration = 1 }
+[186] monster.transition { opacity = 1, duration = 1 }
 
                 begin call method
                   get local var monster (3 0)
@@ -2060,7 +2099,7 @@ begin function
                 end call method ret values 0
 
 
-[185] scene.insert(monster)
+[187] scene.insert(monster)
 
                 begin call method
                   get local var scene (17 1)
@@ -2072,7 +2111,7 @@ begin function
                 end call method ret values 0
 
 
-[186] monsters.push(monster)
+[188] monsters.push(monster)
 
                 begin call method
                   get local var monsters (16 1)
@@ -2084,7 +2123,7 @@ begin function
                 end call method ret values 0
 
 
-[187] monster.addEventListener("onExit", function(){
+[189] monster.addEventListener("onExit", function(){
 
                 begin call method
                   get local var monster (3 0)
@@ -2099,7 +2138,7 @@ begin function
                         1 _G
                       end locals
 
-[188] for(var i, m in monsters){
+[190] for(var i, m in monsters){
 
                       begin scope
                         begin locals 4
@@ -2151,7 +2190,7 @@ begin function
                             end if ret values 0
 
 
-[189] if(m === this){
+[191] if(m === this){
 
                             begin scope
                               begin if
@@ -2163,7 +2202,7 @@ begin function
                                 end bool exp
                                 begin then
 
-[190] delete monsters[i]
+[192] delete monsters[i]
 
                                   begin scope
                                     begin delete
@@ -2172,7 +2211,7 @@ begin function
                                     end delete
 
 
-[191] createMonster(math.random(#monsterNames))
+[193] createMonster(math.random(#monsterNames))
 
                                     begin call
                                       get local var createMonster (19 2)
@@ -2191,7 +2230,7 @@ begin function
                                     end call ret values 0
 
 
-[192] return;
+[194] return;
 
                                     return
                                   end scope ret values 0
@@ -2208,7 +2247,7 @@ begin function
             end set local var createMonster (19 0)
 
 
-[198] for(var i = 0; i < 10; i++){
+[200] for(var i = 0; i < 30; i++){
 
             begin scope
               begin locals 1
@@ -2224,7 +2263,7 @@ begin function
                     begin logic not
                       begin logic <
                         get local var i (20 0)
-                        push const number 10
+                        push const number 30
                       end logic <
                     end logic not
                   end bool exp
@@ -2234,7 +2273,7 @@ begin function
                 end if ret values 0
 
 
-[199] createMonster()
+[201] createMonster()
 
                 begin scope
                   begin call
@@ -2245,7 +2284,7 @@ begin function
                 end scope ret values 0
 
 
-[198] for(var i = 0; i < 10; i++){
+[200] for(var i = 0; i < 30; i++){
 
                 begin code list
                   begin set local var
@@ -2259,7 +2298,7 @@ begin function
             end scope ret values 0
 
 
-[202] var function moveMonsters(x, y){
+[204] var function moveMonsters(x, y){
 
             begin set local var
               begin function
@@ -2270,7 +2309,7 @@ begin function
                   3 _G
                 end locals
 
-[203] for(var i, monster in monsters){
+[205] for(var i, monster in monsters){
 
                 begin scope
                   begin locals 4
@@ -2322,7 +2361,7 @@ begin function
                       end if ret values 0
 
 
-[204] if(!monster.fighting) monster.move(x, y)
+[206] if(!monster.fighting) monster.move(x, y)
 
                       begin scope
                         begin if
@@ -2355,7 +2394,7 @@ begin function
             end set local var moveMonsters (21 0)
 
 
-[208] this.addEventListener("touch", function(touch){
+[210] this.addEventListener("touch", function(touch){
 
             begin call method
               push this
@@ -2371,7 +2410,7 @@ begin function
                     2 _G
                   end locals
 
-[209] moveMonsters(touch.local.x, touch.local.y)
+[211] moveMonsters(touch.local.x, touch.local.y)
 
                   begin call
                     get local var moveMonsters (21 1)
@@ -2398,7 +2437,7 @@ begin function
             end call method ret values 0
 
 
-[212] this.setTimeout(function(){
+[214] this.setTimeout(function(){
 
             begin call method
               push this
@@ -2411,7 +2450,7 @@ begin function
                     1 _G
                   end locals
 
-[213] for(var i, monster in monsters){
+[215] for(var i, monster in monsters){
 
                   begin scope
                     begin locals 4
@@ -2463,7 +2502,7 @@ begin function
                         end if ret values 0
 
 
-[214] for(var j = i+1; j < #monsters; j++){
+[216] for(var j = i+1; j < #monsters; j++){
 
                         begin scope
                           begin scope
@@ -2495,7 +2534,7 @@ begin function
                               end if ret values 0
 
 
-[215] var other = monsters[j]
+[217] var other = monsters[j]
 
                               begin scope
                                 begin locals 2
@@ -2510,7 +2549,7 @@ begin function
                                 end set local var other (5 0)
 
 
-[216] var dist = ((monster.x - other.x)**2 + (monster.y - other.y)**2)**0.5
+[218] var dist = ((monster.x - other.x)**2 + (monster.y - other.y)**2)**0.5
 
                                 begin set local var
                                   begin operator **
@@ -2547,7 +2586,7 @@ begin function
                                 end set local var dist (6 0)
 
 
-[217] if(dist < monster.width){
+[219] if(dist < monster.width){
 
                                 begin if
                                   begin bool exp
@@ -2561,7 +2600,7 @@ begin function
                                   end bool exp
                                   begin then
 
-[218] monster.fight(other)
+[220] monster.fight(other)
 
                                     begin scope
                                       begin call method
@@ -2578,7 +2617,7 @@ begin function
                               end scope ret values 0
 
 
-[214] for(var j = i+1; j < #monsters; j++){
+[216] for(var j = i+1; j < #monsters; j++){
 
                               begin code list
                                 begin set local var
@@ -2597,7 +2636,7 @@ begin function
                 end function
                 ,
 
-[222] }, 0.3, true)
+[224] }, 0.3, true)
 
                 push const number 0.3
                 ,
@@ -2606,11 +2645,11 @@ begin function
             end call method ret values 0
 
 
-[275] }.call(this)
+[277] }.call(this)
 
             begin call method
 
-[224] function(){
+[226] function(){
 
               begin function
                 begin locals, total 8
@@ -2624,14 +2663,14 @@ begin function
                   7 gcNumValues
                 end locals
 
-[226] var font = "arial-en-ru-16.fnt"
+[228] var font = "arial-en-ru-16.fnt"
 
                 begin set local var
                   push const string "arial-en-ru-16.fnt"
                 end set local var font (2 0)
 
 
-[227] var fps = Text("fps", font)
+[229] var fps = Text("fps", font)
 
                 begin set local var
                   begin call method
@@ -2647,7 +2686,7 @@ begin function
                 end set local var fps (3 0)
 
 
-[228] fps.anchor = {x=1.05 y=1.05}
+[230] fps.anchor = {x=1.05 y=1.05}
 
                 begin set property
                   begin object 2
@@ -2664,7 +2703,7 @@ begin function
                 end set property ret values 0
 
 
-[229] fps.x = this.width
+[231] fps.x = this.width
 
                 begin set property
                   begin get property
@@ -2676,7 +2715,7 @@ begin function
                 end set property ret values 0
 
 
-[230] fps.y = this.height - 40
+[232] fps.y = this.height - 40
 
                 begin set property
                   begin operator -
@@ -2691,7 +2730,7 @@ begin function
                 end set property ret values 0
 
 
-[231] fps.color = [0.5, 0.0, 0.0]
+[233] fps.color = [0.5, 0.0, 0.0]
 
                 begin set property
                   begin array 3
@@ -2712,7 +2751,7 @@ begin function
                 end set property ret values 0
 
 
-[233] this.insert(fps)
+[235] this.insert(fps)
 
                 begin call method
                   push this
@@ -2724,7 +2763,7 @@ begin function
                 end call method ret values 0
 
 
-[235] var gcAllocatedBytes = Text("Kb", font)
+[237] var gcAllocatedBytes = Text("Kb", font)
 
                 begin set local var
                   begin call method
@@ -2740,7 +2779,7 @@ begin function
                 end set local var gcAllocatedBytes (4 0)
 
 
-[236] gcAllocatedBytes.anchor = {x=1.05 y=1.05}
+[238] gcAllocatedBytes.anchor = {x=1.05 y=1.05}
 
                 begin set property
                   begin object 2
@@ -2757,7 +2796,7 @@ begin function
                 end set property ret values 0
 
 
-[237] gcAllocatedBytes.x = fps.x
+[239] gcAllocatedBytes.x = fps.x
 
                 begin set property
                   begin get property
@@ -2769,7 +2808,7 @@ begin function
                 end set property ret values 0
 
 
-[238] gcAllocatedBytes.y = fps.y - fps.fontHeight*1.05*1
+[240] gcAllocatedBytes.y = fps.y - fps.fontHeight*1.05*1
 
                 begin set property
                   begin operator -
@@ -2793,7 +2832,7 @@ begin function
                 end set property ret values 0
 
 
-[239] gcAllocatedBytes.color = fps.color
+[241] gcAllocatedBytes.color = fps.color
 
                 begin set property
                   begin get property
@@ -2805,7 +2844,7 @@ begin function
                 end set property ret values 0
 
 
-[241] this.insert(gcAllocatedBytes)
+[243] this.insert(gcAllocatedBytes)
 
                 begin call method
                   push this
@@ -2817,7 +2856,7 @@ begin function
                 end call method ret values 0
 
 
-[243] var gcUsedBytes = Text("Kb", font)
+[245] var gcUsedBytes = Text("Kb", font)
 
                 begin set local var
                   begin call method
@@ -2833,7 +2872,7 @@ begin function
                 end set local var gcUsedBytes (5 0)
 
 
-[244] gcUsedBytes.anchor = {x=1.05 y=1.05}
+[246] gcUsedBytes.anchor = {x=1.05 y=1.05}
 
                 begin set property
                   begin object 2
@@ -2850,7 +2889,7 @@ begin function
                 end set property ret values 0
 
 
-[245] gcUsedBytes.x = fps.x
+[247] gcUsedBytes.x = fps.x
 
                 begin set property
                   begin get property
@@ -2862,7 +2901,7 @@ begin function
                 end set property ret values 0
 
 
-[246] gcUsedBytes.y = fps.y - fps.fontHeight*1.05*3
+[248] gcUsedBytes.y = fps.y - fps.fontHeight*1.05*3
 
                 begin set property
                   begin operator -
@@ -2886,7 +2925,7 @@ begin function
                 end set property ret values 0
 
 
-[247] gcUsedBytes.color = fps.color
+[249] gcUsedBytes.color = fps.color
 
                 begin set property
                   begin get property
@@ -2898,7 +2937,7 @@ begin function
                 end set property ret values 0
 
 
-[249] this.insert(gcUsedBytes)
+[251] this.insert(gcUsedBytes)
 
                 begin call method
                   push this
@@ -2910,7 +2949,7 @@ begin function
                 end call method ret values 0
 
 
-[251] var gcCachedBytes = Text("Kb", font)
+[253] var gcCachedBytes = Text("Kb", font)
 
                 begin set local var
                   begin call method
@@ -2926,7 +2965,7 @@ begin function
                 end set local var gcCachedBytes (6 0)
 
 
-[252] gcCachedBytes.anchor = {x=1.05 y=1.05}
+[254] gcCachedBytes.anchor = {x=1.05 y=1.05}
 
                 begin set property
                   begin object 2
@@ -2943,7 +2982,7 @@ begin function
                 end set property ret values 0
 
 
-[253] gcCachedBytes.x = fps.x
+[255] gcCachedBytes.x = fps.x
 
                 begin set property
                   begin get property
@@ -2955,7 +2994,7 @@ begin function
                 end set property ret values 0
 
 
-[254] gcCachedBytes.y = fps.y - fps.fontHeight*1.05*2
+[256] gcCachedBytes.y = fps.y - fps.fontHeight*1.05*2
 
                 begin set property
                   begin operator -
@@ -2979,7 +3018,7 @@ begin function
                 end set property ret values 0
 
 
-[255] gcCachedBytes.color = fps.color
+[257] gcCachedBytes.color = fps.color
 
                 begin set property
                   begin get property
@@ -2991,7 +3030,7 @@ begin function
                 end set property ret values 0
 
 
-[257] this.insert(gcCachedBytes)
+[259] this.insert(gcCachedBytes)
 
                 begin call method
                   push this
@@ -3003,7 +3042,7 @@ begin function
                 end call method ret values 0
 
 
-[259] var gcNumValues = Text("0", font)
+[261] var gcNumValues = Text("0", font)
 
                 begin set local var
                   begin call method
@@ -3019,7 +3058,7 @@ begin function
                 end set local var gcNumValues (7 0)
 
 
-[260] gcNumValues.anchor = {x=1.05 y=1.05}
+[262] gcNumValues.anchor = {x=1.05 y=1.05}
 
                 begin set property
                   begin object 2
@@ -3036,7 +3075,7 @@ begin function
                 end set property ret values 0
 
 
-[261] gcNumValues.x = fps.x
+[263] gcNumValues.x = fps.x
 
                 begin set property
                   begin get property
@@ -3048,7 +3087,7 @@ begin function
                 end set property ret values 0
 
 
-[262] gcNumValues.y = fps.y - fps.fontHeight*1.05*4
+[264] gcNumValues.y = fps.y - fps.fontHeight*1.05*4
 
                 begin set property
                   begin operator -
@@ -3072,7 +3111,7 @@ begin function
                 end set property ret values 0
 
 
-[263] gcNumValues.color = fps.color
+[265] gcNumValues.color = fps.color
 
                 begin set property
                   begin get property
@@ -3084,7 +3123,7 @@ begin function
                 end set property ret values 0
 
 
-[265] this.insert(gcNumValues)
+[267] this.insert(gcNumValues)
 
                 begin call method
                   push this
@@ -3096,7 +3135,7 @@ begin function
                 end call method ret values 0
 
 
-[267] this.setTimeout(function(){
+[269] this.setTimeout(function(){
 
                 begin call method
                   push this
@@ -3109,7 +3148,7 @@ begin function
                         1 _G
                       end locals
 
-[268] fps.string = math.round(1 / director.deltaTime, 1).." fps"
+[270] fps.string = math.round(1 / director.deltaTime, 1).." fps"
 
                       begin set property
                         begin operator ..
@@ -3136,7 +3175,7 @@ begin function
                       end set property ret values 0
 
 
-[269] gcAllocatedBytes.string = math.round(GC.allocatedBytes / 1024).." Kb allocated"
+[271] gcAllocatedBytes.string = math.round(GC.allocatedBytes / 1024).." Kb allocated"
 
                       begin set property
                         begin operator ..
@@ -3161,7 +3200,7 @@ begin function
                       end set property ret values 0
 
 
-[270] gcUsedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
+[272] gcUsedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
 
                       begin set property
                         begin operator ..
@@ -3192,7 +3231,7 @@ begin function
                       end set property ret values 0
 
 
-[271] gcCachedBytes.string = math.round(GC.cachedBytes / 1024).." Kb cached"
+[273] gcCachedBytes.string = math.round(GC.cachedBytes / 1024).." Kb cached"
 
                       begin set property
                         begin operator ..
@@ -3217,7 +3256,7 @@ begin function
                       end set property ret values 0
 
 
-[272] gcNumValues.string = GC.numValues.." values"
+[274] gcNumValues.string = GC.numValues.." values"
 
                       begin set property
                         begin operator ..
@@ -3233,7 +3272,7 @@ begin function
                     end function
                     ,
 
-[273] }, 0.3, true)
+[275] }, 0.3, true)
 
                     push const number 0.3
                     ,
@@ -3242,7 +3281,7 @@ begin function
                 end call method ret values 0
               end function
 
-[275] }.call(this)
+[277] }.call(this)
 
               begin params 2
                 push const string "call"
@@ -3257,7 +3296,7 @@ begin function
   end set env var MyScene
 
 
-[279] director.scene = MyScene()	// create and set our game scene
+[281] director.scene = MyScene()	// create and set our game scene
 
   begin set property
     begin call method
