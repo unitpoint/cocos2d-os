@@ -2866,6 +2866,8 @@ namespace ObjectScript
 		void pushUserPool();
 		void pushValueById(int id);
 
+		void clone(int offs = -1);
+
 		// int pushArrayNumbers(int offs = -1);
 
 		int getStackSize();

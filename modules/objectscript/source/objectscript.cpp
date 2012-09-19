@@ -11283,6 +11283,7 @@ int OS::Core::gcStep()
 		}
 		if(i <= values.head_mask){
 			gc_values_head_index = i;
+			gc_step_size_auto_mult *= 1.1f;
 			gc_step_size = (int)((float)values.count * gc_step_size_mult * gc_step_size_auto_mult * 2);
 			return OS_GC_PHASE_SWEEP;
 		}
@@ -11292,12 +11293,13 @@ int OS::Core::gcStep()
 		int end_allocated_bytes = allocator->getAllocatedBytes();
 		gc_continuous_count++;
 		if(gc_start_allocated_bytes == end_allocated_bytes){
+			gc_step_size_auto_mult *= 0.5f;
+			if(gc_step_size_auto_mult < 1){
+				gc_step_size_auto_mult = 1.0f;
+			}
 			if(++gc_keep_heap_count >= 2){
 				gc_continuous = false;
-				gc_step_size_auto_mult *= 0.5f;
-				if(gc_step_size_auto_mult < 1){
-					gc_step_size_auto_mult = 1.0f;
-				}
+				// gc_step_size_auto_mult = 1.0f;
 			}
 		}else{
 			gc_start_allocated_bytes = end_allocated_bytes;
@@ -11320,7 +11322,7 @@ int OS::Core::gcStep()
 			gc_continuous = true;
 			gc_continuous_count = 0;
 			gc_keep_heap_count = 0;
-			gc_start_allocated_bytes = allocator->getAllocatedBytes();
+			// gc_start_allocated_bytes = allocator->getAllocatedBytes();
 		}else{
 			// int i = 0;
 		}
@@ -11353,6 +11355,7 @@ int OS::Core::gcStep()
 		gc_values_head_index = 0;
 		return OS_GC_PHASE_SWEEP;
 	}
+	gc_step_size_auto_mult *= 1.1f;
 	return OS_GC_PHASE_MARK;
 }
 
@@ -13492,6 +13495,11 @@ void OS::pushValueById(int id)
 	core->pushValue(core->values.get(id));
 }
 
+void OS::clone(int offs)
+{
+	core->pushCloneValue(core->getStackValue(offs));
+}
+
 int OS::getStackSize()
 {
 	return core->stack_values.count;
@@ -13735,9 +13743,16 @@ void OS::setProperty(const Core::String& name, bool setter_enabled)
 
 void OS::addProperty()
 {
-	pushStackValue(-2);
-	runOp(OP_LENGTH);
-	move(-2, -1);
+	Core::Value value = core->getStackValue(-2);
+	switch(value.type){
+	case OS_VALUE_TYPE_ARRAY:
+		core->insertValue(value.v.arr->values.count, -1);
+		break;
+
+	case OS_VALUE_TYPE_OBJECT:
+		core->insertValue(value.v.object->table ? value.v.object->table->count : 0, -1);
+		break;
+	}
 	setProperty(false);
 }
 
@@ -16308,6 +16323,108 @@ void OS::initObjectClass()
 			os->vectorClear(captured_items);
 			return 1;
 		}
+
+		static int merge(OS * os, int params, int, int, void*)
+		{
+			if(params < 1) return 0;
+			int offs = os->getAbsoluteOffs(-params);
+			bool is_array = os->isArray(offs-1);
+			if(is_array || os->isObject(offs-1)){
+				for(int i = 0; i < params; i++){
+					Core::Value value = os->core->getStackValue(offs+i);
+					switch(value.type){
+					case OS_VALUE_TYPE_ARRAY:
+						{
+							OS_ASSERT(dynamic_cast<Core::GCArrayValue*>(value.v.arr));
+							for(int j = 0; j < value.v.arr->values.count; j++){
+								os->pushStackValue(offs-1);
+								os->core->pushValue(value.v.arr->values[j]);
+								os->addProperty();
+							}
+							break;
+						}
+
+					case OS_VALUE_TYPE_OBJECT:
+						{
+							OS_ASSERT(dynamic_cast<Core::GCObjectValue*>(value.v.object));
+							if(value.v.object->table){
+								Core::Property * prop = value.v.object->table->first;
+								for(; prop; prop = prop->next){
+									os->pushStackValue(offs-1);
+									if(is_array){
+										os->core->pushValue(prop->value);
+										os->addProperty();
+									}else{
+										os->core->pushValue(prop->index);
+										os->core->pushValue(prop->value);
+										os->setProperty();
+									}
+								}
+							}
+							break;
+						}
+					}
+				}
+				os->pushStackValue(offs-1);
+				return 1;
+			}
+			return 0;
+		}
+
+		static int getKeys(OS * os, int params, int, int, void*)
+		{
+			Core::Value value = os->core->getStackValue(-params-1);
+			switch(value.type){
+			case OS_VALUE_TYPE_ARRAY:
+				{
+					Core::GCArrayValue * arr = os->core->pushArrayValue(value.v.arr->values.count);
+					for(int i = 0; i < value.v.arr->values.count; i++){
+						os->vectorAddItem(arr->values, Core::Value(i) OS_DBG_FILEPOS);
+					}
+					return 1;
+				}
+
+			case OS_VALUE_TYPE_OBJECT:
+				{
+					if(value.v.object->table){
+						Core::GCArrayValue * arr = os->core->pushArrayValue(value.v.object->table->count);
+						Core::Property * prop = value.v.object->table->first;
+						for(int i = 0; prop; prop = prop->next, i++){
+							os->vectorAddItem(arr->values, prop->index OS_DBG_FILEPOS);
+						}
+					}else{
+						os->newArray();
+					}
+					return 1;
+				}
+			}
+			return 0;
+		}
+
+		static int getValues(OS * os, int params, int, int, void*)
+		{
+			Core::Value value = os->core->getStackValue(-params-1);
+			switch(value.type){
+			case OS_VALUE_TYPE_ARRAY:
+				os->core->pushValue(value);
+				return 1;
+
+			case OS_VALUE_TYPE_OBJECT:
+				{
+					if(value.v.object->table){
+						Core::GCArrayValue * arr = os->core->pushArrayValue(value.v.object->table->count);
+						Core::Property * prop = value.v.object->table->first;
+						for(int i = 0; prop; prop = prop->next, i++){
+							os->vectorAddItem(arr->values, prop->value OS_DBG_FILEPOS);
+						}
+					}else{
+						os->newArray();
+					}
+					return 1;
+				}
+			}
+			return 0;
+		}
 	};
 	FuncDef list[] = {
 		{OS_TEXT("rawget"), Object::rawget},
@@ -16326,6 +16443,11 @@ void OS::initObjectClass()
 		{OS_TEXT("pop"), Object::pop},
 		{OS_TEXT("hasOwnProperty"), Object::hasOwnProperty},
 		{OS_TEXT("hasProperty"), Object::hasProperty},
+		{OS_TEXT("merge"), Object::merge},
+		{OS_TEXT("getKeys"), Object::getKeys},
+		{OS_TEXT("getValues"), Object::getValues},
+		{OS_TEXT("__get@keys"), Object::getKeys},
+		{OS_TEXT("__get@values"), Object::getValues},
 		{}
 	};
 	core->pushValue(core->prototypes[Core::PROTOTYPE_OBJECT]);
@@ -16511,6 +16633,9 @@ void OS::initFunctionClass()
 
 		static int call(OS * os, int params, int, int need_ret_values, void*)
 		{
+#if 1
+			return os->call(params-1, need_ret_values);
+#else
 			int offs = os->getAbsoluteOffs(-params);
 			os->pushStackValue(offs-1); // self as func
 			if(params < 1){
@@ -16522,6 +16647,7 @@ void OS::initFunctionClass()
 				os->pushStackValue(offs + i);
 			}
 			return os->call(params-1, need_ret_values);
+#endif
 		}
 
 		static int applyEnv(OS * os, int params, int, int need_ret_values, void *)
