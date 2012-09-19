@@ -25,6 +25,9 @@ MarmaladeOS::MarmaladeOS(const OS_CHAR * os_paths[], const OS_CHAR * compiled_fi
 	labelBMFont_class_crc = (int)&labelBMFont_class_crc;
 	labelBMFont_instance_crc = (int)&labelBMFont_instance_crc;
 
+	gc_start_time = 0;
+	gc_frame_time = 0;
+
 	IwGLInit();
 
 	s3eSurfaceSetInt(S3E_SURFACE_DEVICE_ORIENTATION_LOCK, 4);
@@ -922,6 +925,16 @@ static double clamp(double a, double min, double max)
 	return a;
 }
 
+void MarmaladeOS::onEnterGC()
+{
+	gc_start_time = s3eTimerGetMs();
+}
+
+void MarmaladeOS::onExitGC()
+{
+	gc_frame_time = (int)(s3eTimerGetMs() - gc_start_time);
+}
+
 int MarmaladeOS::run(const OS_CHAR * main_stript, const OS_CHAR * os_paths[], const OS_CHAR * compiled_files_path, const OS_CHAR * output_filename)
 {
 	return run(new MarmaladeOS(os_paths, compiled_files_path, output_filename), main_stript);
@@ -933,7 +946,7 @@ int MarmaladeOS::run(MarmaladeOS * p_os, const OS_CHAR * main_stript)
 	// os->setSetting(OS_SETTING_PRIMARY_COMPILED_FILE, true);
 	os->require(main_stript);
 	for(;;){ 
-		uint64 startFrameTimeMS = s3eTimerGetMs();
+		uint64 start_time_ms = s3eTimerGetMs();
 		
 		os->startFrame();
 			
@@ -954,10 +967,10 @@ int MarmaladeOS::run(MarmaladeOS * p_os, const OS_CHAR * main_stript)
 
 		os->getGlobal("director");
 		os->getProperty("animationInterval");
-		int animationIntervalMS = (int)(1000.0f * clamp(os->popNumber(), 0.005, 0.2));
-		int frameMS = (int)(s3eTimerGetMs() - startFrameTimeMS);
-		if(animationIntervalMS > frameMS){
-			s3eDeviceYield(animationIntervalMS - frameMS);
+		int animation_ms = (int)(1000.0f * clamp(os->popNumber(), 0.005, 0.2));
+		int frame_ms = (int)(s3eTimerGetMs() - start_time_ms);
+		if(animation_ms > frame_ms){
+			s3eDeviceYield(animation_ms - frame_ms);
 		}else{
 			s3eDeviceYield(1);
 		}
