@@ -253,10 +253,10 @@ void MarmaladeOS::drawImage(int params)
 
 	float opacity;
 	if(params >= 2){
-		opacity = isNumber(-params+1) ? 1.0f : clampUnit(toFloat(-params+1));
+		opacity = !isNumber(-params+1) ? 1.0f : clampUnit(toFloat(-params+1));
 	}else{
 		getProperty(-params, "opacity");
-		opacity = isNumber() ? (pop(), 1.0f) : clampUnit(popFloat());
+		opacity = !isNumber() ? (pop(), 1.0f) : clampUnit(popFloat());
 	}
 
 	params = getAbsoluteOffs(-params);
