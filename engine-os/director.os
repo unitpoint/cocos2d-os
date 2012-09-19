@@ -284,7 +284,7 @@ function core.triggerEvent(eventName, params){
 		var appTime = app.timeSec
 		deltaTime = (appTime - prevAppTime) * timeSpeed
 		prevAppTime = appTime
-		if(deltaTime > 0.2) deltaTime = 0.2
+		if(deltaTime > 0.1) deltaTime = 0.1
 		time = time + deltaTime
 		
 		handleTouches()

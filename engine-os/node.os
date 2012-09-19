@@ -34,7 +34,7 @@ FunctionNode = {
 	__set@parent = function(a){
 		if(this.__parent !== a){ 
 			this.remove() 
-			if(a) a.insert(this) 
+			a && a.insert(this) 
 		}
 	}
 	
@@ -83,6 +83,10 @@ FunctionNode = {
 			node.__parent = null
 			node.__parentChildren = null
 		}
+	}
+	
+	contains = function(node){
+		return node in this.__childrenNeg || node in this.__childrenPos
 	}
 	
 	handleUpdate = function(params){
@@ -183,7 +187,7 @@ FunctionNode = {
 	}
 	
 	stopTransition = function(t){
-		t.remove()
+		t && t.remove()
 	}
 	
 	stopAllTransitions = function(){
@@ -480,11 +484,16 @@ Transition = extends FunctionNode {
 		duration = 0
 		list = []
 		finished = false
+		onComplete = null
 	}
 
 	__construct = function(params, target){
 		super()
 		this.target = target
+		if("onComplete" in params){
+			this.onComplete = params.onComplete
+			delete params.onComplete
+		}
 		var t = this.calculateTransition(this.list, params, 0, 1)
 		this.duration = t.endTime
 		// print "calculateTransition "..this.list
@@ -609,6 +618,7 @@ Transition = extends FunctionNode {
 			// this.addEventListener("enterFrame", function(){
 				this.remove()
 				this.finished = true
+				this.onComplete && this.onComplete.call(this.target)
 				// print("transition finished", time, duration)
 			// })
 			time = duration

@@ -2617,18 +2617,18 @@ begin function
             end set local var prevAppTime (17 1)
 
 
-[287] if(deltaTime > 0.2) deltaTime = 0.2
+[287] if(deltaTime > 0.1) deltaTime = 0.1
 
             begin if
               begin bool exp
                 begin logic >
                   get local var deltaTime (14 1)
-                  push const number 0.2
+                  push const number 0.1
                 end logic >
               end bool exp
               begin then
                 begin set local var
-                  push const number 0.2
+                  push const number 0.1
                 end set local var deltaTime (14 1)
               end then
             end if ret values 0
