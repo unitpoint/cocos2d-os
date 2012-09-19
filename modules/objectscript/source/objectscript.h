@@ -2993,6 +2993,9 @@ namespace ObjectScript
 		virtual void closeFile(void * f);
 
 		virtual void printf(const OS_CHAR * fmt, ...);
+
+		virtual void onEnterGC();
+		virtual void onExitGC();
 	};
 
 } // namespace OS

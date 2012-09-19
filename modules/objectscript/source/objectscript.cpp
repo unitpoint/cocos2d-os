@@ -11032,7 +11032,7 @@ void OS::Core::gcInitGreyList()
 	gc_grey_added_count = 0;
 	// gc_grey_removed_count = 0;
 	gc_start_values_mult = 1.5f;
-	gc_step_size_mult = 0.01f;
+	gc_step_size_mult = 0.005f;
 	gc_step_size_auto_mult = 1.0f;
 	gc_start_next_values = 16;
 	gc_step_size = 0;
@@ -11244,6 +11244,14 @@ void OS::Core::gcMarkValue(GCValue * value)
 	}
 }
 
+void OS::onEnterGC()
+{
+}
+
+void OS::onExitGC()
+{
+}
+
 int OS::Core::gcStep()
 {
 	// return OS_GC_PHASE_MARK;
@@ -11252,8 +11260,16 @@ int OS::Core::gcStep()
 	}
 	struct GCTouch {
 		Core * core;
-		GCTouch(Core * p_core){ core = p_core; core->gc_in_process = true; }
-		~GCTouch(){ core->gc_in_process = false; }
+		GCTouch(Core * p_core)
+		{
+			core = p_core; core->gc_in_process = true;
+			core->allocator->onEnterGC();
+		}
+		~GCTouch()
+		{
+			core->gc_in_process = false;
+			core->allocator->onExitGC();
+		}
 	} gc_touch(this);
 
 	if(values.count == 0){
@@ -11283,7 +11299,7 @@ int OS::Core::gcStep()
 		}
 		if(i <= values.head_mask){
 			gc_values_head_index = i;
-			gc_step_size_auto_mult *= 1.1f;
+			gc_step_size_auto_mult *= 1.03f;
 			gc_step_size = (int)((float)values.count * gc_step_size_mult * gc_step_size_auto_mult * 2);
 			return OS_GC_PHASE_SWEEP;
 		}
@@ -11323,6 +11339,7 @@ int OS::Core::gcStep()
 			gc_continuous_count = 0;
 			gc_keep_heap_count = 0;
 			// gc_start_allocated_bytes = allocator->getAllocatedBytes();
+			gc_step_size_auto_mult = 1.0f;
 		}else{
 			// int i = 0;
 		}
@@ -11353,9 +11370,13 @@ int OS::Core::gcStep()
 	if(!gc_grey_list_first){
 		gc_grey_root_initialized = false;
 		gc_values_head_index = 0;
+		gc_step_size_auto_mult *= 0.25f;
+		if(gc_step_size_auto_mult < 1.0f){
+			gc_step_size_auto_mult = 1.0f;
+		}
 		return OS_GC_PHASE_SWEEP;
 	}
-	gc_step_size_auto_mult *= 1.1f;
+	gc_step_size_auto_mult *= 1.03f;
 	return OS_GC_PHASE_MARK;
 }
 
