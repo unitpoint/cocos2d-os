@@ -3,7 +3,7 @@
 [1] var core = require("core")
 
 begin function
-  begin locals, total 19
+  begin locals, total 21
     0 _E
     1 _G
     2 core
@@ -22,7 +22,9 @@ begin function
     15 timeSpeed
     16 time
     17 prevAppTime
-    18 coreTriggerEvent
+    18 prevDeltaTime
+    19 clamp
+    20 coreTriggerEvent
   end locals
   begin set local var
     begin call method
@@ -2534,17 +2536,85 @@ begin function
   end set local var prevAppTime (17 0)
 
 
-[279] var coreTriggerEvent = core.triggerEvent
+[278] var prevDeltaTime = 0
+
+  begin set local var
+    push const number 0
+  end set local var prevDeltaTime (18 0)
+
+
+[280] var function clamp(a, min, max){
+
+  begin set local var
+    begin function
+      begin locals, total 5
+        0 a (param)
+        1 min (param)
+        2 max (param)
+        3 _E
+        4 _G
+      end locals
+
+[281] if(a < min) return min
+
+      begin if
+        begin bool exp
+          begin logic <
+            get local var a (0 0 param)
+            get local var min (1 0 param)
+          end logic <
+        end bool exp
+        begin then
+          begin code list
+            begin return
+              get local var min (1 0 param)
+            end return values 1
+          end code list ret values 0
+        end then
+      end if ret values 0
+
+
+[282] if(a > max) return max
+
+      begin if
+        begin bool exp
+          begin logic >
+            get local var a (0 0 param)
+            get local var max (2 0 param)
+          end logic >
+        end bool exp
+        begin then
+          begin code list
+            begin return
+              get local var max (2 0 param)
+            end return values 1
+          end code list ret values 0
+        end then
+      end if ret values 0
+
+
+[283] return a
+
+      begin code list
+        begin return
+          get local var a (0 0 param)
+        end return values 1
+      end code list ret values 0
+    end function
+  end set local var clamp (19 0)
+
+
+[286] var coreTriggerEvent = core.triggerEvent
 
   begin set local var
     begin get property
       get local var core (2 0)
       push const string "triggerEvent"
     end get property ret values 1
-  end set local var coreTriggerEvent (18 0)
+  end set local var coreTriggerEvent (20 0)
 
 
-[280] function core.triggerEvent(eventName, params){
+[287] function core.triggerEvent(eventName, params){
 
   begin set property
     begin function
@@ -2555,10 +2625,10 @@ begin function
         3 _G
       end locals
 
-[281] coreTriggerEvent.call(core, eventName, params)
+[288] coreTriggerEvent.call(core, eventName, params)
 
       begin call method
-        get local var coreTriggerEvent (18 1)
+        get local var coreTriggerEvent (20 1)
         begin params 4
           push const string "call"
           ,
@@ -2571,7 +2641,7 @@ begin function
       end call method ret values 0
 
 
-[282] if(eventName == "enterFrame"){
+[289] if(eventName == "enterFrame"){
 
       begin if
         begin bool exp
@@ -2582,7 +2652,7 @@ begin function
         end bool exp
         begin then
 
-[284] var appTime = app.timeSec
+[291] var appTime = app.timeSec
 
           begin scope
             begin locals 2
@@ -2597,7 +2667,7 @@ begin function
             end set local var appTime (4 0)
 
 
-[285] deltaTime = (appTime - prevAppTime) * timeSpeed
+[292] deltaTime = (appTime - prevAppTime) * timeSpeed
 
             begin set local var
               begin operator *
@@ -2610,31 +2680,59 @@ begin function
             end set local var deltaTime (14 1)
 
 
-[286] prevAppTime = appTime
+[293] prevAppTime = appTime
 
             begin set local var
               get local var appTime (4 0)
             end set local var prevAppTime (17 1)
 
 
-[287] if(deltaTime > 0.1) deltaTime = 0.1
+[294] deltaTime = clamp(deltaTime, prevDeltaTime*0.9, prevDeltaTime*1.1)
 
-            begin if
-              begin bool exp
-                begin logic >
+            begin set local var
+              begin call
+                get local var clamp (19 1)
+                begin params 3
                   get local var deltaTime (14 1)
-                  push const number 0.1
-                end logic >
-              end bool exp
-              begin then
-                begin set local var
-                  push const number 0.1
-                end set local var deltaTime (14 1)
-              end then
-            end if ret values 0
+                  ,
+                  begin operator *
+                    get local var prevDeltaTime (18 1)
+                    push const number 0.9
+                  end operator *
+                  ,
+                  begin operator *
+                    get local var prevDeltaTime (18 1)
+                    push const number 1.1
+                  end operator *
+                end params ret values 3
+              end call ret values 1
+            end set local var deltaTime (14 1)
 
 
-[288] time = time + deltaTime
+[295] deltaTime = clamp(deltaTime, 0.01, 0.1)
+
+            begin set local var
+              begin call
+                get local var clamp (19 1)
+                begin params 3
+                  get local var deltaTime (14 1)
+                  ,
+                  push const number 0.01
+                  ,
+                  push const number 0.1
+                end params ret values 3
+              end call ret values 1
+            end set local var deltaTime (14 1)
+
+
+[296] prevDeltaTime = deltaTime
+
+            begin set local var
+              get local var deltaTime (14 1)
+            end set local var prevDeltaTime (18 1)
+
+
+[297] time = time + deltaTime
 
             begin set local var
               begin operator +
@@ -2644,7 +2742,7 @@ begin function
             end set local var time (16 1)
 
 
-[290] handleTouches()
+[299] handleTouches()
 
             begin call method
               get local var _E (2 0)
@@ -2654,7 +2752,7 @@ begin function
             end call method ret values 0
 
 
-[292] var updateParams = {deltaTime = deltaTime}
+[301] var updateParams = {deltaTime = deltaTime}
 
             begin set local var
               begin object 1
@@ -2665,7 +2763,7 @@ begin function
             end set local var updateParams (5 0)
 
 
-[293] if(runningScene) runningScene.handleUpdate(updateParams)
+[302] if(runningScene) runningScene.handleUpdate(updateParams)
 
             begin if
               begin bool exp
@@ -2684,7 +2782,7 @@ begin function
             end if ret values 0
 
 
-[294] if(notificationNode) notificationNode.handleUpdate(updateParams)
+[303] if(notificationNode) notificationNode.handleUpdate(updateParams)
 
             begin if
               begin bool exp
@@ -2703,7 +2801,7 @@ begin function
             end if ret values 0
 
 
-[296] paint()
+[305] paint()
 
             begin call
               get local var paint (13 1)
@@ -2714,7 +2812,7 @@ begin function
         end then
         begin else
 
-[298] if(runningScene) runningScene.triggerEvent(eventName, params)
+[307] if(runningScene) runningScene.triggerEvent(eventName, params)
 
           begin scope
             begin if
@@ -2736,7 +2834,7 @@ begin function
             end if ret values 0
 
 
-[299] if(notificationNode) notificationNode.triggerEvent(eventName, params)
+[308] if(notificationNode) notificationNode.triggerEvent(eventName, params)
 
             begin if
               begin bool exp
@@ -2760,14 +2858,14 @@ begin function
       end if ret values 0
     end function
 
-[280] function core.triggerEvent(eventName, params){
+[287] function core.triggerEvent(eventName, params){
 
     get local var auto create core (2 0)
     push const string "triggerEvent"
   end set property ret values 0
 
 
-[300] }
+[309] }
 
   begin code list
     begin return
