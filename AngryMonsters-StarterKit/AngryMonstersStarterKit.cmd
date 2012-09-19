@@ -1,0 +1,1 @@
+start .\build_AngryMonstersStarterKit_vc10\AngryMonstersStarterKit_vc10.sln
