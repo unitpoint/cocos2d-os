@@ -29,6 +29,9 @@ public:
 
 	int orientation;
 
+	uint64 gc_start_time;
+	int gc_frame_time;
+
 	struct LabelBMFont
 	{
 		cocos2d::CCLabelBMFont * label;
@@ -84,6 +87,9 @@ public:
 	String getCompiledFilename(const String& resolved_filename);
 
 	void printf(const OS_CHAR * format, ...);
+
+	void onEnterGC();
+	void onExitGC();
 
 	void startFrame();
 	

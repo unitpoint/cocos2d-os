@@ -275,6 +275,13 @@ function get time(){return time}
 function set time(a){ time = a }
 
 var prevAppTime = 0
+var prevDeltaTime = 0
+
+var function clamp(a, min, max){
+	if(a < min) return min
+	if(a > max) return max
+	return a
+}
 
 var coreTriggerEvent = core.triggerEvent
 function core.triggerEvent(eventName, params){
@@ -284,7 +291,9 @@ function core.triggerEvent(eventName, params){
 		var appTime = app.timeSec
 		deltaTime = (appTime - prevAppTime) * timeSpeed
 		prevAppTime = appTime
-		if(deltaTime > 0.2) deltaTime = 0.2
+		deltaTime = clamp(deltaTime, prevDeltaTime*0.9, prevDeltaTime*1.1) 
+		deltaTime = clamp(deltaTime, 0.01, 0.1) 
+		prevDeltaTime = deltaTime
 		time = time + deltaTime
 		
 		handleTouches()

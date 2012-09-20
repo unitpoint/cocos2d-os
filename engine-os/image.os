@@ -24,12 +24,12 @@ Image = extends Node {
 		}
 	}
 	
-	animation = function(t){
-		return this.insert(ImageAnimation(t, this))
+	animation = function(t, onComplete){
+		return this.insert(ImageAnimation(t, this, onComplete))
 	}
 	
 	stopAnimation = function(t){
-		t.remove()
+		t && t.remove()
 	}
 	
 	stopAllAnimations = function(){
@@ -43,13 +43,13 @@ ImageAnimation = extends FunctionNode {
 		index = 0
 	}
 
-	__construct = function(params, target){
+	__construct = function(params, target, onComplete){
 		super()
-		this.target = target
+		this.target, this.onComplete = target, functionof onComplete
 		var cols, rows, start, count = params.cols, params.rows, params.start, params.frames
 		
 		var frameWidth, frameHeight = target.texture.width / cols, target.texture.height / rows
-		var end = start + (count < 0 ? cols * rows : count) - 1
+		var end = start + (count || cols * rows) - 1
 		var yStart = math.floor(start / cols)
 		var yEnd = math.min(rows-1, math.floor(end / cols))
 		for(var y = yStart; y <= yEnd; y++){
@@ -72,6 +72,11 @@ ImageAnimation = extends FunctionNode {
 	update = function(){
 		var frame, target = this.frames[this.index], this.target
 		this.index = (this.index + 1) % #this.frames
+		if(this.index == 0 && this.onComplete){
+			// this.setTimeout(function(){
+				this.onComplete.call(target, this)
+			// })
+		}
 		target.frameLeft = frame.left
 		target.frameTop = frame.top
 		target.frameWidth = frame.width
@@ -96,8 +101,17 @@ Sprite = extends Node {
 	__get@color = function(){ return this.image.color }
 	__set@color = function(a){ this.image.color = a }
 	
-	animation = function(params){
-		var anim = this.image.animation(params)
+	__get@flipX = function(){ return this.image.flipX }
+	__set@flipX = function(a){ this.image.flipX = a }
+	
+	__get@flipY = function(){ return this.image.flipY }
+	__set@flipY = function(a){ this.image.flipY = a }
+	
+	animation = function(params, onComplete){
+		var self = this
+		var anim = this.image.animation(params, onComplete && function(anim){
+			onComplete.call(self, anim)
+		})
 		if("rect" in params){
 			var rect = params.rect
 			this.width = this.image.width * rect.width

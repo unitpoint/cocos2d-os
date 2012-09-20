@@ -634,7 +634,7 @@ namespace ObjectScript
 				
 				virtual int getSize() const = 0;
 
-				virtual void readFromStream(StreamReader*);
+				virtual void writeFromStream(StreamReader*);
 
 				virtual void writeBytes(const void*, int len) = 0;
 				virtual void writeBytesAtPos(const void*, int len, int pos) = 0;
@@ -2866,6 +2866,8 @@ namespace ObjectScript
 		void pushUserPool();
 		void pushValueById(int id);
 
+		void clone(int offs = -1);
+
 		// int pushArrayNumbers(int offs = -1);
 
 		int getStackSize();
@@ -2991,6 +2993,9 @@ namespace ObjectScript
 		virtual void closeFile(void * f);
 
 		virtual void printf(const OS_CHAR * fmt, ...);
+
+		virtual void onEnterGC();
+		virtual void onExitGC();
 	};
 
 } // namespace OS
