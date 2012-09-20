@@ -84,6 +84,7 @@ MyScene = extends Scene {
 		})
 		monster.x = this.width * math.random(0.2, 0.8)
 		monster.y = this.height * math.random(0.2, 0.8)
+		monster.scale = 1.5
 		this.insert(monster)
 		
 		this.addEventListener("touch", function(touch){
