@@ -463,29 +463,19 @@ begin function
             end set local var frameWidth (9 0)
 
 
-[52] var end = start + (count < 0 ? cols * rows : count) - 1
+[52] var end = start + (count || cols * rows) - 1
 
             begin set local var
               begin operator -
                 begin operator +
                   get local var start (7 0)
-                  begin question
-                    begin bool exp
-                      begin logic <
-                        get local var count (8 0)
-                        push const number 0
-                      end logic <
-                    end bool exp
-                    begin then value
-                      begin operator *
-                        get local var cols (5 0)
-                        get local var rows (6 0)
-                      end operator *
-                    end then value
-                    begin else value
-                      get local var count (8 0)
-                    end else value
-                  end question ret values 1
+                  begin logic ||
+                    get local var count (8 0)
+                    begin operator *
+                      get local var cols (5 0)
+                      get local var rows (6 0)
+                    end operator *
+                  end logic ||
                 end operator +
                 push const number 1
               end operator -
@@ -1202,7 +1192,7 @@ begin function
             end set local var self (4 0)
 
 
-[112] var anim = this.image.animation(params, onComplete && function(target, anim){
+[112] var anim = this.image.animation(params, onComplete && function(anim){
 
             begin set local var
               begin call method
@@ -1218,11 +1208,10 @@ begin function
                   begin logic &&
                     get local var onComplete (1 0 param)
                     begin function
-                      begin locals, total 4
-                        0 target (param)
-                        1 anim (param)
-                        2 _E
-                        3 _G
+                      begin locals, total 3
+                        0 anim (param)
+                        1 _E
+                        2 _G
                       end locals
 
 [113] onComplete.call(self, anim)
@@ -1234,7 +1223,7 @@ begin function
                           ,
                           get local var self (4 1)
                           ,
-                          get local var anim (1 0 param)
+                          get local var anim (0 0 param)
                         end params ret values 3
                       end call method ret values 0
                     end function

@@ -134,6 +134,7 @@ MyScene = extends Scene {
 			
 			die = function(){
 				this.clearTimeout(this.trackMove)
+				this.stopTransition(this.moveTransition)
 				this.flipX = this.x > this.fighting.x
 				this.timeSpeed = 1
 				this.runAnimation("dieRight", function(){
@@ -150,10 +151,11 @@ MyScene = extends Scene {
 			}
 			
 			startFightingAnimation = function(){
+				this.health > 0 || return;
 				this.flipX = this.x > this.fighting.x
 				this.runAnimation("fightRight", function(){
 					this.fighting.health = this.fighting.health - this.health * 0.3
-					this.fighting.timeSpeed = math.max(0.5, this.fighting.timeSpeed * 0.8)
+					this.fighting.timeSpeed = math.max(0.7, this.fighting.timeSpeed * 0.8)
 					if(this.fighting.health <= 0){
 						this.fighting.die()
 						this.fighting = null
@@ -180,7 +182,7 @@ MyScene = extends Scene {
 			var monster = Monster(monsterNames[ i % #monsterNames ])
 			monster.x = scene.width * math.random(0.2, 0.8)
 			monster.y = scene.height * math.random(0.2, 0.8)
-			monster.timeSpeed = math.random(0.7, 3.0)
+			monster.timeSpeed = math.random(2.0, 3.0)
 			monster.color = color() // colors[ i % #colors ]
 			monster.opacity = 0
 			monster.transition { opacity = 1, duration = 1 }
@@ -213,6 +215,7 @@ MyScene = extends Scene {
 		
 		this.setTimeout(function(){
 			for(var i, monster in monsters){
+				if(monster.fighting) continue
 				for(var j = i+1; j < #monsters; j++){
 					var other = monsters[j]
 					var dist = ((monster.x - other.x)**2 + (monster.y - other.y)**2)**0.5
@@ -258,20 +261,20 @@ MyScene = extends Scene {
 			// gcAllocatedBytes.shadow = true
 			this.insert(gcCachedBytes)
 			
-			var gcNumValues = Text("0", font)
-			gcNumValues.anchor = {x=1.05 y=1.05}
-			gcNumValues.x = fps.x
-			gcNumValues.y = fps.y - fps.fontHeight*1.05*4
-			gcNumValues.color = fps.color
-			// gcNumValues.shadow = true
-			this.insert(gcNumValues)
+			var gcNumObjects = Text("0", font)
+			gcNumObjects.anchor = {x=1.05 y=1.05}
+			gcNumObjects.x = fps.x
+			gcNumObjects.y = fps.y - fps.fontHeight*1.05*4
+			gcNumObjects.color = fps.color
+			// gcNumObjects.shadow = true
+			this.insert(gcNumObjects)
 			
 			this.setTimeout(function(){
 				fps.string = math.round(1 / director.deltaTime, 1).." fps"
 				gcAllocatedBytes.string = math.round(GC.allocatedBytes / 1024).." Kb allocated"
 				gcUsedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
 				gcCachedBytes.string = math.round(GC.cachedBytes / 1024).." Kb cached"
-				gcNumValues.string = GC.numValues.." values"
+				gcNumObjects.string = GC.numObjects.." gc objects"
 			}, 0.3, true)
 		
 		}.call(this)

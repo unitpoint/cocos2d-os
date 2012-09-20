@@ -7662,7 +7662,7 @@ OS::Core::StreamWriter::~StreamWriter()
 {
 }
 
-void OS::Core::StreamWriter::readFromStream(StreamReader * reader)
+void OS::Core::StreamWriter::writeFromStream(StreamReader * reader)
 {
 	int size = reader->getSize() - reader->getPos();
 	int buf_size = 1024 * 16;
@@ -9791,7 +9791,7 @@ void OS::Core::registerValue(GCValue * value)
 			gc_values_head_index = -1;
 			gc_start_next_values = 0;
 			gc_continuous = false;
-			gc_step_size_auto_mult *= 2.0f;
+			gc_step_size_auto_mult *= 4.0f;
 		}
 	}
 
@@ -11299,7 +11299,7 @@ int OS::Core::gcStep()
 		}
 		if(i <= values.head_mask){
 			gc_values_head_index = i;
-			gc_step_size_auto_mult *= 1.03f;
+			gc_step_size_auto_mult *= 1.01f;
 			gc_step_size = (int)((float)values.count * gc_step_size_mult * gc_step_size_auto_mult * 2);
 			return OS_GC_PHASE_SWEEP;
 		}
@@ -11376,7 +11376,7 @@ int OS::Core::gcStep()
 		}
 		return OS_GC_PHASE_SWEEP;
 	}
-	gc_step_size_auto_mult *= 1.03f;
+	gc_step_size_auto_mult *= 1.01f;
 	return OS_GC_PHASE_MARK;
 }
 
@@ -14137,7 +14137,7 @@ void OS::Core::enterFunction(GCFunctionValue * func_value, GCValue * self, GCVal
 
 	// allocator->vectorReserveCapacity(call_stack_funcs, call_stack_funcs.count+1 OS_DBG_FILEPOS);
 	if(call_stack_funcs.capacity < call_stack_funcs.count+1){
-		call_stack_funcs.capacity = call_stack_funcs.capacity > 0 ? call_stack_funcs.capacity*2 : 4;
+		call_stack_funcs.capacity = call_stack_funcs.capacity > 0 ? call_stack_funcs.capacity*2 : 8;
 		OS_ASSERT(call_stack_funcs.capacity >= call_stack_funcs.count+1);
 
 		StackFunction * new_buf = (StackFunction*)malloc(sizeof(StackFunction)*call_stack_funcs.capacity OS_DBG_FILEPOS);
@@ -14204,10 +14204,8 @@ void OS::Core::enterFunction(GCFunctionValue * func_value, GCValue * self, GCVal
 #endif
 
 	reloadStackFunctionCache();
-	// this->stack_func = stack_func;
-	// allocator->vectorAddItem(call_stack_funcs, stack_func OS_DBG_FILEPOS);
 
-	gcMarkStackFunction(stack_func);
+	// gcMarkStackFunction(stack_func);
 }
 
 int OS::Core::opBreakFunction()
@@ -17154,17 +17152,17 @@ void OS::initGCModule()
 			os->pushNumber(os->getCachedBytes());
 			return 1;
 		}
-		static int getNumValues(OS * os, int params, int, int, void*)
+		static int getNumObjects(OS * os, int params, int, int, void*)
 		{
 			os->pushNumber(os->core->values.count);
 			return 1;
 		}
-		static int getNumCreatedValues(OS * os, int params, int, int, void*)
+		static int getNumCreatedObjects(OS * os, int params, int, int, void*)
 		{
 			os->pushNumber(os->core->num_created_values);
 			return 1;
 		}
-		static int getNumDestroyedValues(OS * os, int params, int, int, void*)
+		static int getNumDestroyedObjects(OS * os, int params, int, int, void*)
 		{
 			os->pushNumber(os->core->num_destroyed_values);
 			return 1;
@@ -17174,9 +17172,9 @@ void OS::initGCModule()
 		{OS_TEXT("__get@allocatedBytes"), GC::getAllocatedBytes},
 		{OS_TEXT("__get@maxAllocatedBytes"), GC::getMaxAllocatedBytes},
 		{OS_TEXT("__get@cachedBytes"), GC::getCachedBytes},
-		{OS_TEXT("__get@numValues"), GC::getNumValues},
-		{OS_TEXT("__get@numCreatedValues"), GC::getNumCreatedValues},
-		{OS_TEXT("__get@numDestroyedValues"), GC::getNumDestroyedValues},
+		{OS_TEXT("__get@numObjects"), GC::getNumObjects},
+		{OS_TEXT("__get@numCreatedObjects"), GC::getNumCreatedObjects},
+		{OS_TEXT("__get@numDestroyedObjects"), GC::getNumDestroyedObjects},
 		{}
 	};
 
@@ -17268,7 +17266,7 @@ void OS::initLangTokenizerModule()
 				return 0;
 			}
 			Core::MemStreamWriter file_data(os);
-			file_data.readFromStream(&file);
+			file_data.writeFromStream(&file);
 
 			Core::Tokenizer tokenizer(os);
 			tokenizer.parseText((OS_CHAR*)file_data.buffer.buf, file_data.buffer.count, filename);
@@ -17601,11 +17599,17 @@ bool OS::compileFile(const String& p_filename, bool required)
 		Core::Program * prog = new (malloc(sizeof(Core::Program) OS_DBG_FILEPOS)) Core::Program(this);
 		prog->filename = compiled_filename;
 
-		Core::FileStreamReader prog_reader(this, compiled_filename);
+		Core::FileStreamReader prog_file_reader(this, compiled_filename);
+		Core::MemStreamWriter prog_file_data(this);
+		prog_file_data.writeFromStream(&prog_file_reader);
+		Core::MemStreamReader prog_reader(NULL, prog_file_data.buffer.buf, prog_file_data.getSize());
 			
 		String debug_info_filename = getDebugInfoFilename(filename);
 		if(isFileExist(debug_info_filename)){
-			Core::FileStreamReader debug_info_reader(this, debug_info_filename);
+			Core::FileStreamReader debug_info_file_reader(this, debug_info_filename);
+			Core::MemStreamWriter debug_info_file_data(this);
+			debug_info_file_data.writeFromStream(&debug_info_file_reader);
+			Core::MemStreamReader debug_info_reader(NULL, debug_info_file_data.buffer.buf, debug_info_file_data.getSize());
 			if(!prog->loadFromStream(&prog_reader, &debug_info_reader)){
 				prog->release();
 				return false;
@@ -17626,7 +17630,7 @@ bool OS::compileFile(const String& p_filename, bool required)
 	}
 
 	Core::MemStreamWriter file_data(this);
-	file_data.readFromStream(&file);
+	file_data.writeFromStream(&file);
 
 	Core::Tokenizer tokenizer(this);
 	tokenizer.parseText((OS_CHAR*)file_data.buffer.buf, file_data.buffer.count, filename);

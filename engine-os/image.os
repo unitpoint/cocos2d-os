@@ -49,7 +49,7 @@ ImageAnimation = extends FunctionNode {
 		var cols, rows, start, count = params.cols, params.rows, params.start, params.frames
 		
 		var frameWidth, frameHeight = target.texture.width / cols, target.texture.height / rows
-		var end = start + (count < 0 ? cols * rows : count) - 1
+		var end = start + (count || cols * rows) - 1
 		var yStart = math.floor(start / cols)
 		var yEnd = math.min(rows-1, math.floor(end / cols))
 		for(var y = yStart; y <= yEnd; y++){
@@ -109,7 +109,7 @@ Sprite = extends Node {
 	
 	animation = function(params, onComplete){
 		var self = this
-		var anim = this.image.animation(params, onComplete && function(target, anim){
+		var anim = this.image.animation(params, onComplete && function(anim){
 			onComplete.call(self, anim)
 		})
 		if("rect" in params){

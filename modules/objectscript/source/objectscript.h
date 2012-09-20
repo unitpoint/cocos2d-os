@@ -634,7 +634,7 @@ namespace ObjectScript
 				
 				virtual int getSize() const = 0;
 
-				virtual void readFromStream(StreamReader*);
+				virtual void writeFromStream(StreamReader*);
 
 				virtual void writeBytes(const void*, int len) = 0;
 				virtual void writeBytesAtPos(const void*, int len, int pos) = 0;
