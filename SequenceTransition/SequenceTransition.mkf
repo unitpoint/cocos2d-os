@@ -1,0 +1,50 @@
+options
+{
+	s3e-data-dir="assets"
+
+	module_path="../modules/cocos2dx/proj.marmalade"
+	module_path="../modules/objectscript"
+	module_path="../modules/marmaladeos"
+}
+
+includepaths
+{
+	source
+}
+
+subprojects
+{
+#	derbh
+	iwgl
+#	iwgeom
+#	iwgx
+#	iwgraphics
+#	zlib
+#	libpng
+#	libxml2
+#	freetype
+#	libjpeg
+	cocos2dx
+#	cocos2dos
+	objectscript
+	marmaladeos
+}
+
+files
+{
+	(source)
+	"*.cpp"
+	"*.h"
+}
+
+deployments
+{
+#	auto-derbh=1
+}
+
+debug_defines {
+	IW_USE_CALLSTACK
+}
+
+defines { 
+}

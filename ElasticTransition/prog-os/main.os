@@ -24,7 +24,7 @@ MyScene = extends Scene {
 				var dx = touch.x - this.x
 				var dy = touch.y - this.y
 				this.len0 = (dx*dx + dy*dy)**0.5 // sqrt is equal to the power of 0.5
-				this.scale0 = this.scale
+				this.scale0 = this.scaleX
 				this.r0 = math.deg(math.atan2(dy, dx)) - this.rotation
 			}else if(touch.phase == "move"){
 				var dx = touch.x - this.x
