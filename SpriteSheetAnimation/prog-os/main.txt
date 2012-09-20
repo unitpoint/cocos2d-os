@@ -977,7 +977,16 @@ begin function
             end set property ret values 0
 
 
-[87] this.insert(monster)
+[87] monster.scale = 1.5
+
+            begin set property
+              push const number 1.5
+              get local var auto create monster (5 0)
+              push const string "scale"
+            end set property ret values 0
+
+
+[88] this.insert(monster)
 
             begin call method
               push this
@@ -989,7 +998,7 @@ begin function
             end call method ret values 0
 
 
-[89] this.addEventListener("touch", function(touch){
+[90] this.addEventListener("touch", function(touch){
 
             begin call method
               push this
@@ -1005,7 +1014,7 @@ begin function
                     2 _G
                   end locals
 
-[90] monster.move(touch.x, touch.y)
+[91] monster.move(touch.x, touch.y)
 
                   begin call method
                     get local var monster (5 1)
@@ -1033,7 +1042,7 @@ begin function
   end set env var MyScene
 
 
-[95] director.scene = MyScene()	// create and set our game scene
+[96] director.scene = MyScene()	// create and set our game scene
 
   begin set property
     begin call method
