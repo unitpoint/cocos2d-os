@@ -884,7 +884,7 @@ begin function
               6 gcAllocatedBytes
               7 gcUsedBytes
               8 gcCachedBytes
-              9 gcNumValues
+              9 gcNumObjects
               16 scene
             end locals
 
@@ -1485,7 +1485,7 @@ begin function
             end call method ret values 0
 
 
-[135] var gcNumValues = Text("0", font)
+[135] var gcNumObjects = Text("0", font)
 
             begin set local var
               begin call method
@@ -1498,10 +1498,10 @@ begin function
                   get local var font (4 0)
                 end params ret values 3
               end call method ret values 1
-            end set local var gcNumValues (9 0)
+            end set local var gcNumObjects (9 0)
 
 
-[136] gcNumValues.anchor = {x=1.05 y=1.05}
+[136] gcNumObjects.anchor = {x=1.05 y=1.05}
 
             begin set property
               begin object 2
@@ -1513,24 +1513,24 @@ begin function
                   push const number 1.05
                 end set by name: [y]
               end object
-              get local var auto create gcNumValues (9 0)
+              get local var auto create gcNumObjects (9 0)
               push const string "anchor"
             end set property ret values 0
 
 
-[137] gcNumValues.x = fps.x
+[137] gcNumObjects.x = fps.x
 
             begin set property
               begin get property
                 get local var fps (5 0)
                 push const string "x"
               end get property ret values 1
-              get local var auto create gcNumValues (9 0)
+              get local var auto create gcNumObjects (9 0)
               push const string "x"
             end set property ret values 0
 
 
-[138] gcNumValues.y = fps.y - fps.fontHeight*1.05*4
+[138] gcNumObjects.y = fps.y - fps.fontHeight*1.05*4
 
             begin set property
               begin operator -
@@ -1549,12 +1549,12 @@ begin function
                   push const number 4
                 end operator *
               end operator -
-              get local var auto create gcNumValues (9 0)
+              get local var auto create gcNumObjects (9 0)
               push const string "y"
             end set property ret values 0
 
 
-[139] gcNumValues.color = [0.9, 0.9, 0.0, 1]
+[139] gcNumObjects.color = [0.9, 0.9, 0.0, 1]
 
             begin set property
               begin array 4
@@ -1574,19 +1574,19 @@ begin function
                   push const number 1
                 end set auto index
               end array
-              get local var auto create gcNumValues (9 0)
+              get local var auto create gcNumObjects (9 0)
               push const string "color"
             end set property ret values 0
 
 
-[141] this.insert(gcNumValues)
+[141] this.insert(gcNumObjects)
 
             begin call method
               push this
               begin params 2
                 push const string "insert"
                 ,
-                get local var gcNumValues (9 0)
+                get local var gcNumObjects (9 0)
               end params ret values 2
             end call method ret values 0
 
@@ -1712,17 +1712,17 @@ begin function
                   end set property ret values 0
 
 
-[148] gcNumValues.string = GC.numValues.." values"
+[148] gcNumObjects.string = GC.numObjects.." gc objects"
 
                   begin set property
                     begin operator ..
                       begin get property
                         get env var GC
-                        push const string "numValues"
+                        push const string "numObjects"
                       end get property ret values 1
-                      push const string " values"
+                      push const string " gc objects"
                     end operator ..
-                    get local var auto create gcNumValues (9 1)
+                    get local var auto create gcNumObjects (9 1)
                     push const string "string"
                   end set property ret values 0
                 end function

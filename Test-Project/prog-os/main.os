@@ -132,20 +132,20 @@ MyScene = extends Scene {
 		// gcAllocatedBytes.shadow = true
 		this.insert(gcCachedBytes)
 		
-		var gcNumValues = Text("0", font)
-		gcNumValues.anchor = {x=1.05 y=1.05}
-		gcNumValues.x = fps.x
-		gcNumValues.y = fps.y - fps.fontHeight*1.05*4
-		gcNumValues.color = [0.9, 0.9, 0.0, 1]
-		// gcNumValues.shadow = true
-		this.insert(gcNumValues)
+		var gcNumObjects = Text("0", font)
+		gcNumObjects.anchor = {x=1.05 y=1.05}
+		gcNumObjects.x = fps.x
+		gcNumObjects.y = fps.y - fps.fontHeight*1.05*4
+		gcNumObjects.color = [0.9, 0.9, 0.0, 1]
+		// gcNumObjects.shadow = true
+		this.insert(gcNumObjects)
 		
 		this.setTimeout(function(){
 			fps.string = math.round(1 / director.deltaTime, 1).." fps"
 			gcAllocatedBytes.string = math.round(GC.allocatedBytes / 1024).." Kb allocated"
 			gcUsedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
 			gcCachedBytes.string = math.round(GC.cachedBytes / 1024).." Kb cached"
-			gcNumValues.string = GC.numValues.." values"
+			gcNumObjects.string = GC.numObjects.." gc objects"
 		}, 0.3, true)
 		
 		for(var i = 0; i < 10; i++){
