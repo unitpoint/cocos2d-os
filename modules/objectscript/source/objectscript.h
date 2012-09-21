@@ -2473,7 +2473,7 @@ namespace ObjectScript
 			void gcFinishMarkPhase();
 			void gcFull();
 
-			void clearValue(Value&);
+			// void clearValue(Value&);
 			void clearValue(GCValue*);
 			void deleteValue(GCValue*);
 
@@ -2897,20 +2897,36 @@ namespace ObjectScript
 		bool isInstanceOf(int value_offs = -2, int prototype_offs = -1);
 		bool is(int value_offs = -2, int prototype_offs = -1);
 
-		bool toBool(int offs = -1);
-		OS_NUMBER toNumber(int offs = -1, bool valueof_enabled = true);
-		float toFloat(int offs = -1, bool valueof_enabled = true);
-		double toDouble(int offs = -1, bool valueof_enabled = true);
-		int toInt(int offs = -1, bool valueof_enabled = true);
-		String toString(int offs = -1, bool valueof_enabled = true);
+		bool		toBool(int offs = -1);
+		OS_NUMBER	toNumber(int offs = -1, bool valueof_enabled = true);
+		float		toFloat(int offs = -1, bool valueof_enabled = true);
+		double		toDouble(int offs = -1, bool valueof_enabled = true);
+		int			toInt(int offs = -1, bool valueof_enabled = true);
+		String		toString(int offs = -1, bool valueof_enabled = true);
+		
 		void * toUserdata(int crc, int offs = -1);
+		void clearUserdata(int crc, int offs = -1);
 
-		bool popBool();
-		OS_NUMBER popNumber(bool valueof_enabled = true);
-		float popFloat(bool valueof_enabled = true);
-		double popDouble(bool valueof_enabled = true);
-		int popInt(bool valueof_enabled = true);
-		String popString(bool valueof_enabled = true);
+		bool		toBool(int offs, bool def);
+		OS_NUMBER	toNumber(int offs, OS_NUMBER def, bool valueof_enabled = true);
+		float		toFloat(int offs, float def, bool valueof_enabled = true);
+		double		toDouble(int offs, double def, bool valueof_enabled = true);
+		int			toInt(int offs, int def, bool valueof_enabled = true);
+		String		toString(int offs, const String& def, bool valueof_enabled = true);
+
+		bool		popBool();
+		OS_NUMBER	popNumber(bool valueof_enabled = true);
+		float		popFloat(bool valueof_enabled = true);
+		double		popDouble(bool valueof_enabled = true);
+		int			popInt(bool valueof_enabled = true);
+		String		popString(bool valueof_enabled = true);
+
+		bool		popBool(bool def);
+		OS_NUMBER	popNumber(OS_NUMBER def, bool valueof_enabled = true);
+		float		popFloat(float def, bool valueof_enabled = true);
+		double		popDouble(double def, bool valueof_enabled = true);
+		int			popInt(int def, bool valueof_enabled = true);
+		String		popString(const String& def, bool valueof_enabled = true);
 
 		int getSetting(OS_ESettings);
 		int setSetting(OS_ESettings, int);
@@ -2947,14 +2963,22 @@ namespace ObjectScript
 			const OS_CHAR * name;
 			const OS_CHAR * value;
 		};
+
+		struct NullDef {
+			const OS_CHAR * name;
+		};
 		
-		void setFuncs(const FuncDef * list, int closure_values = 0, void * user_param = NULL); // null terminated list
-		void setNumbers(const NumberDef * list);
-		void setStrings(const StringDef * list);
+		void setFuncs(const FuncDef * list, bool setter_enabled = true, int closure_values = 0, void * user_param = NULL); // null terminated list
+		void setNumbers(const NumberDef * list, bool setter_enabled = true);
+		void setStrings(const StringDef * list, bool setter_enabled = true);
+		void setNulls(const NullDef * list, bool setter_enabled = true);
 
 		void getObject(const OS_CHAR * name, bool prototype_enabled = true, bool getter_enabled = true);
 		void getGlobalObject(const OS_CHAR * name, bool prototype_enabled = true, bool getter_enabled = true);
 		void getModule(const OS_CHAR * name, bool prototype_enabled = true, bool getter_enabled = true);
+
+		void triggerError(int code, const OS_CHAR * message);
+		void triggerError(int code, const String& message);
 
 		String changeFilenameExt(const String& filename, const String& ext);
 		String changeFilenameExt(const String& filename, const OS_CHAR * ext);

@@ -635,6 +635,9 @@ OS::Core::String::~String()
 	if(string){ // can be cleared by OS::~String
 		OS_ASSERT(string->external_ref_count > 0);
 		string->external_ref_count--;
+		if(string->gc_color == GC_WHITE){
+			string->gc_color = GC_BLACK;
+		}
 	}
 }
 
@@ -677,6 +680,9 @@ OS::Core::String& OS::Core::String::operator=(const String& b)
 	if(string != b.string){
 		OS_ASSERT(string->external_ref_count > 0);
 		string->external_ref_count--;
+		if(string->gc_color == GC_WHITE){
+			string->gc_color = GC_BLACK;
+		}
 		string = b.string;
 		string->external_ref_count++;
 #ifdef OS_DEBUG
@@ -917,6 +923,9 @@ OS::String::~String()
 {
 	OS_ASSERT(string->external_ref_count > 0);
 	string->external_ref_count--;
+	if(string->gc_color == Core::GC_WHITE){
+		string->gc_color = Core::GC_BLACK;
+	}
 	string = NULL;
 	allocator->release();
 }
@@ -926,6 +935,9 @@ OS::String& OS::String::operator=(const Core::String& str)
 	if(string != str.string){
 		OS_ASSERT(string->external_ref_count > 0);
 		string->external_ref_count--;
+		if(string->gc_color == Core::GC_WHITE){
+			string->gc_color = Core::GC_BLACK;
+		}
 		string = str.string;
 		string->external_ref_count++;
 #ifdef OS_DEBUG
@@ -941,6 +953,9 @@ OS::String& OS::String::operator=(const String& str)
 	if(string != str.string){
 		OS_ASSERT(string->external_ref_count > 0);
 		string->external_ref_count--;
+		if(string->gc_color == Core::GC_WHITE){
+			string->gc_color = Core::GC_BLACK;
+		}
 		string = str.string;
 		string->external_ref_count++;
 #ifdef OS_DEBUG
@@ -7267,6 +7282,9 @@ OS::Core::Program::~Program()
 	for(i = 0; i < num_strings; i++){
 		OS_ASSERT(const_strings[i]->external_ref_count > 0);
 		const_strings[i]->external_ref_count--;
+		if(const_strings[i]->gc_color == GC_WHITE){
+			const_strings[i]->gc_color = GC_BLACK;
+		}
 	}
 	allocator->free(const_strings);
 	const_strings = NULL;
@@ -9245,6 +9263,9 @@ void OS::Core::ValueRetained::release()
 	// case OS_VALUE_TYPE_USERPTR:
 		OS_ASSERT(v.value && v.value->external_ref_count > 0);
 		v.value->external_ref_count--;
+		if(v.value->gc_color == GC_WHITE){
+			v.value->gc_color = GC_BLACK;
+		}
 		break;
 	}
 }
@@ -11434,6 +11455,7 @@ void OS::Core::gcFull()
 	}
 }
 
+/*
 void OS::Core::clearValue(Value& val)
 {
 	switch(val.type){
@@ -11457,6 +11479,7 @@ void OS::Core::clearValue(Value& val)
 	}
 	val.type = OS_VALUE_TYPE_NULL;
 }
+*/
 
 void OS::Core::clearValue(GCValue * val)
 {
@@ -11479,12 +11502,18 @@ void OS::Core::clearValue(GCValue * val)
 		{
 			OS_ASSERT(dynamic_cast<GCUserdataValue*>(val));
 			GCUserdataValue * userdata = (GCUserdataValue*)val;
-			if(userdata->dtor){
-				userdata->dtor(allocator, userdata->ptr, userdata->user_param);
-				userdata->dtor = NULL;
-			}
+			
+			void * ptr = userdata->ptr;
+			OS_UserdataDtor dtor  = userdata->dtor;
+			
+			// prevent recursion
 			userdata->ptr = NULL;
 			userdata->crc = 0;
+			userdata->dtor = NULL;
+			
+			if(dtor){
+				dtor(allocator, ptr, userdata->user_param);
+			}
 			break;
 		}
 
@@ -12410,6 +12439,9 @@ bool OS::Core::pushValueOf(Value val)
 		{ 
 			if(--core->check_recursion->external_ref_count == 0 && core->check_recursion->table){
 				core->clearTable(core->check_recursion->table);
+			}
+			if(core->check_recursion->gc_color == GC_WHITE){
+				core->check_recursion->gc_color = GC_BLACK;
 			}
 		}
 	} finalizer = {this};
@@ -13561,9 +13593,21 @@ bool OS::toBool(int offs)
 	return core->valueToBool(core->getStackValue(offs));
 }
 
+bool OS::toBool(int offs, bool def)
+{
+	Core::Value value = core->getStackValue(offs);
+	return value.isNull() ? def : core->valueToBool(value);
+}
+
 OS_NUMBER OS::toNumber(int offs, bool valueof_enabled)
 {
 	return core->valueToNumber(core->getStackValue(offs), valueof_enabled);
+}
+
+OS_NUMBER OS::toNumber(int offs, OS_NUMBER def, bool valueof_enabled)
+{
+	Core::Value value = core->getStackValue(offs);
+	return value.isNull() ? def : core->valueToNumber(value, valueof_enabled);
 }
 
 float OS::toFloat(int offs, bool valueof_enabled)
@@ -13571,14 +13615,29 @@ float OS::toFloat(int offs, bool valueof_enabled)
 	return (float)toNumber(offs, valueof_enabled);
 }
 
+float OS::toFloat(int offs, float def, bool valueof_enabled)
+{
+	return (float)toNumber(offs, (OS_NUMBER)def, valueof_enabled);
+}
+
 double OS::toDouble(int offs, bool valueof_enabled)
 {
 	return (double)toNumber(offs, valueof_enabled);
 }
 
+double OS::toDouble(int offs, double def, bool valueof_enabled)
+{
+	return (double)toNumber(offs, (OS_NUMBER)def, valueof_enabled);
+}
+
 int OS::toInt(int offs, bool valueof_enabled)
 {
 	return (int)toNumber(offs, valueof_enabled);
+}
+
+int OS::toInt(int offs, int def, bool valueof_enabled)
+{
+	return (int)toNumber(offs, (OS_NUMBER)def, valueof_enabled);
 }
 
 bool OS::isNumber(int offs, OS_NUMBER * out)
@@ -13589,6 +13648,12 @@ bool OS::isNumber(int offs, OS_NUMBER * out)
 OS::String OS::toString(int offs, bool valueof_enabled)
 {
 	return String(this, core->valueToString(core->getStackValue(offs), valueof_enabled));
+}
+
+OS::String OS::toString(int offs, const String& def, bool valueof_enabled)
+{
+	Core::Value value = core->getStackValue(offs);
+	return value.isNull() ? def : String(this, core->valueToString(value, valueof_enabled));
 }
 
 bool OS::isString(int offs, String * out)
@@ -13602,10 +13667,22 @@ bool OS::popBool()
 	return toBool(-1);
 }
 
+bool OS::popBool(bool def)
+{
+	struct Pop { OS * os; ~Pop(){ os->pop(); } } pop = {this};
+	return toBool(-1, def);
+}
+
 OS_NUMBER OS::popNumber(bool valueof_enabled)
 {
 	struct Pop { OS * os; ~Pop(){ os->pop(); } } pop = {this};
 	return toNumber(-1, valueof_enabled);
+}
+
+OS_NUMBER OS::popNumber(OS_NUMBER def, bool valueof_enabled)
+{
+	struct Pop { OS * os; ~Pop(){ os->pop(); } } pop = {this};
+	return toNumber(-1, def, valueof_enabled);
 }
 
 float OS::popFloat(bool valueof_enabled)
@@ -13614,10 +13691,22 @@ float OS::popFloat(bool valueof_enabled)
 	return toFloat(-1, valueof_enabled);
 }
 
+float OS::popFloat(float def, bool valueof_enabled)
+{
+	struct Pop { OS * os; ~Pop(){ os->pop(); } } pop = {this};
+	return toFloat(-1, def, valueof_enabled);
+}
+
 double OS::popDouble(bool valueof_enabled)
 {
 	struct Pop { OS * os; ~Pop(){ os->pop(); } } pop = {this};
 	return toDouble(-1, valueof_enabled);
+}
+
+double OS::popDouble(double def, bool valueof_enabled)
+{
+	struct Pop { OS * os; ~Pop(){ os->pop(); } } pop = {this};
+	return toDouble(-1, def, valueof_enabled);
 }
 
 int OS::popInt(bool valueof_enabled)
@@ -13626,10 +13715,22 @@ int OS::popInt(bool valueof_enabled)
 	return toInt(-1, valueof_enabled);
 }
 
+int OS::popInt(int def, bool valueof_enabled)
+{
+	struct Pop { OS * os; ~Pop(){ os->pop(); } } pop = {this};
+	return toInt(-1, def, valueof_enabled);
+}
+
 OS::String OS::popString(bool valueof_enabled)
 {
 	struct Pop { OS * os; ~Pop(){ os->pop(); } } pop = {this};
 	return toString(-1, valueof_enabled);
+}
+
+OS::String OS::popString(const String& def, bool valueof_enabled)
+{
+	struct Pop { OS * os; ~Pop(){ os->pop(); } } pop = {this};
+	return toString(-1, def, valueof_enabled);
 }
 
 OS_EValueType OS::getType(int offs)
@@ -13684,6 +13785,19 @@ void * OS::toUserdata(int crc, int offs)
 		}
 	}
 	return NULL;
+}
+
+void OS::clearUserdata(int crc, int offs)
+{
+	Core::Value val = core->getStackValue(offs);
+	switch(val.type){
+	case OS_VALUE_TYPE_USERDATA:
+	// case OS_VALUE_TYPE_USERPTR:
+		if(val.v.userdata->crc == crc && val.v.userdata->ptr){
+			core->clearValue(val.v.value);
+			// val.v.userdata->ptr = NULL;
+		}
+	}
 }
 
 bool OS::isArray(int offs)
@@ -15521,7 +15635,7 @@ void OS::setErrorHandler(int code)
 	remove(-2);
 }
 
-void OS::setFuncs(const FuncDef * list, int closure_values, void * user_param)
+void OS::setFuncs(const FuncDef * list, bool setter_enabled, int closure_values, void * user_param)
 {
 	for(; list->func; list++){
 		pushStackValue(-1);
@@ -15531,27 +15645,37 @@ void OS::setFuncs(const FuncDef * list, int closure_values, void * user_param)
 			pushStackValue(-2-closure_values);
 		}
 		pushCFunction(list->func, closure_values, user_param);
-		setProperty(true);
+		setProperty(setter_enabled);
 	}
 }
 
-void OS::setNumbers(const NumberDef * list)
+void OS::setNumbers(const NumberDef * list, bool setter_enabled)
 {
 	for(; list->name; list++){
 		pushStackValue(-1);
 		pushString(list->name);
 		pushNumber(list->value);
-		setProperty(true);
+		setProperty(setter_enabled);
 	}
 }
 
-void OS::setStrings(const StringDef * list)
+void OS::setStrings(const StringDef * list, bool setter_enabled)
 {
 	for(; list->name; list++){
 		pushStackValue(-1);
 		pushString(list->name);
 		pushString(list->value);
-		setProperty(true);
+		setProperty(setter_enabled);
+	}
+}
+
+void OS::setNulls(const NullDef * list, bool setter_enabled)
+{
+	for(; list->name; list++){
+		pushStackValue(-1);
+		pushString(list->name);
+		pushNull();
+		setProperty(setter_enabled);
 	}
 }
 
@@ -15727,6 +15851,14 @@ void OS::initGlobalFunctions()
 			}
 			return 1;
 		}
+
+		static int triggerError(OS * os, int params, int, int, void*)
+		{
+			int code = os->toInt(-params, OS_E_ERROR);
+			String message = os->toString(-params+1, OS_TEXT("unknown error"));
+			os->triggerError(code, message);
+			return 0;
+		}
 	};
 	FuncDef list[] = {
 		{OS_TEXT("print"), Lib::print},
@@ -15738,6 +15870,7 @@ void OS::initGlobalFunctions()
 		{OS_TEXT("debugBackTrace"), Lib::debugBackTrace},
 		{OS_TEXT("terminate"), Lib::terminate},
 		{OS_TEXT("setErrorHandler"), Lib::setErrorHandler},
+		{OS_TEXT("triggerError"), Lib::triggerError},
 		{}
 	};
 	NumberDef numbers[] = {
@@ -17743,6 +17876,16 @@ int OS::gc()
 void OS::gcFull()
 {
 	core->gcFull();
+}
+
+void OS::triggerError(int code, const OS_CHAR * message)
+{
+	core->error(code, message);
+}
+
+void OS::triggerError(int code, const String& message)
+{
+	core->error(code, message);
 }
 
 // =====================================================================
