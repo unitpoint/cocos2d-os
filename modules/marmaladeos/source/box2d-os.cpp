@@ -99,6 +99,46 @@ struct PushValue <const b2JointEdge*>
 	static type arg(const b2JointEdge * val){ return (b2JointEdge*)val; }
 };
 
+template <> 
+struct PushValue <const b2ContactEdge*>
+{
+	typedef b2ContactEdge * type;
+
+	static type arg(const b2ContactEdge * val){ return (b2ContactEdge*)val; }
+};
+
+template <> 
+struct PushValue <const b2Manifold*>
+{
+	typedef b2Manifold * type;
+
+	static type arg(const b2Manifold * val){ return (b2Manifold*)val; }
+};
+
+template <> 
+struct PushValue <const b2Contact*>
+{
+	typedef b2Contact * type;
+
+	static type arg(const b2Contact * val){ return (b2Contact*)val; }
+};
+
+template <> 
+struct PushValue <const b2World*>
+{
+	typedef b2World * type;
+
+	static type arg(const b2World * val){ return (b2World*)val; }
+};
+
+template <> 
+struct PushValue <const b2Body*>
+{
+	typedef b2Body * type;
+
+	static type arg(const b2Body * val){ return (b2Body*)val; }
+};
+
 // =====================================================================
 
 template <class T> T toValue(OS * os, int offs)
@@ -405,6 +445,28 @@ template <> void setValueId<b2JointEdge>(OS * os, b2JointEdge * val)
 
 // =====================================================================
 
+template <> int getValueId<b2ContactEdge>(OS * os, b2ContactEdge * val)
+{
+	return 0;
+}
+
+template <> void setValueId<b2ContactEdge>(OS * os, b2ContactEdge * val)
+{
+}
+
+// =====================================================================
+
+template <> int getValueId<b2ManifoldPoint>(OS * os, b2ManifoldPoint * val)
+{
+	return 0;
+}
+
+template <> void setValueId<b2ManifoldPoint>(OS * os, b2ManifoldPoint * val)
+{
+}
+
+// =====================================================================
+
 template <class T> void pushObject(OS * os, T * val)
 {
 	int valueId = getValueId(os, val);
@@ -430,7 +492,7 @@ template <class T> void pushObject(OS * os, const T * val)
 }
 
 // =====================================================================
-
+/*
 template <> void pushObject<const b2ContactImpulse>(OS * os, const b2ContactImpulse * val)
 {
 	os->pushNull();
@@ -440,7 +502,7 @@ template <> void pushObject<const b2Manifold>(OS * os, const b2Manifold * val)
 {
 	os->pushNull();
 }
-
+*/
 // =====================================================================
 
 template <class T> T * toObject(OS * os, T *& val, int offs)
@@ -545,6 +607,17 @@ template <> void pushValue<const b2Profile *>(OS * os, const b2Profile * p)
 }
 
 // =====================================================================
+
+template <> b2World* toValue<b2World*>(OS * os, int offs)
+{
+	b2World * val;
+	return toObject(os, val, offs);
+}
+
+template <> void pushValue<b2World*>(OS * os, b2World* val)
+{
+	pushObject(os, val);
+}
 
 class World: public b2World, b2DestructionListener, b2ContactFilter, b2ContactListener, b2Draw, b2QueryCallback, b2RayCastCallback
 {
@@ -1080,43 +1153,24 @@ public:
 			{"drawDebugData", World::drawDebugData},
 			{"queryAABB", World::queryAABB},
 			{"rayCast", World::rayCast},
-			{"getBodyList", World::getBodyList},
 			{"__get@bodyList", World::getBodyList},
-			{"getJointList", World::getJointList},
 			{"__get@jointList", World::getJointList},
-			{"getContactList", World::getContactList},
 			{"__get@contactList", World::getContactList},
-			{"setWarmStarting", World::setWarmStarting},
 			{"__set@warmStarting", World::setWarmStarting},
-			{"setContinuousPhysics", World::setContinuousPhysics},
 			{"__set@continuousPhysics", World::setContinuousPhysics},
-			{"setSubStepping", World::setSubStepping},
 			{"__set@subStepping", World::setSubStepping},
-			{"getProxyCount", World::getProxyCount},
 			{"__get@proxyCount", World::getProxyCount},
-			{"getBodyCount", World::getBodyCount},
 			{"__get@bodyCount", World::getBodyCount},
-			{"getJointCount", World::getJointCount},
 			{"__get@jointCount", World::getJointCount},
-			{"getContactCount", World::getContactCount},
 			{"__get@contactCount", World::getContactCount},
-			{"getTreeHeight", World::getTreeHeight},
 			{"__get@treeHeight", World::getTreeHeight},
-			{"getTreeBalance", World::getTreeBalance},
 			{"__get@treeBalance", World::getTreeBalance},
-			{"getTreeQuality", World::getTreeQuality},
 			{"__get@treeQuality", World::getTreeQuality},
-			{"setGravity", World::setGravity},
 			{"__set@gravity", World::setGravity},
-			{"getGravity", World::getGravity},
 			{"__get@gravity", World::getGravity},
-			{"getIsLocked", World::getIsLocked},
 			{"__get@isLocked", World::getIsLocked},
-			{"setAutoClearForces", World::setAutoClearForces},
 			{"__set@autoClearForces", World::setAutoClearForces},
-			{"getAutoClearForces", World::getAutoClearForces},
 			{"__get@autoClearForces", World::getAutoClearForces},
-			{"getProfile", World::getProfile},
 			{"__get@profile", World::getProfile},
 			{}
 		};
@@ -1143,6 +1197,15 @@ public:
 		os->setProperty();
 	}
 };
+
+template <> int getValueId<b2World>(OS * os, b2World * val)
+{
+	return ((World*)val)->osId;
+}
+
+template <> void setValueId<b2World>(OS * os, b2World * val)
+{
+}
 
 // =====================================================================
 
@@ -1243,6 +1306,83 @@ struct JointEdge
 		os->pushGlobals();
 		os->pushString("b2JointEdge");
 		os->pushUserdata(getClassId<b2JointEdge>(), 0);
+		os->setFuncs(list);
+		os->setProperty();
+	}
+};
+
+// =====================================================================
+
+template <> b2ContactEdge* toValue<b2ContactEdge*>(OS * os, int offs)
+{
+	b2ContactEdge * val;
+	return toObject(os, val, offs);
+}
+
+template <> void pushValue<b2ContactEdge*>(OS * os, b2ContactEdge* val)
+{
+	pushObject(os, val);
+}
+
+struct ContactEdge
+{
+	static void init(OS * os)
+	{
+		OS::FuncDef list[] = {
+			SYNTHESIZE_READONLY(b2ContactEdge, b2Body*, other),
+			SYNTHESIZE_READONLY(b2ContactEdge, b2Contact*, contact),
+			SYNTHESIZE_READONLY(b2ContactEdge, b2ContactEdge*, prev),
+			SYNTHESIZE_READONLY(b2ContactEdge, b2ContactEdge*, next),
+			{}
+		};
+
+		os->pushGlobals();
+		os->pushString("b2ContactEdge");
+		os->pushUserdata(getClassId<b2ContactEdge>(), 0);
+		os->setFuncs(list);
+		os->setProperty();
+	}
+};
+
+// =====================================================================
+
+template <> b2Contact* toValue<b2Contact*>(OS * os, int offs)
+{
+	b2Contact * val;
+	return toObject(os, val, offs);
+}
+
+template <> void pushValue<b2Contact*>(OS * os, b2Contact* val)
+{
+	pushObject(os, val);
+}
+
+struct Contact
+{
+	static void init(OS * os)
+	{
+		OS::FuncDef list[] = {
+			GET_METHOD(b2Contact, const b2Manifold*, manifold, GetManifold),
+			// void GetWorldManifold(b2WorldManifold* worldManifold) const;
+			GET_METHOD(b2Contact, bool, isTouching, IsTouching),
+			SET_METHOD(b2Contact, bool, isEnabled, SetEnabled),
+			GET_METHOD(b2Contact, bool, isEnabled, IsEnabled),
+			GET_METHOD(b2Contact, const b2Contact*, next, GetNext),
+			GET_METHOD(b2Contact, const b2Fixture*, fixtureA, GetFixtureA),
+			GET_METHOD(b2Contact, int32, childIndexB, GetChildIndexB),
+			SET_METHOD(b2Contact, float32, friction, SetFriction),
+			GET_METHOD(b2Contact, float32, friction, GetFriction),
+			VOID_METHOD(b2Contact, resetFriction, ResetFriction),
+			SET_METHOD(b2Contact, float32, restitution, SetRestitution),
+			GET_METHOD(b2Contact, float32, restitution, GetRestitution),
+			VOID_METHOD(b2Contact, resetRestitution, ResetRestitution),
+			// virtual void Evaluate(b2Manifold* manifold, const b2Transform& xfA, const b2Transform& xfB) = 0;
+			{}
+		};
+
+		os->pushGlobals();
+		os->pushString("b2Contact");
+		os->pushUserdata(getClassId<b2Contact>(), 0);
 		os->setFuncs(list);
 		os->setProperty();
 	}
@@ -1367,6 +1507,17 @@ template <> void pushValue<b2Joint*>(OS * os, b2Joint* val)
 
 // =====================================================================
 
+template <> b2ManifoldPoint* toValue<b2ManifoldPoint*>(OS * os, int offs)
+{
+	b2ManifoldPoint * val;
+	return toObject(os, val, offs);
+}
+
+template <> void pushValue<b2ManifoldPoint*>(OS * os, b2ManifoldPoint* val)
+{
+	pushObject(os, val);
+}
+
 struct ManifoldPoint
 {
 	static void init(OS * os)
@@ -1387,6 +1538,30 @@ struct ManifoldPoint
 };
 
 // =====================================================================
+
+template <> b2Manifold* toValue<b2Manifold*>(OS * os, int offs)
+{
+	b2Manifold * val;
+	return toObject(os, val, offs);
+}
+
+template <> void pushValue<b2Manifold*>(OS * os, b2Manifold* val)
+{
+	pushObject(os, val);
+}
+
+// =====================================================================
+
+template <> const b2MassData* toValue<const b2MassData*>(OS * os, int offs)
+{
+	const b2MassData * val;
+	return toObject(os, val, offs);
+}
+
+template <> void pushValue<b2MassData*>(OS * os, b2MassData* val)
+{
+	pushObject(os, val);
+}
 
 struct MassData
 {
@@ -1462,17 +1637,6 @@ template <> const b2Shape* toValue<const b2Shape*>(OS * os, int offs)
 	return toObject(os, val, offs);
 }
 
-template <> const b2MassData* toValue<const b2MassData*>(OS * os, int offs)
-{
-	const b2MassData * val;
-	return toObject(os, val, offs);
-}
-
-template <> void pushValue<b2MassData*>(OS * os, b2MassData* val)
-{
-	pushObject(os, val);
-}
-
 struct Body
 {
 	static int GetMassData(OS * os, int params, int, int, void*)
@@ -1540,6 +1704,9 @@ struct Body
 			GET_METHOD(b2Body, bool, isFixedRotation, IsFixedRotation),
 			GET_METHOD(b2Body, const b2Fixture*, fixtureList, GetFixtureList),
 			GET_METHOD(b2Body, const b2JointEdge*, jointList, GetJointList),
+			GET_METHOD(b2Body, const b2ContactEdge*, contactList, GetContactList),
+			GET_METHOD(b2Body, const b2Body*, next, GetNext),
+			GET_METHOD(b2Body, const b2World*, world, GetWorld),
 			{}
 		};
 
