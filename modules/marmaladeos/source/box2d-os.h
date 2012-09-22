@@ -5,6 +5,6 @@
 
 using namespace ObjectScript;
 
-void osExportBox2d(OS*);
+void initBox2d(OS * os);
 
 #endif // __BOX2D_OS_H__

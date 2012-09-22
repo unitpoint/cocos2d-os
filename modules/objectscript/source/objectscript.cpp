@@ -13548,6 +13548,25 @@ void OS::pushValueById(int id)
 	core->pushValue(core->values.get(id));
 }
 
+void OS::retainValueById(int id)
+{
+	Core::GCValue * value = core->values.get(id);
+	if(value){
+		value->external_ref_count++;
+	}
+}
+
+void OS::releaseValueById(int id)
+{
+	Core::GCValue * value = core->values.get(id);
+	if(value){
+		OS_ASSERT(value->external_ref_count > 0);
+		if(!--value->external_ref_count && value->gc_color == Core::GC_WHITE){
+			value->gc_color = Core::GC_BLACK;
+		}
+	}
+}
+
 void OS::clone(int offs)
 {
 	core->pushCloneValue(core->getStackValue(offs));
@@ -13764,12 +13783,13 @@ bool OS::isObject(int offs)
 	return false;
 }
 
-bool OS::isUserdata(int offs)
+bool OS::isUserdata(int crc, int offs)
 {
-	switch(core->getStackValue(offs).type){
+	Core::Value val = core->getStackValue(offs);
+	switch(val.type){
 	case OS_VALUE_TYPE_USERDATA:
 	// case OS_VALUE_TYPE_USERPTR:
-		return true;
+		return val.v.userdata->crc == crc;
 	}
 	return false;
 }
@@ -15892,25 +15912,25 @@ void OS::initObjectClass()
 
 	struct Object
 	{
-		static int rawget(OS * os, int params, int closure_values, int, void*)
+		static int rawget(OS * os, int params, int, int, void*)
 		{
-			if(params == 1 && !closure_values){
+			if(params == 1){
 				os->getProperty(false, false);
 				return 1;
 			}
 			return 0;
 		}
 
-		static int rawset(OS * os, int params, int closure_values, int, void*)
+		static int rawset(OS * os, int params, int, int, void*)
 		{
-			if(params == 2 && !closure_values){
+			if(params == 2){
 				os->setProperty(false);
 				return 0;
 			}
 			return 0;
 		}
 
-		static int getValueId(OS * os, int params, int closure_values, int, void*)
+		static int getValueId(OS * os, int params, int, int, void*)
 		{
 			os->pushNumber(os->getValueId(-params-1));
 			return 1;

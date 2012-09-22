@@ -1,3 +1,13 @@
+debugger
+world = b2World()
+
+bodyDef = b2BodyDef()
+bodyDef.type = "static"
+bodyDef.position = {x=0 y=0}
+
+body = world.createBody(bodyDef)
+
+/*
 var core = require("core")
 var app = require("app")
 var node = require("node")
@@ -212,17 +222,6 @@ MyScene = extends Scene {
 				easy = Easy.inOutBounce
 				// speed = 0.5
 				repeat = true
-				/*
-				easy = Easy.outBounce
-				duration = 2
-				x = this.width * 0.7
-				y = this.height * 0.3
-				anchorX = 0.5
-				anchorY = 0.5
-				rotation = 45
-				zOrder = 1
-				opacity = 0.7
-				*/
 				sequence = [{
 					duration = 3
 					x = this.width * 0.4
@@ -425,3 +424,4 @@ MyScene = extends Scene {
 director.scene = MyScene()
 
 require("bitmapfont")
+*/

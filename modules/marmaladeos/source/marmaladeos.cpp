@@ -2,6 +2,8 @@
 
 #include "marmaladeos.h"
 #include "glos.h"
+#include "box2d-os.h"
+
 #include "stddef.h"
 
 #include "s3eOSExec.h"
@@ -63,7 +65,7 @@ MarmaladeOS::~MarmaladeOS()
   		IwGLTerminate();
 	}
 
-		s3eDeviceRequestQuit();
+	// s3eDeviceRequestQuit();
 }
 
 bool MarmaladeOS::init(MemoryManager * mem)
@@ -78,6 +80,7 @@ bool MarmaladeOS::init(MemoryManager * mem)
 	initAppModule();
 	initTextureClass();
 	initLabelBMFontClass();
+	initBox2d(this);
 
 	return true;
 }
@@ -427,7 +430,7 @@ void MarmaladeOS::initTextureClass()
 			MarmaladeOS * os = (MarmaladeOS*)p_os;
 			cocos2d::CCTexture2D * texture = (cocos2d::CCTexture2D*)os->toUserdata(os->texture2d_instance_crc, -params-1);
 			if(texture){
-				os->pushNumber((OS_NUMBER)texture->getHasPremultipliedAlpha());
+				os->pushBool(texture->getHasPremultipliedAlpha());
 				return 1;
 			}
 			return 0;

@@ -2866,6 +2866,9 @@ namespace ObjectScript
 		void pushUserPool();
 		void pushValueById(int id);
 
+		void retainValueById(int id);
+		void releaseValueById(int id);
+
 		void clone(int offs = -1);
 
 		// int pushArrayNumbers(int offs = -1);
@@ -2893,7 +2896,7 @@ namespace ObjectScript
 		bool isObject(int offs = -1);
 		bool isArray(int offs = -1);
 		bool isFunction(int offs = -1);
-		bool isUserdata(int offs = -1);
+		bool isUserdata(int crc, int offs);
 		bool isInstanceOf(int value_offs = -2, int prototype_offs = -1);
 		bool is(int value_offs = -2, int prototype_offs = -1);
 
