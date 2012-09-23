@@ -3,8 +3,6 @@
 
 #include "objectscript.h"
 
-using namespace ObjectScript;
-
-void initBox2d(OS * os);
+void initBox2d(ObjectScript::OS * os);
 
 #endif // __BOX2D_OS_H__

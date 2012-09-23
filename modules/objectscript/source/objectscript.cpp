@@ -182,6 +182,8 @@ static bool parseSimpleHex(const OS_CHAR *& p_str, T& p_val)
 			val = (val << 4) + 10 + (T)(*str - OS_TEXT('a'));
 		}else if(*str >= OS_TEXT('A') && *str <= OS_TEXT('F')){
 			val = (val << 4) + 10 + (T)(*str - OS_TEXT('A'));
+		}else{
+			break;
 		}
 		if(prev_val > val){
 			p_str = start;

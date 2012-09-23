@@ -1,13 +1,27 @@
-debugger
+/*
 world = b2World()
 
-bodyDef = b2BodyDef()
-bodyDef.type = "static"
-bodyDef.position = {x=0 y=0}
+body = world.createBody {
+	type = "static"
+	position = {x=0 y=0}
+}
 
-body = world.createBody(bodyDef)
+body.createFixture {
+	shape = {
+		type = "circle"
+		position = {x=100 y=100}
+		radius = 125
+	}
+	friction = 0.2
+	restitution = 0
+	density = 0
+	categoryBits = 0x0001
+	maskBits = 0xfff
+	groupIndex = 0
+	isSensor = false
+}
+*/
 
-/*
 var core = require("core")
 var app = require("app")
 var node = require("node")
@@ -357,7 +371,54 @@ MyScene = extends Scene {
 			}()
 		}
 		
-		;{
+		if(true){
+			var bg = Image("bg.jpg")
+			bg.x = this.width / 2
+			bg.y = this.height / 2
+			bg.scale = math.max(this.width / bg.width, this.height / bg.height)
+			this.insert(bg, -10)
+			
+			var ball = Image("ball.png")
+			ball.x = this.width * 0.5
+			ball.y = this.height * 0.1
+			ball.zOrder = 1000
+			this.insert(ball)
+			
+			var physics = b2World()
+			var physicsHz = 60
+			var physicsTimeStep = 1.0f / physicsHz
+			var physicsVelocityIterations = 10
+			var physicsPositionIterations = 8
+			var physicsTimeAccumulator = 0
+			this.addEventListener("enterFrame", function(params){
+				physicsTimeAccumulator = physicsTimeAccumulator + params.deltaTime
+				for(; physicsTimeAccumulator >= physicsTimeStep;){
+					debugger
+					physics.step(physicsTimeStep, physicsVelocityIterations, physicsPositionIterations)
+					physicsTimeAccumulator = physicsTimeAccumulator - physicsTimeStep
+				}
+			})
+			
+			var body = physics.createBody {
+				type = "dynamic"
+				x = ball.x
+				y = ball.y
+				fixture = {
+					shape = {
+						type = "circle"
+						radius = ball.width/2
+					}
+					density = 1
+				}
+			}
+			ball.addEventListener("enterFrame", function(){
+				var position = body.position
+				this.x, this.y = position.x, position.y
+				this.rotation = math.deg(body.angle)
+			})
+		}
+		
+		if(false){
 			var bg = Image("bg.jpg")
 			bg.x = this.width / 2
 			bg.y = this.height / 2
@@ -423,5 +484,4 @@ MyScene = extends Scene {
 
 director.scene = MyScene()
 
-require("bitmapfont")
-*/
+// require("bitmapfont")
