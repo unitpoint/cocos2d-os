@@ -73,14 +73,17 @@ template <class T> void osObjectDestructor(OS * os, void * data, void * user_par
 
 template <> void osObjectDestructor<b2Body>(OS * os, void * data, void * user_param)
 {
+#if 0
 	b2Body * body = (b2Body*)data;
 	if(body){
 		body->GetWorld()->DestroyBody(body);
 	}
+#endif
 }
 
 void osJointDestructor(OS * os, void * data, void * user_param)
 {
+#if 0
 	b2Joint * joint = (b2Joint*)data;
 	if(joint){
 		b2Body * body = joint->GetBodyA();
@@ -90,6 +93,7 @@ void osJointDestructor(OS * os, void * data, void * user_param)
 			OS_ASSERT(false);
 		}
 	}
+#endif
 }
 
 template <> void osObjectDestructor<b2Joint>(OS * os, void * data, void * user_param)
@@ -805,6 +809,7 @@ public:
 
 	OS * os;
 	int osId; // weak ref to ObjectScript value
+	// float metricScale;
 
 	static World * toWorld(b2World * w)
 	{
@@ -815,6 +820,7 @@ public:
 	{
 		os = p_os;
 		osId = os->getValueId();
+		// metricScale = p_metricScale;
 		SetDestructionListener(this);
 		SetContactFilter(this);
 		SetContactListener(this);
@@ -834,7 +840,7 @@ public:
 	{
 		pushThis();
 		os->pushStackValue();
-		os->getProperty(name);
+		os->getProperty(name, false, false);
 		if(os->isFunction()){
 			os->move(-2, -1);
 			return true;
@@ -1054,6 +1060,8 @@ public:
 			def.position = Box2dValue<b2Vec2>::to(os, -1);
 			os->pop();
 		}
+		// def.position.x *= self->metricScale;
+		// def.position.y *= self->metricScale;
 
 		os->getProperty(offs, "angle", false, false);
 		def.angle = os->popFloat(def.angle);
@@ -1095,8 +1103,23 @@ public:
 		os->getProperty(offs, "fixture", false, false);
 		if(os->isObject()){
 			createBodyFixture(body, os, -1);
-			os->pop();
 		}
+		os->pop();
+
+		os->getProperty(offs, "fixtures", false, false);
+		if(os->isArray()){
+			int count = os->getLen();
+			for(int i = 0; i < count; i++){
+				os->pushStackValue();
+				os->pushNumber(i);
+				os->getProperty();
+				if(os->isObject()){
+					createBodyFixture(body, os, -1);
+					os->pop();
+				}
+			}
+		}
+		os->pop();
 
 		return 1;
 	}
@@ -1203,8 +1226,9 @@ public:
 
 	static int create(OS * os, int params, int, int, void*)
 	{
-		b2Vec2 gravity = params > 0 ? Box2dValue<b2Vec2>::to(os, -params) : b2Vec2(0, -9.8f);
+		b2Vec2 gravity = params > 0 ? Box2dValue<b2Vec2>::to(os, -params) : b2Vec2(0, 9.8f);
 		bool sleep = os->toBool(-params+1, true);
+		// float metricScale = os->toFloat(-params+2, 1/100.0f);
 		new (os->pushUserdata(getId<World>(), sizeof(World), destructor)) World(os, gravity, sleep);
 		os->retainValueById(os->getValueId());
 		os->pushStackValue();
@@ -1249,7 +1273,27 @@ public:
 			{}
 		};
 
-		initClass<World>(os, funcs);
+		OS::NullDef nulls[] = {
+			{"shouldCollide"},
+			{"beginContact"},
+			{"endContact"},
+			{"preSolve"},
+			{"postSolve"},
+			{"drawPolygon"},
+			{"drawCircle"},
+			{"drawSolidCircle"},
+			{"drawSegment"},
+			{"drawTransform"},
+			{}
+		};
+
+		// initClass<World>(os, funcs);
+		os->pushGlobals();
+		os->pushString(getClassName<World>());
+		os->pushUserdata(getClassId<World>(), 0);
+		os->setFuncs(funcs);
+		os->setNulls(nulls);
+		os->setProperty();
 	}
 };
 
@@ -1322,6 +1366,23 @@ struct Body
 		self->GetMassData(&massData);
 		massData.I = Box2dValue<float32>::to(os, -params);
 		self->SetMassData(&massData);
+		return 0;
+	}
+
+	static int setPosition(OS * os, int params, int, int, void*)
+	{
+		GET_SELF(b2Body);
+		b2Transform xf = self->GetTransform();
+		xf.p = Box2dValue<b2Vec2>::to(os, -params);
+		self->SetTransform(xf.p, xf.q.GetAngle());
+		return 0;
+	}
+
+	static int setAngle(OS * os, int params, int, int, void*)
+	{
+		GET_SELF(b2Body);
+		b2Transform xf = self->GetTransform();
+		self->SetTransform(xf.p, os->toFloat(-params));
 		return 0;
 	}
 
@@ -1532,7 +1593,9 @@ struct Body
 			VOID_METHOD_2(b2Body, setTransform, SetTransform, const b2Vec2&, float32),
 			GET_METHOD(b2Body, const b2Transform&, transform, GetTransform),
 			GET_METHOD(b2Body, const b2Vec2&, position, GetPosition),
+			{"__set@position", setPosition},
 			GET_METHOD(b2Body, float32, angle, GetAngle),
+			{"__set@angle", setAngle},
 			GET_METHOD(b2Body, const b2Vec2&, worldCenter, GetWorldCenter),
 			GET_METHOD(b2Body, const b2Vec2&, localCenter, GetLocalCenter),
 			SET_METHOD(b2Body, const b2Vec2&, linearVelocity, SetLinearVelocity),

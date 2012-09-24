@@ -10764,8 +10764,6 @@ void OS::Core::shutdown()
 {
 	// freeAutoreleaseValues();
 	// vectorClear(autorelease_values);
-	stack_values.count = 0;
-
 	free(stack_values.buf);
 	stack_values.buf = NULL;
 	stack_values.capacity = 0;
@@ -10814,6 +10812,13 @@ void OS::Core::shutdown()
 #endif
 	deleteValues(true);
 	deleteStringRefs();
+	
+	if(stack_values.buf){
+		free(stack_values.buf);
+		stack_values.buf = NULL;
+		stack_values.capacity = 0;
+		stack_values.count = 0;
+	}
 }
 
 OS::String OS::changeFilenameExt(const String& filename, const String& ext)

@@ -31,7 +31,7 @@ var director = require("director")
 
 print "Hello World!"
 
-print "Sprite\n"..Sprite
+// print "Sprite\n"..Sprite
 
 // var image = Texture2d("award-first.png")
 // print("image width "image.width" height "image.height" pixelformat "image.pixelFormat" hasPremultipliedAlpha "image.hasPremultipliedAlpha)
@@ -384,7 +384,8 @@ MyScene = extends Scene {
 			ball.zOrder = 1000
 			this.insert(ball)
 			
-			var physics = b2World()
+			var physicsMetricScale = 1/100
+			var physics = b2World({x=0, y=9.8}, true)
 			var physicsHz = 60
 			var physicsTimeStep = 1.0f / physicsHz
 			var physicsVelocityIterations = 10
@@ -393,28 +394,118 @@ MyScene = extends Scene {
 			this.addEventListener("enterFrame", function(params){
 				physicsTimeAccumulator = physicsTimeAccumulator + params.deltaTime
 				for(; physicsTimeAccumulator >= physicsTimeStep;){
-					debugger
 					physics.step(physicsTimeStep, physicsVelocityIterations, physicsPositionIterations)
 					physicsTimeAccumulator = physicsTimeAccumulator - physicsTimeStep
 				}
 			})
 			
+			var restitution = 0.8
+			var friction = 0.3
+			physics.createBody {
+				type = "static"
+				fixtures = [
+					{
+						shape = {
+							type = "polygon",
+							vertices = [
+								{x=0, y=director.height*physicsMetricScale},
+								{x=director.width*physicsMetricScale, y=director.height*physicsMetricScale},
+								{x=director.width*physicsMetricScale, y=director.height*1.1*physicsMetricScale},
+								{x=0, y=director.height*1.1*physicsMetricScale},
+							],
+						}
+						restitution = restitution
+						friction = friction
+					},
+					{
+						shape = {
+							type = "polygon",
+							vertices = [
+								{x=0, y=director.height*-0.1*physicsMetricScale},
+								{x=director.width*physicsMetricScale, y=director.height*-0.1*physicsMetricScale},
+								{x=director.width*physicsMetricScale, y=0},
+								{x=0, y=0},
+							],
+						}
+						restitution = restitution
+						friction = friction
+					},
+					{
+						shape = {
+							type = "polygon",
+							vertices = [
+								{x=director.width*-0.1*physicsMetricScale, y=0},
+								{x=0, y=0},
+								{x=0, y=director.height*physicsMetricScale},
+								{x=director.width*-0.1*physicsMetricScale, y=director.height*physicsMetricScale},
+							],
+						}
+						restitution = restitution
+						friction = friction
+					},
+					{
+						shape = {
+							type = "polygon",
+							vertices = [
+								{x=director.width*physicsMetricScale, y=0},
+								{x=director.width*1.1*physicsMetricScale, y=0},
+								{x=director.width*1.1*physicsMetricScale, y=director.height*physicsMetricScale},
+								{x=director.width*physicsMetricScale, y=director.height*physicsMetricScale},
+							],
+						}
+						restitution = restitution
+						friction = friction
+					},
+				],
+			}
+			
 			var body = physics.createBody {
 				type = "dynamic"
-				x = ball.x
-				y = ball.y
+				x = ball.x*physicsMetricScale
+				y = ball.y*physicsMetricScale
 				fixture = {
 					shape = {
 						type = "circle"
-						radius = ball.width/2
+						radius = ball.width/2*physicsMetricScale
 					}
 					density = 1
+					restitution = restitution
+					friction = friction
 				}
 			}
 			ball.addEventListener("enterFrame", function(){
 				var position = body.position
-				this.x, this.y = position.x, position.y
+				this.x, this.y = position.x/physicsMetricScale, position.y/physicsMetricScale
 				this.rotation = math.deg(body.angle)
+			})
+			var prevX, prevY, speedX, speedY = 0, 0, 0, 0
+			var function trackVelocity(params){
+				speedX = (this.x - prevX) / params.deltaTime
+				speedY = (this.y - prevY) / params.deltaTime
+				prevX, prevY = this.x, this.y
+			}
+			var function bodyDragging(){
+				body.linearVelocity = [0, 0]
+				body.gravityScale = 0
+			}
+			ball.addEventListener("touch", function(touch){
+				if(touch.phase == "start"){
+					// tx, ty, sx, sy = touch.x, touch.y, this.x, this.y
+					this.x0, this.y0 = touch.x - this.x, touch.y - this.y
+					// body.type = "kinematic"
+					// this.clearTimeout(setDynamicType)
+					this.addEventListener("enterFrame", bodyDragging)
+					this.addEventListener("enterFrame", trackVelocity)
+				}else if(touch.phase == "move"){
+					this.x, this.y = touch.x - this.x0, touch.y - this.y0
+					body.position = [this.x*physicsMetricScale, this.y*physicsMetricScale]
+					// body.linearVelocity = [0, 0]
+				}else if(touch.phase == "end" || touch.phase == "cancel"){
+					body.linearVelocity = [speedX*physicsMetricScale, speedY*physicsMetricScale]
+					body.gravityScale = 1
+					this.removeEventListener("enterFrame", bodyDragging)
+					this.removeEventListener("enterFrame", trackVelocity)
+				}
 			})
 		}
 		
