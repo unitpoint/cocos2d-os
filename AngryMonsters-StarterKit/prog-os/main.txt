@@ -2280,7 +2280,7 @@ begin function
             end set local var createMonster (19 0)
 
 
-[202] for(var i = 0; i < 10; i++){
+[202] for(var i = 0; i < 20; i++){
 
             begin scope
               begin locals 1
@@ -2296,7 +2296,7 @@ begin function
                     begin logic not
                       begin logic <
                         get local var i (20 0)
-                        push const number 10
+                        push const number 20
                       end logic <
                     end logic not
                   end bool exp
@@ -2317,7 +2317,7 @@ begin function
                 end scope ret values 0
 
 
-[202] for(var i = 0; i < 10; i++){
+[202] for(var i = 0; i < 20; i++){
 
                 begin code list
                   begin set local var
