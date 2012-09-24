@@ -199,7 +199,7 @@ MyScene = extends Scene {
 			})
 		}
 		
-		for(var i = 0; i < 30; i++){
+		for(var i = 0; i < 10; i++){
 			createMonster()
 		}
 		
@@ -225,59 +225,6 @@ MyScene = extends Scene {
 				}
 			}
 		}, 0.3, true)
-		
-		function(){
-		
-			var font = "arial-en-ru-16.fnt"
-			var fps = Text("fps", font)
-			fps.anchor = {x=1.05 y=1.05}
-			fps.x = this.width
-			fps.y = this.height - 40
-			fps.color = [0.5, 0.0, 0.0]
-			// fps.shadow = true
-			this.insert(fps)
-			
-			var gcAllocatedBytes = Text("Kb", font)
-			gcAllocatedBytes.anchor = {x=1.05 y=1.05}
-			gcAllocatedBytes.x = fps.x
-			gcAllocatedBytes.y = fps.y - fps.fontHeight*1.05*1
-			gcAllocatedBytes.color = fps.color
-			// gcAllocatedBytes.shadow = true
-			this.insert(gcAllocatedBytes)
-			
-			var gcUsedBytes = Text("Kb", font)
-			gcUsedBytes.anchor = {x=1.05 y=1.05}
-			gcUsedBytes.x = fps.x
-			gcUsedBytes.y = fps.y - fps.fontHeight*1.05*3
-			gcUsedBytes.color = fps.color
-			// gcUsedBytes.shadow = true
-			this.insert(gcUsedBytes)
-			
-			var gcCachedBytes = Text("Kb", font)
-			gcCachedBytes.anchor = {x=1.05 y=1.05}
-			gcCachedBytes.x = fps.x
-			gcCachedBytes.y = fps.y - fps.fontHeight*1.05*2
-			gcCachedBytes.color = fps.color
-			// gcAllocatedBytes.shadow = true
-			this.insert(gcCachedBytes)
-			
-			var gcNumObjects = Text("0", font)
-			gcNumObjects.anchor = {x=1.05 y=1.05}
-			gcNumObjects.x = fps.x
-			gcNumObjects.y = fps.y - fps.fontHeight*1.05*4
-			gcNumObjects.color = fps.color
-			// gcNumObjects.shadow = true
-			this.insert(gcNumObjects)
-			
-			this.setTimeout(function(){
-				fps.string = math.round(1 / director.deltaTime, 1).." fps"
-				gcAllocatedBytes.string = math.round(GC.allocatedBytes / 1024).." Kb allocated"
-				gcUsedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
-				gcCachedBytes.string = math.round(GC.cachedBytes / 1024).." Kb cached"
-				gcNumObjects.string = GC.numObjects.." gc objects"
-			}, 0.3, true)
-		
-		}.call(this)
 	}
 }
 

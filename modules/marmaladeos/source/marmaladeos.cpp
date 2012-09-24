@@ -2,7 +2,6 @@
 
 #include "marmaladeos.h"
 #include "glos.h"
-#include "box2d-os.h"
 
 #include "stddef.h"
 
@@ -80,7 +79,6 @@ bool MarmaladeOS::init(MemoryManager * mem)
 	initAppModule();
 	initTextureClass();
 	initLabelBMFontClass();
-	initBox2d(this);
 
 	return true;
 }
