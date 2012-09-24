@@ -5,4 +5,4 @@ Angry Monsters StarterKit is game example made with ObjectScript and Marmalade S
 
 Main program file of this example is located here: prog-os\main.os
 
-You could view video of the example here: http://youtu.be/0MmBWm5Risc
+You could view video of the example here: http://youtu.be/uep2SvXdCNU
