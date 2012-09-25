@@ -7,6 +7,20 @@ namespace Box2dObjectScript {
 
 // =====================================================================
 
+static float32 b2MetricScale = 0.01f;
+
+static float32 toBox2dMetric(float32 x)
+{
+	return x * b2MetricScale;
+}
+
+static float32 fromBox2dMetric(float32 x)
+{
+	return x / b2MetricScale;
+}
+
+// =====================================================================
+
 template <class T> struct RemoveConst          { typedef T type; };
 template <class T> struct RemoveConst<const T> { typedef T type; };
 template <class T> struct RemoveConst<const T&> { typedef T type; };
@@ -73,7 +87,7 @@ template <class T> void osObjectDestructor(OS * os, void * data, void * user_par
 
 template <> void osObjectDestructor<b2Body>(OS * os, void * data, void * user_param)
 {
-#if 0
+#if 1
 	b2Body * body = (b2Body*)data;
 	if(body){
 		body->GetWorld()->DestroyBody(body);
@@ -83,7 +97,7 @@ template <> void osObjectDestructor<b2Body>(OS * os, void * data, void * user_pa
 
 void osJointDestructor(OS * os, void * data, void * user_param)
 {
-#if 0
+#if 1
 	b2Joint * joint = (b2Joint*)data;
 	if(joint){
 		b2Body * body = joint->GetBodyA();
@@ -332,22 +346,22 @@ struct Box2dValue<b2Vec2>
 	{
 		if(os->isObject(offs)){
 			os->getProperty(offs, "x");
-			float x = os->popNumber();
+			float x = toBox2dMetric(os->popNumber());
 		
 			os->getProperty(offs, "y");
-			float y = os->popNumber();
+			float y = toBox2dMetric(os->popNumber());
 
 			return b2Vec2(x, y);
 		}else if(os->isArray(offs)){
 			os->pushStackValue(offs);
 			os->pushNumber(0);
 			os->getProperty();
-			float x = os->popNumber();
+			float x = toBox2dMetric(os->popNumber());
 		
 			os->pushStackValue(offs);
 			os->pushNumber(1);
 			os->getProperty();
-			float y = os->popNumber();
+			float y = toBox2dMetric(os->popNumber());
 
 			return b2Vec2(x, y);
 		}
@@ -360,11 +374,11 @@ struct Box2dValue<b2Vec2>
 		os->newObject();
 	
 		os->pushStackValue();
-		os->pushNumber(p.x);
+		os->pushNumber(fromBox2dMetric(p.x));
 		os->setProperty("x", false);
 				
 		os->pushStackValue();
-		os->pushNumber(p.y);
+		os->pushNumber(fromBox2dMetric(p.y));
 		os->setProperty("y", false);
 	}
 };
@@ -446,13 +460,13 @@ struct Box2dValue<b2Transform>
 	{
 		if(os->isObject(offs)){
 			os->getProperty(offs, "x");
-			OS_NUMBER x = os->popNumber();
+			float x = toBox2dMetric(os->popFloat());
 		
 			os->getProperty(offs, "y");
-			OS_NUMBER y = os->popNumber();
+			float y = toBox2dMetric(os->popFloat());
 		
 			os->getProperty(offs, "angle");
-			OS_NUMBER angle = os->popNumber();
+			float angle = os->popFloat();
 
 			return b2Transform(b2Vec2(x, y), b2Rot(angle));
 		}
@@ -465,11 +479,11 @@ struct Box2dValue<b2Transform>
 		os->newObject();
 	
 		os->pushStackValue();
-		os->pushNumber(xf.p.x);
+		os->pushNumber(fromBox2dMetric(xf.p.x));
 		os->setProperty("x", false);
 				
 		os->pushStackValue();
-		os->pushNumber(xf.p.y);
+		os->pushNumber(fromBox2dMetric(xf.p.y));
 		os->setProperty("y", false);
 				
 		os->pushStackValue();
@@ -574,8 +588,8 @@ template <class T> void pushBox2dValue(OS * os, T obj)
 
 void pushXY(OS * os, const b2Vec2& p)
 {
-	os->pushNumber(p.x);
-	os->pushNumber(p.y);
+	os->pushNumber(fromBox2dMetric(p.x));
+	os->pushNumber(fromBox2dMetric(p.y));
 }
 
 void pushVertices(OS * os, const b2Vec2* vertices, int count)
@@ -599,29 +613,13 @@ template <class T> void clearUserdata(OS * os, T * val)
 
 // =====================================================================
 
-/*
-#define GET_SELF(argType) \
-	Box2dValue< typename RemoveConst<argType>::type >::type self = Box2dValue< typename RemoveConst<argType>::type >::to(os, -params-1); \
-	if(!Box2dValue< typename RemoveConst<argType>::type >::isValid(self)){ \
-		os->triggerError(OS_E_ERROR, OS::String(os, getClassName< PlainType<argType> >())+" this is wrong"); \
-		return 0; \
-	}
-*/
-
 #define GET_SELF(argType) \
 	argType * self = toBox2dObject<argType>(os, -params-1); \
 	if(!self){ \
 		os->triggerError(OS_E_ERROR, OS::String(os, getClassName<argType>())+" this is wrong"); \
 		return 0; \
 	}
-/*
-#define GET_ARG(num, argType) \
-	Box2dValue< typename RemoveConst<argType>::type >::type arg##num = Box2dValue< typename RemoveConst<argType>::type >::to(os, -params+num-1); \
-	if(!Box2dValue< typename RemoveConst<argType>::type >::isValid(arg##num)){ \
-		os->triggerError(OS_E_ERROR, OS::String(os, getClassName< PlainType<argType> >())+" expected"); \
-		return 0; \
-	}
-*/
+
 #define GET_TEMPLATE_ARG(num, argType) \
 	typename Box2dValue<argType>::type arg##num = Box2dValue<argType>::to(os, -params+num-1); \
 	if(!Box2dValue<argType>::isValid(arg##num)){ \
@@ -1052,10 +1050,10 @@ public:
 			os->pop();
 
 			os->getProperty(offs, "x", false, false);
-			def.position.x = os->popFloat(def.position.x);
+			def.position.x = toBox2dMetric(os->popFloat(fromBox2dMetric(def.position.x)));
 			
 			os->getProperty(offs, "y", false, false);
-			def.position.y = os->popFloat(def.position.y);
+			def.position.y = toBox2dMetric(os->popFloat(fromBox2dMetric(def.position.y)));
 		}else{
 			def.position = Box2dValue<b2Vec2>::to(os, -1);
 			os->pop();
@@ -1391,7 +1389,7 @@ struct Body
 		b2CircleShape * shape = new (os->malloc(sizeof(b2CircleShape) OS_DBG_FILEPOS)) b2CircleShape();
 		
 		os->getProperty(offs, "radius", false, false);
-		shape->m_radius = os->popFloat(shape->m_radius);
+		shape->m_radius = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_radius)));
 		
 		os->getProperty(offs, "center", false, false);
 		if(os->isNull()){
@@ -1402,10 +1400,10 @@ struct Body
 			os->pop();
 
 			os->getProperty(offs, "x", false, false);
-			shape->m_p.x = os->popFloat(shape->m_p.x);
+			shape->m_p.x = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_p.x)));
 			
 			os->getProperty(offs, "y", false, false);
-			shape->m_p.y = os->popFloat(shape->m_p.y);
+			shape->m_p.y = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_p.y)));
 		}else{
 			shape->m_p = Box2dValue<b2Vec2>::to(os, -1);
 			os->pop();
@@ -1418,7 +1416,7 @@ struct Body
 		b2EdgeShape * shape = new (os->malloc(sizeof(b2EdgeShape) OS_DBG_FILEPOS)) b2EdgeShape();
 		
 		os->getProperty(offs, "radius", false, false);
-		shape->m_radius = os->popFloat(shape->m_radius);
+		shape->m_radius = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_radius)));
 		
 		os->getProperty(offs, "vertex1", false, false);
 		if(os->isNull()) return error(shape, os, "vertex1 expected by edge shape");
@@ -1452,7 +1450,7 @@ struct Body
 		b2PolygonShape * shape = new (os->malloc(sizeof(b2PolygonShape) OS_DBG_FILEPOS)) b2PolygonShape();
 
 		os->getProperty(offs, "radius", false, false);
-		shape->m_radius = os->popFloat(shape->m_radius);
+		shape->m_radius = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_radius)));
 		
 		os->getProperty(offs, "vertices", false, false);
 		if(!os->isArray()) return error(shape, os, "array of vertices expected by polygon shape");
@@ -1479,7 +1477,7 @@ struct Body
 		b2LoopShape * shape = new (os->malloc(sizeof(b2LoopShape) OS_DBG_FILEPOS)) b2LoopShape();
 
 		os->getProperty(offs, "radius", false, false);
-		shape->m_radius = os->popFloat(shape->m_radius);
+		shape->m_radius = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_radius)));
 		
 		os->getProperty(offs, "vertices", false, false);
 		if(!os->isArray()) return error(shape, os, "array of vertices expected by loop shape");
@@ -1557,11 +1555,36 @@ struct Body
 			def.shape = NULL;
 		}else{ // shape
 			os->pop();
-			b2Shape * shape = toShape(os, offs);
-			float density = os->toFloat(offs+1);
-			self->CreateFixture(shape, density);
-			shape->~b2Shape();
-			os->free(shape);
+			offs = os->getAbsoluteOffs(offs);
+			os->getProperty(offs, "shapes", false, false);
+			if(os->isArray()){
+				int count = os->getLen();
+				for(int i = 0; i < count; i++){
+					os->pushStackValue();
+					os->pushNumber(i);
+					os->getProperty();
+					if(!os->isObject()){
+						os->pop();
+						continue;
+					}
+					os->clone(offs);
+					os->pushStackValue();
+					os->deleteProperty("shapes", false);
+					os->pushStackValue();
+					os->pushStackValue(-3);
+					os->setProperty("shape", false);
+					createFixture(self, os, -1);
+					os->pop(2);
+				}
+				os->pop();
+			}else{
+				os->pop();
+				b2Shape * shape = toShape(os, offs);
+				float density = os->toFloat(offs+1);
+				self->CreateFixture(shape, density);
+				shape->~b2Shape();
+				os->free(shape);
+			}
 		}
 	}
 

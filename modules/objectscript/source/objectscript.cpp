@@ -13918,6 +13918,23 @@ void OS::addProperty()
 	setProperty(false);
 }
 
+void OS::deleteProperty(bool del_method_enabled)
+{
+	core->deleteValueProperty(core->getStackValue(-2), core->getStackValue(-1), false, del_method_enabled);
+	pop(2);
+}
+
+void OS::deleteProperty(const OS_CHAR * name, bool del_method_enabled)
+{
+	deleteProperty(Core::String(this, name), del_method_enabled);
+}
+
+void OS::deleteProperty(const Core::String& name, bool del_method_enabled)
+{
+	pushString(name);
+	deleteProperty(del_method_enabled);
+}
+
 void OS::getPrototype()
 {
 	if(core->stack_values.count >= 1){

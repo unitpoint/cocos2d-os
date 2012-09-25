@@ -491,7 +491,7 @@ Transition = extends FunctionNode {
 		super()
 		this.target = target
 		if("onComplete" in params){
-			this.onComplete = params.onComplete
+			this.onComplete = functionof params.onComplete
 			delete params.onComplete
 		}
 		var t = this.calculateTransition(this.list, params, 0, 1)

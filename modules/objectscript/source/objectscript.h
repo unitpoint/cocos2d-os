@@ -2831,6 +2831,10 @@ namespace ObjectScript
 		void setProperty(const Core::String&, bool setter_enabled = true);
 		void addProperty();
 
+		void deleteProperty(bool del_method_enabled = true);
+		void deleteProperty(const OS_CHAR*, bool del_method_enabled = true);
+		void deleteProperty(const Core::String&, bool del_method_enabled = true);
+
 		void getGlobal(const OS_CHAR*, bool prototype_enabled = true, bool getter_enabled = true);
 		void getGlobal(const Core::String&, bool prototype_enabled = true, bool getter_enabled = true);
 
