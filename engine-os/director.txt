@@ -1360,28 +1360,7 @@ begin function
   end set env var nextScene
 
 
-[147] notificationNode = null
-
-  begin set env var
-    const null
-  end set env var notificationNode
-
-
-[148] displayFPS = true
-
-  begin set env var
-    const true
-  end set env var displayFPS
-
-
-[149] displayProfilers = true
-
-  begin set env var
-    const true
-  end set env var displayProfilers
-
-
-[151] _E.scene = Scene()
+[148] _E.scene = Scene()
 
   begin set property
     begin call method
@@ -1395,14 +1374,14 @@ begin function
   end set property ret values 0
 
 
-[153] var totalFrames = 0
+[150] var totalFrames = 0
 
   begin set local var
     push const number 0
   end set local var totalFrames (11 0)
 
 
-[154] function get totalFrames(){ return totalFrames }
+[151] function get totalFrames(){ return totalFrames }
 
   begin set env var
     begin function
@@ -1417,7 +1396,7 @@ begin function
   end set env var __get@totalFrames
 
 
-[156] function enableDefaultGlStates(){
+[153] function enableDefaultGlStates(){
 
   begin set env var
     begin function
@@ -1426,7 +1405,7 @@ begin function
         1 _G
       end locals
 
-[157] glEnableClientState(GL_VERTEX_ARRAY)
+[154] glEnableClientState(GL_VERTEX_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1438,7 +1417,7 @@ begin function
       end call method ret values 0
 
 
-[158] glEnableClientState(GL_COLOR_ARRAY)
+[155] glEnableClientState(GL_COLOR_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1450,7 +1429,7 @@ begin function
       end call method ret values 0
 
 
-[159] glEnableClientState(GL_TEXTURE_COORD_ARRAY)
+[156] glEnableClientState(GL_TEXTURE_COORD_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1462,7 +1441,7 @@ begin function
       end call method ret values 0
 
 
-[160] glEnable(GL_TEXTURE_2D)
+[157] glEnable(GL_TEXTURE_2D)
 
       begin call method
         get local var _E (0 0)
@@ -1476,7 +1455,7 @@ begin function
   end set env var enableDefaultGlStates
 
 
-[163] function disableDefaultGlStates(){
+[160] function disableDefaultGlStates(){
 
   begin set env var
     begin function
@@ -1485,7 +1464,7 @@ begin function
         1 _G
       end locals
 
-[164] glDisable(GL_TEXTURE_2D)
+[161] glDisable(GL_TEXTURE_2D)
 
       begin call method
         get local var _E (0 0)
@@ -1497,7 +1476,7 @@ begin function
       end call method ret values 0
 
 
-[165] glDisableClientState(GL_TEXTURE_COORD_ARRAY)
+[162] glDisableClientState(GL_TEXTURE_COORD_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1509,7 +1488,7 @@ begin function
       end call method ret values 0
 
 
-[166] glDisableClientState(GL_COLOR_ARRAY)
+[163] glDisableClientState(GL_COLOR_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1521,7 +1500,7 @@ begin function
       end call method ret values 0
 
 
-[167] glDisableClientState(GL_VERTEX_ARRAY)
+[164] glDisableClientState(GL_VERTEX_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1535,7 +1514,7 @@ begin function
   end set env var disableDefaultGlStates
 
 
-[170] var function setNextScene(){
+[167] var function setNextScene(){
 
   begin set local var
     begin function
@@ -1544,14 +1523,14 @@ begin function
         1 _G
       end locals
 
-[171] runningScene = nextScene
+[168] runningScene = nextScene
 
       begin set local var
         get env var nextScene
       end set local var runningScene (10 1)
 
 
-[172] nextScene = null
+[169] nextScene = null
 
       begin set env var
         const null
@@ -1560,7 +1539,7 @@ begin function
   end set local var setNextScene (12 0)
 
 
-[175] var function paint(){
+[172] var function paint(){
 
   begin set local var
     begin function
@@ -1570,7 +1549,7 @@ begin function
         2 paintParams
       end locals
 
-[177] glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+[174] glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
       begin pop
         begin code list
@@ -1587,7 +1566,7 @@ begin function
           end call method ret values 0
 
 
-[179] if(nextScene) setNextScene()
+[176] if(nextScene) setNextScene()
 
           begin if
             begin bool exp
@@ -1603,7 +1582,7 @@ begin function
           end if ret values 0
 
 
-[181] glPushMatrix()
+[178] glPushMatrix()
 
           begin call method
             get local var _E (0 0)
@@ -1613,7 +1592,7 @@ begin function
           end call method ret values 0
 
 
-[182] applyOrientation()
+[179] applyOrientation()
 
           begin call
             get local var applyOrientation (8 1)
@@ -1622,7 +1601,7 @@ begin function
           end call ret values 0
 
 
-[185] enableDefaultGlStates()
+[182] enableDefaultGlStates()
 
           begin call method
             get local var _E (0 0)
@@ -1632,7 +1611,7 @@ begin function
           end call method ret values 0
 
 
-[188] var paintParams = {opacity = 1}
+[185] var paintParams = {opacity = 1}
 
           begin set local var
             begin object 1
@@ -1643,7 +1622,7 @@ begin function
           end set local var paintParams (2 0)
 
 
-[189] if(runningScene) runningScene.handlePaint(paintParams)
+[186] if(runningScene) runningScene.handlePaint(paintParams)
 
           begin if
             begin bool exp
@@ -1662,60 +1641,7 @@ begin function
           end if ret values 0
 
 
-[190] if(notificationNode) notificationNode.handlePaint(paintParams)
-
-          begin if
-            begin bool exp
-              get env var notificationNode
-            end bool exp
-            begin then
-              begin call method
-                get env var notificationNode
-                begin params 2
-                  push const string "handlePaint"
-                  ,
-                  get local var paintParams (2 0)
-                end params ret values 2
-              end call method ret values 0
-            end then
-          end if ret values 0
-
-
-[192] if(displayFPS) showFPS()
-
-          begin if
-            begin bool exp
-              get env var displayFPS
-            end bool exp
-            begin then
-              begin call method
-                get local var _E (0 0)
-                begin params 1
-                  push const string "showFPS"
-                end params ret values 1
-              end call method ret values 0
-            end then
-          end if ret values 0
-
-
-[193] if(displayProfilers) showProfilers()
-
-          begin if
-            begin bool exp
-              get env var displayProfilers
-            end bool exp
-            begin then
-              begin call method
-                get local var _E (0 0)
-                begin params 1
-                  push const string "showProfilers"
-                end params ret values 1
-              end call method ret values 0
-            end then
-          end if ret values 0
-
-
-[195] disableDefaultGlStates()
+[188] disableDefaultGlStates()
 
           begin call method
             get local var _E (0 0)
@@ -1725,7 +1651,7 @@ begin function
           end call method ret values 0
 
 
-[197] glPopMatrix()
+[190] glPopMatrix()
 
           begin call method
             get local var _E (0 0)
@@ -1735,7 +1661,7 @@ begin function
           end call method ret values 0
 
 
-[198] glSwapBuffers()
+[191] glSwapBuffers()
 
           begin call method
             get local var _E (0 0)
@@ -1745,7 +1671,7 @@ begin function
           end call method ret values 0
 
 
-[200] ++totalFrames
+[193] ++totalFrames
 
           begin code list
             begin set local var
@@ -1763,31 +1689,7 @@ begin function
   end set local var paint (13 0)
 
 
-[203] function showFPS(){
-
-  begin set env var
-    begin function
-      begin locals, total 2
-        0 _E
-        1 _G
-      end locals
-    end function
-  end set env var showFPS
-
-
-[206] function showProfilers(){
-
-  begin set env var
-    begin function
-      begin locals, total 2
-        0 _E
-        1 _G
-      end locals
-    end function
-  end set env var showProfilers
-
-
-[209] touches = {}
+[196] touches = {}
 
   begin set env var
     begin object 0
@@ -1795,7 +1697,7 @@ begin function
   end set env var touches
 
 
-[211] function handleTouches(){
+[198] function handleTouches(){
 
   begin set env var
     begin function
@@ -1809,7 +1711,7 @@ begin function
         6 touches
       end locals
 
-[212] var time, orientation, width, height, touches = app.timeSec, app.orientation, _E.width, _E.height, {}
+[199] var time, orientation, width, height, touches = app.timeSec, app.orientation, _E.width, _E.height, {}
 
       begin set local var
         begin set local var
@@ -1847,7 +1749,7 @@ begin function
       end set local var time (2 0)
 
 
-[213] for(var id, touch in app.touches){
+[200] for(var id, touch in app.touches){
 
       begin scope
         begin locals 4
@@ -1902,7 +1804,7 @@ begin function
             end if ret values 0
 
 
-[214] if(!touch.processed){
+[201] if(!touch.processed){
 
             begin scope
               begin if
@@ -1916,7 +1818,7 @@ begin function
                 end bool exp
                 begin then
 
-[215] if(orientation == ORIENTATION_PORTRAIT){
+[202] if(orientation == ORIENTATION_PORTRAIT){
 
                   begin scope
                     begin if
@@ -1928,7 +1830,7 @@ begin function
                       end bool exp
                       begin then
 
-[217] }else if(orientation == ORIENTATION_PORTRAIT_UPSIDE_DOWN){
+[204] }else if(orientation == ORIENTATION_PORTRAIT_UPSIDE_DOWN){
 
                         begin scope
                         end scope ret values 0
@@ -1943,7 +1845,7 @@ begin function
                           end bool exp
                           begin then
 
-[218] touch.x = width - touch.x
+[205] touch.x = width - touch.x
 
                             begin scope
                               begin set property
@@ -1961,7 +1863,7 @@ begin function
                           end then
                           begin else
 
-[219] }else if(orientation == ORIENTATION_LANDSCAPE_LEFT){
+[206] }else if(orientation == ORIENTATION_LANDSCAPE_LEFT){
 
                             begin if
                               begin bool exp
@@ -1972,7 +1874,7 @@ begin function
                               end bool exp
                               begin then
 
-[221] touch.x, touch.y = height - touch.y, touch.x
+[208] touch.x, touch.y = height - touch.y, touch.x
 
                                 begin scope
                                   begin set property
@@ -2001,7 +1903,7 @@ begin function
                               end then
                               begin else
 
-[222] }else if(orientation == ORIENTATION_LANDSCAPE_RIGHT){
+[209] }else if(orientation == ORIENTATION_LANDSCAPE_RIGHT){
 
                                 begin if
                                   begin bool exp
@@ -2012,7 +1914,7 @@ begin function
                                   end bool exp
                                   begin then
 
-[224] touch.x, touch.y = touch.y, width - touch.x
+[211] touch.x, touch.y = touch.y, width - touch.x
 
                                     begin scope
                                       begin set property
@@ -2048,7 +1950,7 @@ begin function
                     end if ret values 0
 
 
-[226] touch.nativeX, touch.nativeY = touch.x, touch.y
+[213] touch.nativeX, touch.nativeY = touch.x, touch.y
 
                     begin set property
                       begin set property
@@ -2071,7 +1973,7 @@ begin function
                     end set property ret values 0
 
 
-[227] touches.push touch
+[214] touches.push touch
 
                     begin call method
                       get local var touches (6 0)
@@ -2085,7 +1987,7 @@ begin function
                 end then
                 begin else
 
-[228] }else if(touch.phase == "end" || touch.phase == "cancel" || time - touch.processed > 30){
+[215] }else if(touch.phase == "end" || touch.phase == "cancel" || time - touch.processed > 30){
 
                   begin if
                     begin bool exp
@@ -2120,7 +2022,7 @@ begin function
                     end bool exp
                     begin then
 
-[230] delete app.touches[id]
+[217] delete app.touches[id]
 
                       begin scope
                         begin delete
@@ -2141,7 +2043,7 @@ begin function
       end scope ret values 0
 
 
-[233] for(var id, touch in touches){
+[220] for(var id, touch in touches){
 
       begin scope
         begin locals 4
@@ -2193,7 +2095,7 @@ begin function
             end if ret values 0
 
 
-[234] if(touch.processed){
+[221] if(touch.processed){
 
             begin scope
               begin if
@@ -2205,7 +2107,7 @@ begin function
                 end bool exp
                 begin then
 
-[235] continue;
+[222] continue;
 
                   begin scope
                     continue
@@ -2214,7 +2116,7 @@ begin function
               end if ret values 0
 
 
-[237] touch.processed = time
+[224] touch.processed = time
 
               begin set property
                 get local var time (2 0)
@@ -2223,7 +2125,7 @@ begin function
               end set property ret values 0
 
 
-[238] if(touch.captured && !touch.modal){ // && touch.phase != "start"){
+[225] if(touch.captured && !touch.modal){ // && touch.phase != "start"){
 
               begin if
                 begin bool exp
@@ -2242,7 +2144,7 @@ begin function
                 end bool exp
                 begin then
 
-[239] var cur = touch.captured
+[226] var cur = touch.captured
 
                   begin scope
                     begin locals 2
@@ -2257,7 +2159,7 @@ begin function
                     end set local var cur (13 0)
 
 
-[240] var recursion = {[cur] = true}
+[227] var recursion = {[cur] = true}
 
                     begin set local var
                       begin object 1
@@ -2269,7 +2171,7 @@ begin function
                     end set local var recursion (14 0)
 
 
-[241] for(;cur !== runningScene && cur.__parent;){
+[228] for(;cur !== runningScene && cur.__parent;){
 
                     begin scope
                       nop
@@ -2296,7 +2198,7 @@ begin function
                         end if ret values 0
 
 
-[242] cur = cur.__parent
+[229] cur = cur.__parent
 
                         begin scope
                           begin set local var
@@ -2307,7 +2209,7 @@ begin function
                           end set local var cur (13 0)
 
 
-[243] if(cur in recursion) break
+[230] if(cur in recursion) break
 
                           begin if
                             begin bool exp
@@ -2322,7 +2224,7 @@ begin function
                           end if ret values 0
 
 
-[244] recursion[cur] = true
+[231] recursion[cur] = true
 
                           begin set property
                             const true
@@ -2332,14 +2234,14 @@ begin function
                         end scope ret values 0
 
 
-[241] for(;cur !== runningScene && cur.__parent;){
+[228] for(;cur !== runningScene && cur.__parent;){
 
                         nop
                       end loop ret values 0
                     end scope ret values 0
 
 
-[246] if(cur === runningScene){
+[233] if(cur === runningScene){
 
                     begin if
                       begin bool exp
@@ -2350,7 +2252,7 @@ begin function
                       end bool exp
                       begin then
 
-[248] touch.captured.handleTouch(touch)
+[235] touch.captured.handleTouch(touch)
 
                         begin scope
                           begin call method
@@ -2366,7 +2268,7 @@ begin function
                           end call method ret values 0
 
 
-[249] if(touch.captured){
+[236] if(touch.captured){
 
                           begin if
                             begin bool exp
@@ -2377,7 +2279,7 @@ begin function
                             end bool exp
                             begin then
 
-[251] continue
+[238] continue
 
                               begin scope
                                 continue
@@ -2388,7 +2290,7 @@ begin function
                       end then
                       begin else
 
-[255] touch.captured = null
+[242] touch.captured = null
 
                         begin scope
                           begin set property
@@ -2404,7 +2306,7 @@ begin function
               end if ret values 0
 
 
-[259] touch.modal = false
+[246] touch.modal = false
 
               begin set property
                 const false
@@ -2413,7 +2315,7 @@ begin function
               end set property ret values 0
 
 
-[261] runningScene.handleTouch(touch)
+[248] runningScene.handleTouch(touch)
 
               begin call method
                 get local var runningScene (10 1)
@@ -2431,14 +2333,14 @@ begin function
   end set env var handleTouches
 
 
-[266] var deltaTime = 0.01
+[253] var deltaTime = 0.01
 
   begin set local var
     push const number 0.01
   end set local var deltaTime (14 0)
 
 
-[267] function get deltaTime(){return deltaTime}
+[254] function get deltaTime(){return deltaTime}
 
   begin set env var
     begin function
@@ -2453,14 +2355,14 @@ begin function
   end set env var __get@deltaTime
 
 
-[269] var timeSpeed = 1
+[256] var timeSpeed = 1
 
   begin set local var
     push const number 1
   end set local var timeSpeed (15 0)
 
 
-[270] function get timeSpeed(){return timeSpeed}
+[257] function get timeSpeed(){return timeSpeed}
 
   begin set env var
     begin function
@@ -2475,7 +2377,7 @@ begin function
   end set env var __get@timeSpeed
 
 
-[271] function set timeSpeed(a){ timeSpeed = a }
+[258] function set timeSpeed(a){ timeSpeed = a }
 
   begin set env var
     begin function
@@ -2491,14 +2393,14 @@ begin function
   end set env var __set@timeSpeed
 
 
-[273] var time = 0
+[260] var time = 0
 
   begin set local var
     push const number 0
   end set local var time (16 0)
 
 
-[274] function get time(){return time}
+[261] function get time(){return time}
 
   begin set env var
     begin function
@@ -2513,7 +2415,7 @@ begin function
   end set env var __get@time
 
 
-[275] function set time(a){ time = a }
+[262] function set time(a){ time = a }
 
   begin set env var
     begin function
@@ -2529,21 +2431,21 @@ begin function
   end set env var __set@time
 
 
-[277] var prevAppTime = 0
+[264] var prevAppTime = 0
 
   begin set local var
     push const number 0
   end set local var prevAppTime (17 0)
 
 
-[278] var prevDeltaTime = 0
+[265] var prevDeltaTime = 0
 
   begin set local var
     push const number 0
   end set local var prevDeltaTime (18 0)
 
 
-[280] var function clamp(a, min, max){
+[267] var function clamp(a, min, max){
 
   begin set local var
     begin function
@@ -2555,7 +2457,7 @@ begin function
         4 _G
       end locals
 
-[281] if(a < min) return min
+[268] if(a < min) return min
 
       begin if
         begin bool exp
@@ -2574,7 +2476,7 @@ begin function
       end if ret values 0
 
 
-[282] if(a > max) return max
+[269] if(a > max) return max
 
       begin if
         begin bool exp
@@ -2593,7 +2495,7 @@ begin function
       end if ret values 0
 
 
-[283] return a
+[270] return a
 
       begin code list
         begin return
@@ -2604,7 +2506,7 @@ begin function
   end set local var clamp (19 0)
 
 
-[286] var coreTriggerEvent = core.triggerEvent
+[273] var coreTriggerEvent = core.triggerEvent
 
   begin set local var
     begin get property
@@ -2614,7 +2516,7 @@ begin function
   end set local var coreTriggerEvent (20 0)
 
 
-[287] function core.triggerEvent(eventName, params){
+[274] function core.triggerEvent(eventName, params){
 
   begin set property
     begin function
@@ -2625,23 +2527,7 @@ begin function
         3 _G
       end locals
 
-[288] coreTriggerEvent.call(core, eventName, params)
-
-      begin call method
-        get local var coreTriggerEvent (20 1)
-        begin params 4
-          push const string "call"
-          ,
-          get local var core (2 1)
-          ,
-          get local var eventName (0 0 param)
-          ,
-          get local var params (1 0 param)
-        end params ret values 4
-      end call method ret values 0
-
-
-[289] if(eventName == "enterFrame"){
+[275] if(eventName == "enterFrame"){
 
       begin if
         begin bool exp
@@ -2652,7 +2538,7 @@ begin function
         end bool exp
         begin then
 
-[291] var appTime = app.timeSec
+[277] var appTime = app.timeSec
 
           begin scope
             begin locals 2
@@ -2667,7 +2553,7 @@ begin function
             end set local var appTime (4 0)
 
 
-[292] deltaTime = (appTime - prevAppTime) * timeSpeed
+[278] deltaTime = (appTime - prevAppTime) * timeSpeed
 
             begin set local var
               begin operator *
@@ -2680,14 +2566,14 @@ begin function
             end set local var deltaTime (14 1)
 
 
-[293] prevAppTime = appTime
+[279] prevAppTime = appTime
 
             begin set local var
               get local var appTime (4 0)
             end set local var prevAppTime (17 1)
 
 
-[294] deltaTime = clamp(deltaTime, prevDeltaTime*0.9, prevDeltaTime*1.1)
+[280] deltaTime = clamp(deltaTime, prevDeltaTime*0.9, prevDeltaTime*1.1)
 
             begin set local var
               begin call
@@ -2709,7 +2595,7 @@ begin function
             end set local var deltaTime (14 1)
 
 
-[295] deltaTime = clamp(deltaTime, 0.01, 0.1)
+[281] deltaTime = clamp(deltaTime, 0.01, 0.1)
 
             begin set local var
               begin call
@@ -2725,14 +2611,14 @@ begin function
             end set local var deltaTime (14 1)
 
 
-[296] prevDeltaTime = deltaTime
+[282] prevDeltaTime = deltaTime
 
             begin set local var
               get local var deltaTime (14 1)
             end set local var prevDeltaTime (18 1)
 
 
-[297] time = time + deltaTime
+[283] time = time + deltaTime
 
             begin set local var
               begin operator +
@@ -2742,17 +2628,7 @@ begin function
             end set local var time (16 1)
 
 
-[299] handleTouches()
-
-            begin call method
-              get local var _E (2 0)
-              begin params 1
-                push const string "handleTouches"
-              end params ret values 1
-            end call method ret values 0
-
-
-[301] var updateParams = {deltaTime = deltaTime}
+[285] var updateParams = {deltaTime = deltaTime}
 
             begin set local var
               begin object 1
@@ -2763,7 +2639,33 @@ begin function
             end set local var updateParams (5 0)
 
 
-[302] if(runningScene) runningScene.handleUpdate(updateParams)
+[286] coreTriggerEvent.call(core, eventName, updateParams)
+
+            begin call method
+              get local var coreTriggerEvent (20 1)
+              begin params 4
+                push const string "call"
+                ,
+                get local var core (2 1)
+                ,
+                get local var eventName (0 0 param)
+                ,
+                get local var updateParams (5 0)
+              end params ret values 4
+            end call method ret values 0
+
+
+[287] handleTouches()
+
+            begin call method
+              get local var _E (2 0)
+              begin params 1
+                push const string "handleTouches"
+              end params ret values 1
+            end call method ret values 0
+
+
+[289] if(runningScene) runningScene.handleUpdate(updateParams)
 
             begin if
               begin bool exp
@@ -2782,26 +2684,7 @@ begin function
             end if ret values 0
 
 
-[303] if(notificationNode) notificationNode.handleUpdate(updateParams)
-
-            begin if
-              begin bool exp
-                get env var notificationNode
-              end bool exp
-              begin then
-                begin call method
-                  get env var notificationNode
-                  begin params 2
-                    push const string "handleUpdate"
-                    ,
-                    get local var updateParams (5 0)
-                  end params ret values 2
-                end call method ret values 0
-              end then
-            end if ret values 0
-
-
-[305] paint()
+[291] paint()
 
             begin call
               get local var paint (13 1)
@@ -2812,9 +2695,25 @@ begin function
         end then
         begin else
 
-[307] if(runningScene) runningScene.triggerEvent(eventName, params)
+[293] coreTriggerEvent.call(core, eventName, params)
 
           begin scope
+            begin call method
+              get local var coreTriggerEvent (20 1)
+              begin params 4
+                push const string "call"
+                ,
+                get local var core (2 1)
+                ,
+                get local var eventName (0 0 param)
+                ,
+                get local var params (1 0 param)
+              end params ret values 4
+            end call method ret values 0
+
+
+[294] if(runningScene) runningScene.triggerEvent(eventName, params)
+
             begin if
               begin bool exp
                 get local var runningScene (10 1)
@@ -2822,27 +2721,6 @@ begin function
               begin then
                 begin call method
                   get local var runningScene (10 1)
-                  begin params 3
-                    push const string "triggerEvent"
-                    ,
-                    get local var eventName (0 0 param)
-                    ,
-                    get local var params (1 0 param)
-                  end params ret values 3
-                end call method ret values 0
-              end then
-            end if ret values 0
-
-
-[308] if(notificationNode) notificationNode.triggerEvent(eventName, params)
-
-            begin if
-              begin bool exp
-                get env var notificationNode
-              end bool exp
-              begin then
-                begin call method
-                  get env var notificationNode
                   begin params 3
                     push const string "triggerEvent"
                     ,
@@ -2858,14 +2736,14 @@ begin function
       end if ret values 0
     end function
 
-[287] function core.triggerEvent(eventName, params){
+[274] function core.triggerEvent(eventName, params){
 
     get local var auto create core (2 0)
     push const string "triggerEvent"
   end set property ret values 0
 
 
-[309] }
+[295] }
 
   begin code list
     begin return

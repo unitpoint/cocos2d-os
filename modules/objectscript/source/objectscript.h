@@ -118,7 +118,7 @@
 
 #define OS_CALL_STACK_MAX_SIZE 200
 
-#define OS_VERSION OS_TEXT("0.92-vm2")
+#define OS_VERSION OS_TEXT("0.93-vm2")
 #define OS_COMPILED_HEADER OS_TEXT("OBJECTSCRIPT")
 #define OS_DEBUGINFO_HEADER OS_TEXT("OBJECTSCRIPT.DEBUGINFO")
 #define OS_SOURCECODE_EXT OS_TEXT(".os")
@@ -2817,7 +2817,7 @@ namespace ObjectScript
 
 		bool isTerminated();
 		int getTerminatedCode();
-		void setTerminated(bool, int);
+		void setTerminated(bool = true, int = 0);
 		void resetTerminated();
 
 		void getProperty(bool anonymous_getter_enabled = true, bool named_getter_enabled = true, bool prototype_enabled = true);

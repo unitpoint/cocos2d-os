@@ -7,16 +7,16 @@ namespace Box2dObjectScript {
 
 // =====================================================================
 
-static float32 b2MetricScale = 0.01f;
+static float32 physicsMetricScale = 100.0f;
 
 static float32 toBox2dMetric(float32 x)
 {
-	return x * b2MetricScale;
+	return x / physicsMetricScale;
 }
 
 static float32 fromBox2dMetric(float32 x)
 {
-	return x / b2MetricScale;
+	return x * physicsMetricScale;
 }
 
 // =====================================================================
@@ -345,10 +345,10 @@ struct Box2dValue<b2Vec2>
 	static b2Vec2 to(OS * os, int offs)
 	{
 		if(os->isObject(offs)){
-			os->getProperty(offs, "x");
+			os->getProperty(offs, "x"); // required
 			float x = toBox2dMetric(os->popNumber());
 		
-			os->getProperty(offs, "y");
+			os->getProperty(offs, "y"); // required
 			float y = toBox2dMetric(os->popNumber());
 
 			return b2Vec2(x, y);
@@ -375,11 +375,11 @@ struct Box2dValue<b2Vec2>
 	
 		os->pushStackValue();
 		os->pushNumber(fromBox2dMetric(p.x));
-		os->setProperty("x", false);
+		os->setProperty("x", false, false);
 				
 		os->pushStackValue();
 		os->pushNumber(fromBox2dMetric(p.y));
-		os->setProperty("y", false);
+		os->setProperty("y", false, false);
 	}
 };
 
@@ -396,13 +396,13 @@ struct Box2dValue<b2Color>
 	static b2Color to(OS * os, int offs)
 	{
 		if(os->isObject(offs)){
-			os->getProperty(offs, "r");
+			os->getProperty(offs, "r"); // required
 			float r = os->popFloat(1.0f);
 		
-			os->getProperty(offs, "g");
+			os->getProperty(offs, "g"); // required
 			float g = os->popFloat(1.0f);
 
-			os->getProperty(offs, "b");
+			os->getProperty(offs, "b"); // required
 			float b = os->popFloat(1.0f);
 
 			return b2Color(r, g, b);
@@ -459,13 +459,13 @@ struct Box2dValue<b2Transform>
 	static b2Transform to(OS * os, int offs)
 	{
 		if(os->isObject(offs)){
-			os->getProperty(offs, "x");
+			os->getProperty(offs, "x"); // required
 			float x = toBox2dMetric(os->popFloat());
 		
-			os->getProperty(offs, "y");
+			os->getProperty(offs, "y"); // required
 			float y = toBox2dMetric(os->popFloat());
 		
-			os->getProperty(offs, "angle");
+			os->getProperty(offs, "angle"); // required
 			float angle = os->popFloat();
 
 			return b2Transform(b2Vec2(x, y), b2Rot(angle));
@@ -480,15 +480,15 @@ struct Box2dValue<b2Transform>
 	
 		os->pushStackValue();
 		os->pushNumber(fromBox2dMetric(xf.p.x));
-		os->setProperty("x", false);
+		os->setProperty("x", false, false);
 				
 		os->pushStackValue();
 		os->pushNumber(fromBox2dMetric(xf.p.y));
-		os->setProperty("y", false);
+		os->setProperty("y", false, false);
 				
 		os->pushStackValue();
 		os->pushNumber(xf.q.GetAngle());
-		os->setProperty("angle", false);
+		os->setProperty("angle", false, false);
 	}
 };
 
@@ -838,7 +838,7 @@ public:
 	{
 		pushThis();
 		os->pushStackValue();
-		os->getProperty(name, false, false);
+		os->getProperty(name, false, false); // getters disabled
 		if(os->isFunction()){
 			os->move(-2, -1);
 			return true;
@@ -1040,19 +1040,19 @@ public:
 		b2BodyDef def;
 		int offs = os->getAbsoluteOffs(-params);
 
-		os->getProperty(offs, "type", false, false);
+		os->getProperty(offs, "type", false); // optional because of we handle error next line of code
 		if(os->isNull()) return error(os, "type expected by body def");
 		def.type = Box2dValue<b2BodyType>::to(os, -1);
 		os->pop();
 
-		os->getProperty(offs, "position", false, false);
+		os->getProperty(offs, "position", false); // optional
 		if(os->isNull()){
 			os->pop();
 
-			os->getProperty(offs, "x", false, false);
+			os->getProperty(offs, "x", false); // optional
 			def.position.x = toBox2dMetric(os->popFloat(fromBox2dMetric(def.position.x)));
 			
-			os->getProperty(offs, "y", false, false);
+			os->getProperty(offs, "y", false); // optional
 			def.position.y = toBox2dMetric(os->popFloat(fromBox2dMetric(def.position.y)));
 		}else{
 			def.position = Box2dValue<b2Vec2>::to(os, -1);
@@ -1061,50 +1061,50 @@ public:
 		// def.position.x *= self->metricScale;
 		// def.position.y *= self->metricScale;
 
-		os->getProperty(offs, "angle", false, false);
+		os->getProperty(offs, "angle", false); // optional
 		def.angle = os->popFloat(def.angle);
 
-		os->getProperty(offs, "linearVelocity", false, false);
+		os->getProperty(offs, "linearVelocity", false); // optional
 		def.linearVelocity = os->isNull() ? def.linearVelocity : Box2dValue<b2Vec2>::to(os, -1);
 		os->pop();
 
-		os->getProperty(offs, "angularVelocity", false, false);
+		os->getProperty(offs, "angularVelocity", false); // optional
 		def.angularVelocity = os->popFloat(def.angularVelocity);
 
-		os->getProperty(offs, "linearDamping", false, false);
+		os->getProperty(offs, "linearDamping", false); // optional
 		def.linearDamping = os->popFloat(def.linearDamping);
 
-		os->getProperty(offs, "angularDamping", false, false);
+		os->getProperty(offs, "angularDamping", false); // optional
 		def.angularDamping = os->popFloat(def.angularDamping);
 
-		os->getProperty(offs, "allowSleep", false, false);
+		os->getProperty(offs, "allowSleep", false); // optional
 		def.allowSleep = os->popBool(def.allowSleep);
 
-		os->getProperty(offs, "awake", false, false);
+		os->getProperty(offs, "awake", false); // optional
 		def.awake = os->popBool(def.awake);
 
-		os->getProperty(offs, "fixedRotation", false, false);
+		os->getProperty(offs, "fixedRotation", false); // optional
 		def.fixedRotation = os->popBool(def.fixedRotation);
 
-		os->getProperty(offs, "bullet", false, false);
+		os->getProperty(offs, "bullet", false); // optional
 		def.bullet = os->popBool(def.bullet);
 
-		os->getProperty(offs, "active", false, false);
+		os->getProperty(offs, "active", false); // optional
 		def.active = os->popBool(def.active);
 
-		os->getProperty(offs, "gravityScale", false, false);
+		os->getProperty(offs, "gravityScale", false); // optional
 		def.gravityScale = os->popFloat(def.gravityScale);
 
 		b2Body * body = self->CreateBody(&def);
 		pushBox2dValue(os, body);
 
-		os->getProperty(offs, "fixture", false, false);
+		os->getProperty(offs, "fixture", false); // optional
 		if(os->isObject()){
 			createBodyFixture(body, os, -1);
 		}
 		os->pop();
 
-		os->getProperty(offs, "fixtures", false, false);
+		os->getProperty(offs, "fixtures", false); // optional
 		if(os->isArray()){
 			int count = os->getLen();
 			for(int i = 0; i < count; i++){
@@ -1187,7 +1187,7 @@ public:
 		if(!os->isObject(-params)) return error(os, "joint def object expected");
 		int offs = os->getAbsoluteOffs(-params);
 
-		os->getProperty(offs, "type", false, false);
+		os->getProperty(offs, "type", false); // optional because of we handle error next line of code
 		if(os->isNull()) return error(os, "type expected by joint def");
 		b2JointType type = Box2dValue<b2JointType>::to(os, -1); os->pop();
 		switch(type){
@@ -1226,7 +1226,6 @@ public:
 	{
 		b2Vec2 gravity = params > 0 ? Box2dValue<b2Vec2>::to(os, -params) : b2Vec2(0, 9.8f);
 		bool sleep = os->toBool(-params+1, true);
-		// float metricScale = os->toFloat(-params+2, 1/100.0f);
 		new (os->pushUserdata(getId<World>(), sizeof(World), destructor)) World(os, gravity, sleep);
 		os->retainValueById(os->getValueId());
 		os->pushStackValue();
@@ -1236,10 +1235,24 @@ public:
 		return 1;
 	}
 
+	static int getMetricScale(OS * os, int params, int, int, void*)
+	{
+		os->pushNumber(physicsMetricScale);
+		return 1;
+	}
+
+	static int setMetricScale(OS * os, int params, int, int, void*)
+	{
+		physicsMetricScale = os->toFloat(-params, 100.0f);
+		return 0;
+	}
+
 	static void init(OS * os)
 	{
 		OS::FuncDef funcs[] = {
 			{"__construct", create},
+			{"__get@metricScale", getMetricScale},
+			{"__set@metricScale", setMetricScale},
 			{"createBody", createBody},
 			{"destroyBody", destroyBody},
 			{"createJoint", createJoint},
@@ -1388,21 +1401,21 @@ struct Body
 	{
 		b2CircleShape * shape = new (os->malloc(sizeof(b2CircleShape) OS_DBG_FILEPOS)) b2CircleShape();
 		
-		os->getProperty(offs, "radius", false, false);
+		os->getProperty(offs, "radius", false); // optional
 		shape->m_radius = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_radius)));
 		
-		os->getProperty(offs, "center", false, false);
+		os->getProperty(offs, "center", false); // optional
 		if(os->isNull()){
 			os->pop();
-			os->getProperty(offs, "position", false, false);
+			os->getProperty(offs, "position", false); // optional
 		}
 		if(os->isNull()){
 			os->pop();
 
-			os->getProperty(offs, "x", false, false);
+			os->getProperty(offs, "x", false); // optional
 			shape->m_p.x = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_p.x)));
 			
-			os->getProperty(offs, "y", false, false);
+			os->getProperty(offs, "y", false); // optional
 			shape->m_p.y = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_p.y)));
 		}else{
 			shape->m_p = Box2dValue<b2Vec2>::to(os, -1);
@@ -1411,31 +1424,36 @@ struct Body
 		return shape;
 	}
 
+	static b2CircleShape * toAutoCircleShape(OS * os, int offs)
+	{
+		return toCircleShape(os, offs);
+	}
+
 	static b2EdgeShape * toEdgeShape(OS * os, int offs)
 	{
 		b2EdgeShape * shape = new (os->malloc(sizeof(b2EdgeShape) OS_DBG_FILEPOS)) b2EdgeShape();
 		
-		os->getProperty(offs, "radius", false, false);
+		os->getProperty(offs, "radius", false); // optional
 		shape->m_radius = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_radius)));
 		
-		os->getProperty(offs, "vertex1", false, false);
+		os->getProperty(offs, "vertex1", false); // optional
 		if(os->isNull()) return error(shape, os, "vertex1 expected by edge shape");
 		shape->m_vertex1 = Box2dValue<b2Vec2>::to(os, -1);
 		os->pop();
 
-		os->getProperty(offs, "vertex2", false, false);
+		os->getProperty(offs, "vertex2", false); // optional
 		if(os->isNull()) return error(shape, os, "vertex2 expected by edge shape");
 		shape->m_vertex2 = Box2dValue<b2Vec2>::to(os, -1);
 		os->pop();
 
-		os->getProperty(offs, "vertex0", false, false);
+		os->getProperty(offs, "vertex0", false); // optional
 		if(!os->isNull()){
 			shape->m_vertex0 = Box2dValue<b2Vec2>::to(os, -1);
 			shape->m_hasVertex0 = true;
 		}
 		os->pop();
 
-		os->getProperty(offs, "vertex3", false, false);
+		os->getProperty(offs, "vertex3", false); // optional
 		if(!os->isNull()){
 			shape->m_vertex3 = Box2dValue<b2Vec2>::to(os, -1);
 			shape->m_hasVertex3 = true;
@@ -1449,10 +1467,14 @@ struct Body
 	{
 		b2PolygonShape * shape = new (os->malloc(sizeof(b2PolygonShape) OS_DBG_FILEPOS)) b2PolygonShape();
 
-		os->getProperty(offs, "radius", false, false);
+		os->getProperty(offs, "radius", false); // optional
 		shape->m_radius = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_radius)));
 		
-		os->getProperty(offs, "vertices", false, false);
+		os->getProperty(offs, "vertices", false); // optional
+		if(os->isNull()){
+			os->pop();
+			os->getProperty(offs, "points", false); // optional
+		}
 		if(!os->isArray()) return error(shape, os, "array of vertices expected by polygon shape");
 		int count = os->getLen();
 		if(count < 1) return error(shape, os, "not clear array of vertices expected by polygon shape");
@@ -1472,14 +1494,40 @@ struct Body
 		return shape;
 	}
 	
+	static b2PolygonShape * toAutoPolygonShape(OS * os, int offs)
+	{
+		b2PolygonShape * shape = new (os->malloc(sizeof(b2PolygonShape) OS_DBG_FILEPOS)) b2PolygonShape();
+
+		if(!os->isArray(offs)) return error(shape, os, "array of shape expected");
+		int count = os->getLen();
+		if(count < 1) return error(shape, os, "not clear array of shape expected");
+		if(count > b2_maxPolygonVertices) return error(shape, os, OS::String::format(os, "too much vertices for polygon shape, max: %d", b2_maxPolygonVertices).toChar());
+
+		b2Vec2 vertices[b2_maxPolygonVertices];
+		for(int i = 0; i < count; i++){
+			os->pushStackValue(offs);
+			os->pushNumber(i);
+			os->getProperty();
+			vertices[i] = Box2dValue<b2Vec2>::to(os, -1);
+			os->pop();
+		}
+		shape->Set(vertices, count);
+
+		return shape;
+	}
+	
 	static b2LoopShape * toLoopShape(OS * os, int offs)
 	{
 		b2LoopShape * shape = new (os->malloc(sizeof(b2LoopShape) OS_DBG_FILEPOS)) b2LoopShape();
 
-		os->getProperty(offs, "radius", false, false);
+		os->getProperty(offs, "radius", false); // optional
 		shape->m_radius = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_radius)));
 		
-		os->getProperty(offs, "vertices", false, false);
+		os->getProperty(offs, "vertices", false); // optional
+		if(os->isNull()){
+			os->pop();
+			os->getProperty(offs, "points", false); // optional
+		}
 		if(!os->isArray()) return error(shape, os, "array of vertices expected by loop shape");
 		int count = os->getLen();
 		if(count < 1) return error(shape, os, "not clear array of vertices expected by loop shape");
@@ -1501,7 +1549,7 @@ struct Body
 
 	static b2Shape * toShape(OS * os, int offs)
 	{
-		os->getProperty(offs, "type", false, false);
+		os->getProperty(offs, "type", false); // optional
 		OS::String type = os->popString();
 		if(type == "circle"){
 			return toCircleShape(os, offs);
@@ -1512,42 +1560,64 @@ struct Body
 		}else if(type == "loop"){
 			return toLoopShape(os, offs);
 		}
-		os->triggerError(OS_E_ERROR, "shape type expected");
-		return NULL;
+		os->getProperty(offs, "radius", false); // optional
+		if(!os->isNull()){
+			os->pop();
+			return toAutoCircleShape(os, offs);
+		}
+		return toAutoPolygonShape(os, offs);
+		// os->triggerError(OS_E_ERROR, "shape type expected");
+		// return NULL;
+	}
+
+	static void populateFixtureDef(b2FixtureDef& def, OS * os, int offs)
+	{
+		os->getProperty(offs, "friction", false); // optional
+		def.friction = os->popFloat(def.friction);
+
+		os->getProperty(offs, "bounce", false); // optional
+		def.restitution = os->popFloat(def.restitution);
+
+		os->getProperty(offs, "density", false); // optional
+		def.density = os->popFloat(def.density);
+
+		os->getProperty(offs, "sensor", false); // optional
+		def.isSensor = os->popBool(def.isSensor);
+
+		os->getProperty(offs, "categoryBits", false); // optional
+		def.filter.categoryBits = os->popInt(def.filter.categoryBits);
+
+		os->getProperty(offs, "maskBits", false); // optional
+		def.filter.maskBits = os->popInt(def.filter.maskBits);
+
+		os->getProperty(offs, "groupIndex", false); // optional
+		def.filter.groupIndex = os->popInt(def.filter.groupIndex);
 	}
 
 	static void createFixture(b2Body * self, OS * os, int offs)
 	{
 		// OS_ASSERT(os->isObject(
-		os->getProperty(offs, "shape", false, false);
+		os->getProperty(offs, "shape", false); // optional
 		if(os->isObject()){ // fixture
 			b2FixtureDef def;
+			def.shape = toShape(os, -1); os->pop();
+			if(!def.shape) return;
+			
+			populateFixtureDef(def, os, offs);
+			
+			self->CreateFixture(&def);
 
-			def.shape = toShape(os, -1);
+			def.shape->~b2Shape();
+			os->free((void*)def.shape);
+			def.shape = NULL;
+		}else if(os->isArray()){
+			b2FixtureDef def;
+			def.shape = toAutoPolygonShape(os, -1);
 			if(!def.shape) return;
 			os->pop();
-
-			os->getProperty(offs, "friction", false, false);
-			def.friction = os->popFloat(def.friction);
-
-			os->getProperty(offs, "restitution", false, false);
-			def.restitution = os->popFloat(def.restitution);
-
-			os->getProperty(offs, "density", false, false);
-			def.density = os->popFloat(def.density);
-
-			os->getProperty(offs, "isSensor", false, false);
-			def.isSensor = os->popBool(def.isSensor);
-
-			os->getProperty(offs, "categoryBits", false, false);
-			def.filter.categoryBits = os->popInt(def.filter.categoryBits);
-
-			os->getProperty(offs, "maskBits", false, false);
-			def.filter.maskBits = os->popInt(def.filter.maskBits);
-
-			os->getProperty(offs, "groupIndex", false, false);
-			def.filter.groupIndex = os->popInt(def.filter.groupIndex);
-
+			
+			populateFixtureDef(def, os, offs);
+			
 			self->CreateFixture(&def);
 
 			def.shape->~b2Shape();
@@ -1556,23 +1626,19 @@ struct Body
 		}else{ // shape
 			os->pop();
 			offs = os->getAbsoluteOffs(offs);
-			os->getProperty(offs, "shapes", false, false);
+			os->getProperty(offs, "shapes", false); // optional
 			if(os->isArray()){
 				int count = os->getLen();
 				for(int i = 0; i < count; i++){
 					os->pushStackValue();
 					os->pushNumber(i);
 					os->getProperty();
-					if(!os->isObject()){
-						os->pop();
-						continue;
-					}
 					os->clone(offs);
 					os->pushStackValue();
-					os->deleteProperty("shapes", false);
+					os->deleteProperty("shapes", false, false);
 					os->pushStackValue();
 					os->pushStackValue(-3);
-					os->setProperty("shape", false);
+					os->setProperty("shape", false, false);
 					createFixture(self, os, -1);
 					os->pop(2);
 				}

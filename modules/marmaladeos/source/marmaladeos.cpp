@@ -212,7 +212,7 @@ bool MarmaladeOS::getColor(int offs, float color[4])
 		for(int i = 0; i < 4; i++){
 			pushStackValue(offs);
 			pushNumber(i);
-			getProperty(false, false);
+			getProperty();
 			color[i] = !isNumber() ? (pop(), 1.0f) : clampUnit(popFloat());
 		}
 		return true;

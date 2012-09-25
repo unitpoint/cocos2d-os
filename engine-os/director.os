@@ -144,9 +144,6 @@ function remove(node){
 }
 
 nextScene = null
-notificationNode = null
-displayFPS = true
-displayProfilers = true
 
 _E.scene = Scene()
 
@@ -187,23 +184,13 @@ var function paint(){
 	// paint the scene
 	var paintParams = {opacity = 1}
     if(runningScene) runningScene.handlePaint(paintParams)
-	if(notificationNode) notificationNode.handlePaint(paintParams)
 	
-	if(displayFPS) showFPS()
-	if(displayProfilers) showProfilers()
-
 	disableDefaultGlStates()
 
 	glPopMatrix()
 	glSwapBuffers()
 	
 	++totalFrames
-}
-
-function showFPS(){
-}
-
-function showProfilers(){
 }
 
 touches = {}
@@ -285,7 +272,6 @@ var function clamp(a, min, max){
 
 var coreTriggerEvent = core.triggerEvent
 function core.triggerEvent(eventName, params){
-	coreTriggerEvent.call(core, eventName, params)
 	if(eventName == "enterFrame"){
 		// calculate delta time
 		var appTime = app.timeSec
@@ -296,15 +282,15 @@ function core.triggerEvent(eventName, params){
 		prevDeltaTime = deltaTime
 		time = time + deltaTime
 		
+		var updateParams = {deltaTime = deltaTime}
+		coreTriggerEvent.call(core, eventName, updateParams)
 		handleTouches()
 
-		var updateParams = {deltaTime = deltaTime}
 		if(runningScene) runningScene.handleUpdate(updateParams)
-		if(notificationNode) notificationNode.handleUpdate(updateParams)
 
 		paint()
-	}else{ 
+	}else{
+		coreTriggerEvent.call(core, eventName, params)
 		if(runningScene) runningScene.triggerEvent(eventName, params)
-		if(notificationNode) notificationNode.triggerEvent(eventName, params)
 	}
 }

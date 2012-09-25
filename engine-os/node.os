@@ -71,14 +71,18 @@ FunctionNode = {
 		this.sortChildren(children)
 		node.__parent = this
 		node.__parentChildren = children
-		node.triggerEvent("onEnter")
+		node.triggerEvent("onEnter", {sender: node})
 		return node
+	}
+	
+	insertTo = function(newParent, zOrder){
+		return newParent.insert(this, zOrder)
 	}
 	
 	remove = function(node){
 		node = node || this
 		if(node.__parent){
-			node.triggerEvent("onExit")
+			node.triggerEvent("onExit", {sender: node})
 			delete node.__parentChildren[node]
 			node.__parent = null
 			node.__parentChildren = null
@@ -98,9 +102,9 @@ FunctionNode = {
 			child.handleUpdate(params)
 		}
 		if("enterFrame" in this.__events){
-			params.target = this
+			// params.target = this
 			for(var func in this.__events["enterFrame"]){
-				func.call(this params)
+				func.call(this, params)
 			}
 		}
 		for(var child in this.__childrenNeg){
@@ -116,7 +120,7 @@ FunctionNode = {
 		functionof func || return;
 		this.__events[eventName][func] = zOrder || 0
 		this.__events[eventName].rsort()
-		return [eventName func]
+		return [eventName, func]
 	}
 	
 	removeEventListener = function(eventName, func){
@@ -128,12 +132,21 @@ FunctionNode = {
 		}
 	}
 
+	triggerLocalEvent = function(eventName, params){
+		if(eventName in this.__events){
+			// params.target = this
+			for(var func in this.__events[eventName]){
+				func.call(this, params)
+			}
+		}
+	}
+	
 	triggerEvent = function(eventName, params){
 		for(var child in this.__childrenPos){
 			child.triggerEvent(eventName, params)
 		}
 		if(eventName in this.__events){
-			params.target = this
+			// params.target = this
 			for(var func in this.__events[eventName]){
 				func.call(this, params)
 			}
@@ -146,16 +159,14 @@ FunctionNode = {
 	setTimeout = function(func, delay, count, priority){
 		count = count || 1
 		count > 0 && functionof func || return;
-		var i = func
-		this.__timers[i] = {
+		this.__timers[func] = {
 			nextTime = this.time + delay
 			delay = delay
-			func = func
 			count = count
 			priority = priority || 0
 		}
 		this.__timers.rsort "priority"
-		return i
+		return func
 	}
 
 	clearTimeout = function(t){
@@ -164,19 +175,19 @@ FunctionNode = {
 	
 	updateTimers = function(){
 		var time = this.time
-		for(var i, t in this.__timers){
+		for(var func, t in this.__timers){
 			if(t.nextTime <= time){
 				// print "run timer "..t
 				t.nextTime = time + t.delay
 				if(t.count === true){
-					t.func.call(this)
+					func.call(this)
 				}else{
 					if(t.count <= 1){
-						delete this.__timers[i]
+						delete this.__timers[func]
 					}else{
 						t.count = t.count - 1
 					}
-					t.func.call(this)
+					func.call(this)
 				}
 			}
 		}
@@ -379,7 +390,7 @@ Node = extends FunctionNode {
 		
 		this.paint(params)
 		if("paint" in this.__events){
-			params.target = this
+			// params.target = this
 			for(var func in this.__events["paint"]){
 				func.call(this, params)
 			}
@@ -401,9 +412,9 @@ Node = extends FunctionNode {
 			}
 		}
 		if("nativeTouch" in this.__events){
-			touch.target = this
+			// touch.target = this
 			for(var func in this.__events["nativeTouch"]){
-				func.call(this touch)
+				func.call(this, touch)
 			}
 		}
 		var autoCapture
@@ -414,7 +425,8 @@ Node = extends FunctionNode {
 					var local = this.pointToNodeSpace(touch)
 					// echo("touch "touch", local"local", is local "this.isLocalPoint(local)"\n")
 					if(this.isLocalPoint(local)){
-						touch.local, touch.target, autoCapture = local, this, true
+						touch.local, autoCapture = local, true
+						// touch.target = this
 						for(var func in this.__events["touch"]){
 							if(func.call(this, touch) === true){
 								touch.captured = this
@@ -428,7 +440,8 @@ Node = extends FunctionNode {
 				}
 			}else if(touch.captured === this){
 				// touch.x, touch.y = touch.nativeX, touch.nativeY
-				touch.local, touch.target = this.pointToNodeSpace(touch), this
+				touch.local = this.pointToNodeSpace(touch)
+				// touch.target = this
 				if(touch.capturedFunc){
 					if(touch.capturedFunc in this.__events["touch"]){
 						touch.capturedFunc.call(this, touch)
