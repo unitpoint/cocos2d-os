@@ -34,46 +34,72 @@ function destroyBody(params){
 	return world.destroyBody(params)
 }
 
-PhysicsBodyNode = extends FunctionNode {
-	__object = {
-		body = null
+Node.__object.merge {
+	__physicsUpdateInProgress = null
+	__physicsBody = null
+}
+
+var nodeSetX = Node.__set@x
+var nodeSetY = Node.__set@y
+
+Node.merge {
+	addPhysicsBody = function(params){
+		this.removePhysicsBody()
+		this.__physicsBody = world.createBody({}.merge(params, {
+			x = this.x
+			y = this.y
+			angle = math.rad(this.rotation)
+		}))
+		this.addEventListener("enterFrame", this.__updateNodePosition)
+		return this.physicsBody
 	}
-	__construct = function(parent, params){
-		params = clone params
-		
-		var function createBody(){
-			if(!this.body){
-				this.body = world.createBody(params.merge {
-					x = parent.x
-					y = parent.y
-					angle = math.rad(parent.rotation)
-				})
-			}
+	removePhysicsBody = function(){
+		if(this.__physicsBody){
+			this.removeEventListener("enterFrame", this.__updateNodePosition)
+			world.destroyBody(this.__physicsBody)
+			this.__physicsBody = null
 		}
-		createBody.call(this)
-		this.addEventListener("onEnter", function(){
-			createBody.call(this)
-			this.addEventListener("enterFrame", this.update)
-		})
-		this.addEventListener("onExit", function(){
-			this.removeEventListener("enterFrame", this.update)
-			world.destroyBody(this.body)
-			this.body = null
-		})
-		"__physicsBodyNode" in parent && parent.remove(parent.__physicsBodyNode)
-		parent.__physicsBodyNode = parent.insert(this)
 	}
-	
-	update = function(){
-		var xf, parent = this.body.transform, this.parent
-		parent.x, parent.y, parent.rotation = xf.x, xf.y, math.deg(xf.angle)
+	__updateNodePosition = function(){
+		var xf = this.__physicsBody.transform
+		this.__physicsUpdateInProgress = true
+		this.x, this.y, this.rotation = xf.x, xf.y, math.deg(xf.angle)
+		this.__physicsUpdateInProgress = false
+	}
+	__get@physicsBody = function(){
+		return this.__physicsBody
+	}
+	__set@x = function(a){
+		nodeSetX.call(this, a)
+		if(!this.__physicsUpdateInProgress){
+			this.__physicsBody.position = [this.x, this.y]
+		}
+	}
+	__set@y = function(a){
+		nodeSetY.call(this, a)
+		if(!this.__physicsUpdateInProgress){
+			this.__physicsBody.position = [this.x, this.y]
+		}
 	}
 }
 
-function Node.addPhysicsBody(params){
-	return PhysicsBodyNode(this, params).body
+function extractPoint(p){
+	if(arrayof p){
+		return p[0], p[1]
+	}
+	return p.x, p.y
 }
 
-function Node.__get@physicsBody(){
-	return "__physicsBodyNode" in this ? this.__physicsBodyNode.body : null
+function extractSize(p){
+	if(arrayof p){
+		return p[0], p[1]
+	}
+	return p.width, p.height
 }
+
+function getBoxShapeVertices(leftTopCorner, size){
+	var x, y = extractPoint(leftTopCorner)
+	var width, height = extractSize(size)
+	return [ [x, y], [x + width, y], [x + width, y + height], [x, y + height] ]
+}
+

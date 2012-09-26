@@ -1579,7 +1579,7 @@ struct Body
 		def.restitution = os->popFloat(def.restitution);
 
 		os->getProperty(offs, "density", false); // optional
-		def.density = os->popFloat(def.density);
+		def.density = os->popFloat(1.0f); // def.density);
 
 		os->getProperty(offs, "sensor", false); // optional
 		def.isSensor = os->popBool(def.isSensor);
@@ -1609,7 +1609,6 @@ struct Body
 
 			def.shape->~b2Shape();
 			os->free((void*)def.shape);
-			def.shape = NULL;
 		}else if(os->isArray()){
 			b2FixtureDef def;
 			def.shape = toAutoPolygonShape(os, -1);
@@ -1622,7 +1621,6 @@ struct Body
 
 			def.shape->~b2Shape();
 			os->free((void*)def.shape);
-			def.shape = NULL;
 		}else{ // shape
 			os->pop();
 			offs = os->getAbsoluteOffs(offs);
@@ -1645,11 +1643,27 @@ struct Body
 				os->pop();
 			}else{
 				os->pop();
-				b2Shape * shape = toShape(os, offs);
-				float density = os->toFloat(offs+1);
-				self->CreateFixture(shape, density);
-				shape->~b2Shape();
-				os->free(shape);
+				os->getProperty(offs, "radius", false); // optional
+				if(!os->isNull()){
+					b2FixtureDef def;
+					def.shape = new (os->malloc(sizeof(b2CircleShape) OS_DBG_FILEPOS)) b2CircleShape();
+					((b2CircleShape*)def.shape)->m_radius = toBox2dMetric(os->popFloat());
+			
+					populateFixtureDef(def, os, offs);
+			
+					self->CreateFixture(&def);
+
+					def.shape->~b2Shape();
+					os->free((void*)def.shape);
+				}else{
+					os->pop();
+					b2Shape * shape = toShape(os, offs);
+					if(!shape) return;
+					float density = os->toFloat(offs+1, 1.0f);
+					self->CreateFixture(shape, density);
+					shape->~b2Shape();
+					os->free(shape);
+				}
 			}
 		}
 	}

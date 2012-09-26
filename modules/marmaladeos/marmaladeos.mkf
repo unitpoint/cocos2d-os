@@ -8,6 +8,7 @@ options
 
 subprojects
 {
+	iwgl
 	objectscript
 	cocos2dx	
 	box2d

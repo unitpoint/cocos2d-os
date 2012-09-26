@@ -395,36 +395,16 @@ MyScene = extends Scene {
 			})
 			*/
 			
-			var function extractPoint(p){
-				if(arrayof p){
-					return p[0], p[1]
-				}
-				return p.x, p.y
-			}
-			
-			var function extractSize(p){
-				if(arrayof p){
-					return p[0], p[1]
-				}
-				return p.width, p.height
-			}
-			
-			var function getShapeBoxVertices(leftTopCorner, size){
-				var x, y = extractPoint(leftTopCorner)
-				var width, height = extractSize(size)
-				return [ [x, y], [x + width, y], [x + width, y + height], [x, y + height] ]
-			}
-			
 			var bounce = 0.8
 			var friction = 0.2
 			var walls = physics.createBody {
 				type = "static"
 				fixture = {
 					shapes = [ 
-						getShapeBoxVertices([0, director.height], [director.width, director.height*0.1]),
-						getShapeBoxVertices([0, director.height*-0.1], [director.width, director.height*0.1]),
-						getShapeBoxVertices([director.width*-0.1, 0], [director.width*0.1, director.height]),
-						getShapeBoxVertices([director.width, 0], [director.width*0.1, director.height]),
+						getBoxShapeVertices([0, director.height], [director.width, director.height*0.1]),
+						getBoxShapeVertices([0, director.height*-0.1], [director.width, director.height*0.1]),
+						getBoxShapeVertices([director.width*-0.1, 0], [director.width*0.1, director.height]),
+						getBoxShapeVertices([director.width, 0], [director.width*0.1, director.height]),
 					],
 					bounce = bounce
 					friction = friction
@@ -458,7 +438,7 @@ MyScene = extends Scene {
 						ball = Image("box.jpg")
 						ball.x = this.width * math.random(0.1, 0.9)
 						ball.y = this.height * 0.1
-						ball.anchor = [0, 0]
+						// ball.anchor = [0, 0]
 						ball.zOrder = 1000
 						ball.color = colors[i % #colors]
 						this.insert(ball)
@@ -466,7 +446,8 @@ MyScene = extends Scene {
 						body = ball.addPhysicsBody {
 							type = "dynamic"
 							fixture = {
-								shape = getShapeBoxVertices([0, 0], [ball.width, ball.height])
+								// shape = getBoxShapeVertices([0, 0], [ball.width, ball.height])
+								shape = getBoxShapeVertices([-ball.width/2, -ball.height/2], [ball.width, ball.height])
 								density = 1
 								bounce = bounce
 								friction = friction
@@ -495,7 +476,7 @@ MyScene = extends Scene {
 							body.position = [this.x, this.y]
 							// body.linearVelocity = [0, 0]
 						}else if(touch.phase == "end" || touch.phase == "cancel"){
-							body.linearVelocity, body.gravityScale = [speedX, speedY], 1
+							body.linearVelocity, body.gravityScale, body.isAwake = [speedX, speedY], 1, true
 							this.removeEventListener("enterFrame", dragging)
 						}
 					})

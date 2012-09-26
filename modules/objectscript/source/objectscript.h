@@ -2584,6 +2584,7 @@ namespace ObjectScript
 			void registerValue(GCValue * val);
 			GCValue * unregisterValue(int value_id);
 			void deleteValues(bool del_ref_counted_also);
+			static int compareGCValues(const void * a, const void * b);
 
 			bool valueToBool(Value val);
 			OS_INT valueToInt(Value val, bool valueof_enabled = false);
