@@ -13826,7 +13826,7 @@ void OS::clearUserdata(int crc, int offs)
 	switch(val.type){
 	case OS_VALUE_TYPE_USERDATA:
 		// case OS_VALUE_TYPE_USERPTR:
-		if(val.v.userdata->crc == crc && val.v.userdata->ptr){
+		if(val.v.userdata->crc == crc){ // && val.v.userdata->ptr){
 			core->clearValue(val.v.value);
 			// val.v.userdata->ptr = NULL;
 		}
@@ -16876,13 +16876,12 @@ void OS::initFunctionClass()
 			os->pushStackValue(offs); // first param - new this
 
 			Core::Value array_var = os->core->getStackValue(offs+1);
-			Core::GCValue * array_value = array_var.getGCValue();
-			if(array_value && array_value->table){
-				Core::Property * prop = array_value->table->first;
-				for(; prop; prop = prop->next){
-					os->core->pushValue(prop->value);	
+			if(array_var.type == OS_VALUE_TYPE_ARRAY){
+				int count = array_var.v.arr->values.count;
+				for(int i = 0; i < count; i++){
+					os->core->pushValue(array_var.v.arr->values[i]);
 				}
-				return os->call(array_value->table->count, need_ret_values);
+				return os->call(count, need_ret_values);
 			}
 			return os->call(0, need_ret_values);
 		}
