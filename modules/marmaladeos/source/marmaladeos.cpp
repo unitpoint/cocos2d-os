@@ -446,6 +446,20 @@ void MarmaladeOS::initTextureClass()
 		{
 			MarmaladeOS * os = (MarmaladeOS*)p_os;
 			String filename = os->toString(-params);
+			const char * ext[2];
+			if(os->getFilenameExt(filename) == ".jpg"){
+				ext[0] = ".jpg";
+				ext[1] = ".png";
+			}else{
+				ext[0] = ".png";
+				ext[1] = ".jpg";
+			}
+			for(int i = 0; i < 2; i++){
+				filename = os->changeFilenameExt(filename, ext[i]);
+				if(os->isFileExist(filename)){
+					break;
+				}
+			}
 			cocos2d::CCTexture2D * texture = cocos2d::CCTextureCache::sharedTextureCache()->addImage(filename);
 			if(texture){
 				texture->retain();

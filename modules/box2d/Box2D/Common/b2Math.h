@@ -37,6 +37,10 @@ inline bool b2IsValid(float32 x)
 	}
 
 	float32 infinity = std::numeric_limits<float32>::infinity();
+	// arm gcc fix:
+	if(infinity == 0.0f){
+		return true;
+	}
 	return -infinity < x && x < infinity;
 }
 

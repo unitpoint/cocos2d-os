@@ -7,7 +7,7 @@ using namespace ObjectScript;
 // =====================================================================
 // =====================================================================
 
-#ifdef IW_SDK
+#if defined __GNUC__ || defined IW_SDK
 
 int OS_VSNPRINTF(OS_CHAR * str, size_t size, const OS_CHAR *format, va_list va)
 {
@@ -4600,15 +4600,18 @@ OS::Core::Compiler::Scope * OS::Core::Compiler::expectCodeExpression(Scope * par
 	return scope;
 }
 
-OS::Core::Compiler::Expression * OS::Core::Compiler::expectObjectExpression(Scope * scope, const Params& org_p)
+OS::Core::Compiler::Expression * OS::Core::Compiler::expectObjectExpression(Scope * scope, const Params& org_p, bool allow_finish_exp)
 {
 	OS_ASSERT(recent_token && recent_token->type == Tokenizer::BEGIN_CODE_BLOCK);
 	struct Lib {
 		Compiler * compiler;
 		Expression * obj_exp;
 
-		Expression * finishValue(Scope * scope, const Params& p)
+		Expression * finishValue(Scope * scope, const Params& p, bool allow_finish_exp)
 		{
+			if(!allow_finish_exp){
+				return obj_exp;
+			}
 			return compiler->finishValueExpression(scope, obj_exp, Params(p).setAllowAssign(false).setAllowAutoCall(false));
 		}
 
@@ -4654,7 +4657,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectObjectExpression(Scop
 		}
 		if(recent_token->type == Tokenizer::END_CODE_BLOCK){
 			readToken();
-			return lib.finishValue(scope, org_p);
+			return lib.finishValue(scope, org_p, allow_finish_exp);
 		}
 		TokenData * name_token = recent_token;
 		if(name_token->type == Tokenizer::BEGIN_ARRAY_BLOCK){
@@ -4722,7 +4725,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectObjectExpression(Scop
 		lib.obj_exp->list.add(exp OS_DBG_FILEPOS);
 		if(recent_token && recent_token->type == Tokenizer::END_CODE_BLOCK){
 			readToken();
-			return lib.finishValue(scope, org_p);
+			return lib.finishValue(scope, org_p, allow_finish_exp);
 		}
 #if 11
 		if(!recent_token){
@@ -6304,7 +6307,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::finishValueExpression(Scope
 			/* if(!p.allow_auto_call){
 			return exp;
 			} */
-			exp2 = expectObjectExpression(scope, p);
+			exp2 = expectObjectExpression(scope, p, false);
 			if(!exp2){
 				allocator->deleteObj(exp);
 				return NULL;
@@ -13873,12 +13876,12 @@ bool OS::Core::isValueInstanceOf(Value val, Value prototype_val)
 	return object && proto && isValueInstanceOf(object, proto);
 }
 
-bool OS::is(int value_offs, int prototype_offs)
+bool OS::isPrototypeOf(int value_offs, int prototype_offs)
 {
 	return core->isValuePrototypeOf(core->getStackValue(value_offs), core->getStackValue(prototype_offs));
 }
 
-bool OS::isInstanceOf(int value_offs, int prototype_offs)
+bool OS::is(int value_offs, int prototype_offs)
 {
 	return core->isValueInstanceOf(core->getStackValue(value_offs), core->getStackValue(prototype_offs));
 }
@@ -13904,9 +13907,33 @@ void OS::setProperty(const OS_CHAR * name, bool anonymous_setter_enabled, bool n
 
 void OS::setProperty(const Core::String& name, bool anonymous_setter_enabled, bool named_setter_enabled)
 {
-	pushString(name);
-	move(-1, -2);
-	setProperty(anonymous_setter_enabled, named_setter_enabled);
+	if(core->stack_values.count >= 2){
+		Core::Value object = core->stack_values[core->stack_values.count - 2];
+		Core::Value value = core->stack_values[core->stack_values.count - 1];
+		core->setPropertyValue(object, Core::PropertyIndex(name), value, anonymous_setter_enabled, named_setter_enabled);
+		pop(2);
+	}else{
+		// error
+		pop(2);
+	}
+}
+
+void OS::setProperty(int offs, const OS_CHAR * name, bool anonymous_setter_enabled, bool named_setter_enabled)
+{
+	setProperty(offs, Core::String(this, name), anonymous_setter_enabled, named_setter_enabled);
+}
+
+void OS::setProperty(int offs, const Core::String& name, bool anonymous_setter_enabled, bool named_setter_enabled)
+{
+	if(core->stack_values.count >= 1){
+		Core::Value object = core->getStackValue(offs);
+		Core::Value value = core->stack_values[core->stack_values.count - 1];
+		core->setPropertyValue(object, Core::PropertyIndex(name), value, anonymous_setter_enabled, named_setter_enabled);
+		pop();
+	}else{
+		// error
+		pop();
+	}
 }
 
 void OS::addProperty()
@@ -17002,8 +17029,8 @@ It's port from PHP framework.
 #if defined _MSC_VER && !defined IW_SDK
 #include <windows.h>
 #define OS_RAND_GENERATE_SEED() (((long) (time(0) * GetCurrentProcessId())) ^ ((long) (1000000.0)))
-#elif !defined IW_SDK
-#define OS_RAND_GENERATE_SEED() (((long) (time(0) * getpid())) ^ ((long) (1000000.0)))
+// #elif !defined IW_SDK
+// #define OS_RAND_GENERATE_SEED() (((long) (time(0) * getpid())) ^ ((long) (1000000.0)))
 #else
 #define OS_RAND_GENERATE_SEED() (((long) (time(0))) ^ ((long) (1000000.0)))
 #endif 
@@ -17589,7 +17616,7 @@ OS::Core::GCObjectValue * OS::Core::initObjectInstance(GCObjectValue * object)
 					Property * prop = object_props->table->first;
 					for(; prop; prop = prop->next){
 						core->pushCloneValue(prop->value);
-						core->setPropertyValue(object, *prop, core->stack_values.lastElement(), false, false);
+						core->setPropertyValue(object, *prop, core->stack_values.lastElement(), true, true);
 						core->pop();
 					}
 				}
