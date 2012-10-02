@@ -1,3 +1,20 @@
+options
+{
+	module_path="../cocos2dx/proj.marmalade"
+	module_path="../objectscript"
+	module_path="../box2d"
+	module_path="../wavreader"
+}
+
+subprojects
+{
+	iwgl
+	objectscript
+	cocos2dx	
+	box2d
+	wavreader
+}
+
 includepaths
 {
     "source"

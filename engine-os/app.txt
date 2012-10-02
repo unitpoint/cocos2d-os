@@ -66,22 +66,122 @@ begin function
   end set env var orientation
 
 
-[13] touches = {}
+[13] touchEvents = {}
 
   begin set env var
     begin object 0
     end object
-  end set env var touches
+  end set env var touchEvents
 
 
-[15] var autoTouchId = 0
+[14] keyEvents = {}
+
+  begin set env var
+    begin object 0
+    end object
+  end set env var keyEvents
+
+
+[16] function registerKeyEvent(key pressed){
+
+  begin set env var
+    begin function
+      begin locals, total 4
+        0 key (param)
+        1 pressed (param)
+        2 _E
+        3 _G
+      end locals
+
+[17] if(key in keyEvents){
+
+      begin if
+        begin bool exp
+          begin in
+            get local var key (0 0 param)
+            get env var keyEvents
+          end in
+        end bool exp
+        begin then
+
+[18] keyEvents[key].pressed = pressed
+
+          begin scope
+            begin set property
+              get local var pressed (1 0 param)
+              begin get property auto create
+                get env var auto create keyEvents
+                get local var key (0 0 param)
+              end get property auto create ret values 1
+              push const string "pressed"
+            end set property ret values 0
+
+
+[19] return
+
+            return
+          end scope ret values 0
+        end then
+      end if ret values 0
+
+
+[21] keyEvents[key] = {
+
+      begin set property
+        begin object 5
+
+[22] key = key
+
+          begin set by name
+            get local var key (0 0 param)
+          end set by name: [key]
+          ,
+
+[23] pressed = pressed
+
+          begin set by name
+            get local var pressed (1 0 param)
+          end set by name: [pressed]
+          ,
+
+[24] processed = false
+
+          begin set by name
+            const false
+          end set by name: [processed]
+          ,
+
+[25] captured = null
+
+          begin set by name
+            const null
+          end set by name: [captured]
+          ,
+
+[26] capturedFunc = null
+
+          begin set by name
+            const null
+          end set by name: [capturedFunc]
+        end object
+
+[21] keyEvents[key] = {
+
+        get env var auto create keyEvents
+        get local var key (0 0 param)
+      end set property ret values 0
+    end function
+  end set env var registerKeyEvent
+
+
+[30] var autoTouchId = 0
 
   begin set local var
     push const number 0
   end set local var autoTouchId (2 0)
 
 
-[16] function registerTouchEvent(x y phase id){
+[31] function registerTouchEvent(x y phase id){
 
   begin set env var
     begin function
@@ -95,18 +195,20 @@ begin function
         6 touch
       end locals
 
-[17] if(id == 0){
+[32] if(id == 0){
 
       begin if
         begin bool exp
-          begin logic ==
-            get local var id (3 0 param)
-            push const number 0
-          end logic ==
+          begin binary operator by local & number
+            begin logic ==
+              get local var id (3 0 param)
+              push const number 0
+            end logic ==
+          end binary operator by local & number
         end bool exp
         begin then
 
-[18] id = phase == "start" ? --autoTouchId : autoTouchId
+[33] id = phase == "start" ? --autoTouchId : autoTouchId
 
           begin scope
             begin set local var
@@ -139,7 +241,7 @@ begin function
       end if ret values 0
 
 
-[20] if(phase == "start"){
+[35] if(phase == "start"){
 
       begin if
         begin bool exp
@@ -150,69 +252,69 @@ begin function
         end bool exp
         begin then
 
-[21] touches[id] = {
+[36] touchEvents[id] = {
 
           begin scope
             begin set property
               begin object 7
 
-[22] x = x
+[37] x = x
 
                 begin set by name
                   get local var x (0 0 param)
                 end set by name: [x]
                 ,
 
-[23] y = y
+[38] y = y
 
                 begin set by name
                   get local var y (1 0 param)
                 end set by name: [y]
                 ,
 
-[24] phase = phase
+[39] phase = phase
 
                 begin set by name
                   get local var phase (2 0 param)
                 end set by name: [phase]
                 ,
 
-[25] processed = false
+[40] processed = false
 
                 begin set by name
                   const false
                 end set by name: [processed]
                 ,
 
-[26] id = id
+[41] id = id
 
                 begin set by name
                   get local var id (3 0 param)
                 end set by name: [id]
                 ,
 
-[27] captured = null
+[42] captured = null
 
                 begin set by name
                   const null
                 end set by name: [captured]
                 ,
 
-[28] capturedFunc = null
+[43] capturedFunc = null
 
                 begin set by name
                   const null
                 end set by name: [capturedFunc]
               end object
 
-[21] touches[id] = {
+[36] touchEvents[id] = {
 
-              get env var auto create touches
+              get env var auto create touchEvents
               get local var id (3 0 param)
             end set property ret values 0
 
 
-[30] return
+[45] return
 
             return
           end scope ret values 0
@@ -220,20 +322,20 @@ begin function
       end if ret values 0
 
 
-[32] if(!(id in touches)){
+[47] if(!(id in touchEvents)){
 
       begin if
         begin bool exp
           begin logic not
             begin in
               get local var id (3 0 param)
-              get env var touches
+              get env var touchEvents
             end in
           end logic not
         end bool exp
         begin then
 
-[33] return
+[48] return
 
           begin scope
             return
@@ -242,17 +344,17 @@ begin function
       end if ret values 0
 
 
-[35] var touch = touches[id]
+[50] var touch = touchEvents[id]
 
       begin set local var
         begin get property
-          get env var touches
+          get env var touchEvents
           get local var id (3 0 param)
         end get property ret values 1
       end set local var touch (6 0)
 
 
-[36] if(phase == "move"){
+[51] if(phase == "move"){
 
       begin if
         begin bool exp
@@ -263,7 +365,7 @@ begin function
         end bool exp
         begin then
 
-[37] if(touch.phase == "start"){
+[52] if(touch.phase == "start"){
 
           begin scope
             begin if
@@ -278,7 +380,7 @@ begin function
               end bool exp
               begin then
 
-[38] if(!touch.processed){
+[53] if(!touch.processed){
 
                 begin scope
                   begin if
@@ -292,7 +394,7 @@ begin function
                     end bool exp
                     begin then
 
-[39] touch.x = x
+[54] touch.x = x
 
                       begin scope
                         begin set property
@@ -302,7 +404,7 @@ begin function
                         end set property ret values 0
 
 
-[40] touch.y = y
+[55] touch.y = y
 
                         begin set property
                           get local var y (1 0 param)
@@ -311,7 +413,7 @@ begin function
                         end set property ret values 0
 
 
-[41] return
+[56] return
 
                         return
                       end scope ret values 0
@@ -321,7 +423,7 @@ begin function
               end then
               begin else
 
-[43] }else if(touch.phase != "move"){
+[58] }else if(touch.phase != "move"){
 
                 begin if
                   begin bool exp
@@ -335,7 +437,7 @@ begin function
                   end bool exp
                   begin then
 
-[44] return
+[59] return
 
                     begin scope
                       return
@@ -349,7 +451,7 @@ begin function
       end if ret values 0
 
 
-[47] touch.x = x
+[62] touch.x = x
 
       begin set property
         get local var x (0 0 param)
@@ -358,7 +460,7 @@ begin function
       end set property ret values 0
 
 
-[48] touch.y = y
+[63] touch.y = y
 
       begin set property
         get local var y (1 0 param)
@@ -367,7 +469,7 @@ begin function
       end set property ret values 0
 
 
-[49] touch.phase = phase
+[64] touch.phase = phase
 
       begin set property
         get local var phase (2 0 param)
@@ -376,7 +478,7 @@ begin function
       end set property ret values 0
 
 
-[50] touch.processed = false
+[65] touch.processed = false
 
       begin set property
         const false
@@ -385,7 +487,7 @@ begin function
       end set property ret values 0
 
 
-[51] touch.id = id
+[66] touch.id = id
 
       begin set property
         get local var id (3 0 param)
@@ -394,6 +496,9 @@ begin function
       end set property ret values 0
     end function
   end set env var registerTouchEvent
+
+
+[67] }
 
   begin code list
     begin return

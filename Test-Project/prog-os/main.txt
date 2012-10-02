@@ -1,9 +1,9 @@
 
 [FILE] raw://../prog-os/main.os
-[1] var core = require("core")
+[25] var core = require("core")
 
 begin function
-  begin locals, total 8
+  begin locals, total 9
     0 _E
     1 _G
     2 core
@@ -12,6 +12,7 @@ begin function
     5 image
     6 text
     7 director
+    8 physics
   end locals
   begin set local var
     begin call method
@@ -25,7 +26,7 @@ begin function
   end set local var core (2 0)
 
 
-[2] var app = require("app")
+[26] var app = require("app")
 
   begin set local var
     begin call method
@@ -39,7 +40,7 @@ begin function
   end set local var app (3 0)
 
 
-[3] var node = require("node")
+[27] var node = require("node")
 
   begin set local var
     begin call method
@@ -53,7 +54,7 @@ begin function
   end set local var node (4 0)
 
 
-[4] var image = require("image")
+[28] var image = require("image")
 
   begin set local var
     begin call method
@@ -67,7 +68,7 @@ begin function
   end set local var image (5 0)
 
 
-[5] var text = require("text")
+[29] var text = require("text")
 
   begin set local var
     begin call method
@@ -81,7 +82,7 @@ begin function
   end set local var text (6 0)
 
 
-[6] var director = require("director")
+[30] var director = require("director")
 
   begin set local var
     begin call method
@@ -95,7 +96,21 @@ begin function
   end set local var director (7 0)
 
 
-[8] print "Hello World!"
+[31] var physics = require("physics")
+
+  begin set local var
+    begin call method
+      get local var _E (0 0)
+      begin params 2
+        push const string "require"
+        ,
+        push const string "physics"
+      end params ret values 2
+    end call method ret values 1
+  end set local var physics (8 0)
+
+
+[33] print "Hello World!"
 
   begin call method
     get local var _E (0 0)
@@ -107,23 +122,7 @@ begin function
   end call method ret values 0
 
 
-[10] print "Sprite\n"..Sprite
-
-  begin call method
-    get local var _E (0 0)
-    begin params 2
-      push const string "print"
-      ,
-      begin operator ..
-        push const string "Sprite
-"
-        get env var Sprite
-      end operator ..
-    end params ret values 2
-  end call method ret values 0
-
-
-[15] addEventListener("enterFrame", function(){
+[40] addEventListener("enterFrame", function(){
 
   begin call method
     get local var _E (0 0)
@@ -140,47 +139,47 @@ begin function
       end function
       ,
 
-[17] }, true)
+[42] }, true)
 
       const true
     end params ret values 4
   end call method ret values 0
 
 
-[19] MyColorNode = extends ColorNode {
+[44] MyColorNode = extends ColorNode {
 
   begin set env var
     begin extends
       get env var ColorNode
       begin object 3
 
-[20] __object = {
+[45] __object = {
 
         begin set by name
           begin object 4
 
-[21] speed = 0.5
+[46] speed = 0.5
 
             begin set by name
               push const number 0.5
             end set by name: [speed]
             ,
 
-[22] dx = 1
+[47] dx = 1
 
             begin set by name
               push const number 1
             end set by name: [dx]
             ,
 
-[23] dy = 1
+[48] dy = 1
 
             begin set by name
               push const number 1
             end set by name: [dy]
             ,
 
-[24] touched = false
+[49] touched = false
 
             begin set by name
               const false
@@ -189,7 +188,7 @@ begin function
         end set by name: [__object]
         ,
 
-[27] __construct = function(){
+[52] __construct = function(){
 
         begin set by name
           begin function
@@ -205,7 +204,7 @@ begin function
               8 sy
             end locals
 
-[28] super()
+[53] super()
 
             begin call
               super
@@ -214,7 +213,7 @@ begin function
             end call ret values 0
 
 
-[30] var self, timer = this
+[55] var self, timer = this
 
             begin set local var
               begin set local var
@@ -227,7 +226,7 @@ begin function
             end set local var self (2 0)
 
 
-[31] var function changeDir(){
+[56] var function changeDir(){
 
             begin set local var
               begin function
@@ -236,7 +235,7 @@ begin function
                   1 _G
                 end locals
 
-[33] self.dx = math.random(-1 1)
+[58] self.dx = math.random(-1 1)
 
                 begin set property
                   begin call method
@@ -256,7 +255,7 @@ begin function
                 end set property ret values 0
 
 
-[34] self.dy = math.random(-1 1)
+[59] self.dy = math.random(-1 1)
 
                 begin set property
                   begin call method
@@ -276,7 +275,7 @@ begin function
                 end set property ret values 0
 
 
-[36] timer = self.setTimeout(changeDir, math.random(3.0 5.0))
+[61] timer = self.setTimeout(changeDir, math.random(3.0 5.0))
 
                 begin set local var
                   begin call method
@@ -303,7 +302,7 @@ begin function
             end set local var changeDir (4 0)
 
 
-[38] changeDir()
+[63] changeDir()
 
             begin call
               get local var changeDir (4 0)
@@ -312,7 +311,7 @@ begin function
             end call ret values 0
 
 
-[40] this.addEventListener("enterFrame", function(params){
+[65] this.addEventListener("enterFrame", function(params){
 
             begin call method
               push this
@@ -328,7 +327,7 @@ begin function
                     2 _G
                   end locals
 
-[41] this.update(params)
+[66] this.update(params)
 
                   begin call method
                     push this
@@ -343,7 +342,7 @@ begin function
             end call method ret values 0
 
 
-[44] var tx, ty, sx, sy
+[69] var tx, ty, sx, sy
 
             begin params 4
               new local var tx (5 0)
@@ -356,7 +355,7 @@ begin function
             end params ret values 0
 
 
-[45] this.addEventListener("touch", function(touch){
+[70] this.addEventListener("touch", function(touch){
 
             begin call method
               push this
@@ -372,7 +371,7 @@ begin function
                     2 _G
                   end locals
 
-[46] if(touch.phase == "start"){
+[71] if(touch.phase == "start"){
 
                   begin if
                     begin bool exp
@@ -386,7 +385,7 @@ begin function
                     end bool exp
                     begin then
 
-[47] tx, ty, sx, sy = touch.x, touch.y, self.x, self.y
+[72] tx, ty, sx, sy = touch.x, touch.y, self.x, self.y
 
                       begin scope
                         begin set local var
@@ -420,7 +419,7 @@ begin function
                         end set local var tx (5 1)
 
 
-[48] self.touched = true
+[73] self.touched = true
 
                         begin set property
                           const true
@@ -429,7 +428,7 @@ begin function
                         end set property ret values 0
 
 
-[49] self.zOrder = 1
+[74] self.zOrder = 1
 
                         begin set property
                           push const number 1
@@ -438,7 +437,7 @@ begin function
                         end set property ret values 0
 
 
-[50] self.clearTimeout(timer)
+[75] self.clearTimeout(timer)
 
                         begin call method
                           get local var self (2 1)
@@ -452,7 +451,7 @@ begin function
                     end then
                     begin else
 
-[51] }else if(touch.phase == "move"){
+[76] }else if(touch.phase == "move"){
 
                       begin if
                         begin bool exp
@@ -466,7 +465,7 @@ begin function
                         end bool exp
                         begin then
 
-[52] self.x, self.y = sx + touch.x - tx, sy + touch.y - ty
+[77] self.x, self.y = sx + touch.x - tx, sy + touch.y - ty
 
                           begin scope
                             begin set property
@@ -504,7 +503,7 @@ begin function
                         end then
                         begin else
 
-[53] }else if(touch.phase == "end"){
+[78] }else if(touch.phase == "end"){
 
                           begin if
                             begin bool exp
@@ -518,7 +517,7 @@ begin function
                             end bool exp
                             begin then
 
-[54] self.touched = false
+[79] self.touched = false
 
                               begin scope
                                 begin set property
@@ -528,7 +527,7 @@ begin function
                                 end set property ret values 0
 
 
-[55] self.zOrder = 0
+[80] self.zOrder = 0
 
                                 begin set property
                                   push const number 0
@@ -537,7 +536,7 @@ begin function
                                 end set property ret values 0
 
 
-[56] changeDir()
+[81] changeDir()
 
                                 begin call
                                   get local var changeDir (4 1)
@@ -558,7 +557,7 @@ begin function
         end set by name: [__construct]
         ,
 
-[61] update = function(params){
+[86] update = function(params){
 
         begin set by name
           begin function
@@ -570,7 +569,7 @@ begin function
               4 clamp
             end locals
 
-[62] if(this.touched) return;
+[87] if(this.touched) return;
 
             begin if
               begin bool exp
@@ -585,7 +584,7 @@ begin function
             end if ret values 0
 
 
-[64] var offs = director.width * this.speed * params.deltaTime
+[89] var offs = director.width * this.speed * params.deltaTime
 
             begin set local var
               begin operator *
@@ -607,7 +606,7 @@ begin function
             end set local var offs (3 0)
 
 
-[66] this.x = this.x + this.dx * offs
+[91] this.x = this.x + this.dx * offs
 
             begin set property
               begin operator +
@@ -628,7 +627,7 @@ begin function
             end set property ret values 0
 
 
-[67] this.y = this.y + this.dy * offs
+[92] this.y = this.y + this.dy * offs
 
             begin set property
               begin operator +
@@ -649,7 +648,7 @@ begin function
             end set property ret values 0
 
 
-[69] var function clamp(a min max){
+[94] var function clamp(a min max){
 
             begin set local var
               begin function
@@ -661,7 +660,7 @@ begin function
                   4 _G
                 end locals
 
-[70] if(a < min) return min
+[95] if(a < min) return min
 
                 begin if
                   begin bool exp
@@ -680,7 +679,7 @@ begin function
                 end if ret values 0
 
 
-[71] if(a > max) return max
+[96] if(a > max) return max
 
                 begin if
                   begin bool exp
@@ -699,7 +698,7 @@ begin function
                 end if ret values 0
 
 
-[72] return a
+[97] return a
 
                 begin code list
                   begin return
@@ -710,7 +709,7 @@ begin function
             end set local var clamp (4 0)
 
 
-[75] if(this.x < 0 || this.x > this.__parent.width){
+[100] if(this.x < 0 || this.x > this.__parent.width){
 
             begin if
               begin bool exp
@@ -739,7 +738,7 @@ begin function
               end bool exp
               begin then
 
-[76] this.dx = -this.dx
+[101] this.dx = -this.dx
 
                 begin scope
                   begin set property
@@ -754,7 +753,7 @@ begin function
                   end set property ret values 0
 
 
-[77] this.x = clamp(this.x, 0, this.__parent.width)
+[102] this.x = clamp(this.x, 0, this.__parent.width)
 
                   begin set property
                     begin call
@@ -784,7 +783,7 @@ begin function
             end if ret values 0
 
 
-[79] if(this.y < 0 || this.y > this.__parent.height){
+[104] if(this.y < 0 || this.y > this.__parent.height){
 
             begin if
               begin bool exp
@@ -813,7 +812,7 @@ begin function
               end bool exp
               begin then
 
-[80] this.dy = -this.dy
+[105] this.dy = -this.dy
 
                 begin scope
                   begin set property
@@ -828,7 +827,7 @@ begin function
                   end set property ret values 0
 
 
-[81] this.y = clamp(this.y, 0, this.__parent.height)
+[106] this.y = clamp(this.y, 0, this.__parent.height)
 
                   begin set property
                     begin call
@@ -863,18 +862,18 @@ begin function
   end set env var MyColorNode
 
 
-[86] MyScene = extends Scene {
+[111] MyScene = extends Scene {
 
   begin set env var
     begin extends
       get env var Scene
       begin object 1
 
-[87] __construct = function(){
+[112] __construct = function(){
 
         begin set by name
           begin function
-            begin locals, total 31
+            begin locals, total 40
               0 _E
               1 _G
               2 color
@@ -884,11 +883,11 @@ begin function
               6 gcAllocatedBytes
               7 gcUsedBytes
               8 gcCachedBytes
-              9 gcNumValues
+              9 gcNumObjects
               16 scene
             end locals
 
-[88] super()
+[113] super()
 
             begin call
               super
@@ -897,7 +896,7 @@ begin function
             end call ret values 0
 
 
-[89] glClearColor(0.2 0.2 0.2 1)
+[114] glClearColor(0.2 0.2 0.2 1)
 
             begin call method
               get local var _E (0 0)
@@ -915,7 +914,7 @@ begin function
             end call method ret values 0
 
 
-[91] var function color(){
+[116] var function color(){
 
             begin set local var
               begin function
@@ -924,7 +923,7 @@ begin function
                   1 _G
                 end locals
 
-[92] return [math.random(0.2 0.95) math.random(0.2 0.95) math.random(0.2 0.95) 1]
+[117] return [math.random(0.2 0.95) math.random(0.2 0.95) math.random(0.2 0.95) 1]
 
                 begin return
                   begin array 4
@@ -976,7 +975,7 @@ begin function
             end set local var color (2 0)
 
 
-[95] var message = Text("Awesome text with shadow")
+[120] var message = Text("Awesome text with shadow")
 
             begin set local var
               begin call method
@@ -990,7 +989,7 @@ begin function
             end set local var message (3 0)
 
 
-[96] message.x = this.width * 0.5
+[121] message.x = this.width * 0.5
 
             begin set property
               begin operator *
@@ -1005,7 +1004,7 @@ begin function
             end set property ret values 0
 
 
-[97] message.y = this.height * 0.5
+[122] message.y = this.height * 0.5
 
             begin set property
               begin operator *
@@ -1020,7 +1019,7 @@ begin function
             end set property ret values 0
 
 
-[98] message.color = [1 0 0 1]
+[123] message.color = [1 0 0 1]
 
             begin set property
               begin array 4
@@ -1045,7 +1044,7 @@ begin function
             end set property ret values 0
 
 
-[99] message.shadow = true
+[124] message.shadow = true
 
             begin set property
               const true
@@ -1054,7 +1053,7 @@ begin function
             end set property ret values 0
 
 
-[100] this.insert(message)
+[125] this.insert(message)
 
             begin call method
               push this
@@ -1066,14 +1065,14 @@ begin function
             end call method ret values 0
 
 
-[102] var font = "arial-en-ru-16.fnt"
+[127] var font = "arial-en-ru-16.fnt"
 
             begin set local var
               push const string "arial-en-ru-16.fnt"
             end set local var font (4 0)
 
 
-[103] var fps = Text("fps", font)
+[128] var fps = Text("fps", font)
 
             begin set local var
               begin call method
@@ -1089,7 +1088,7 @@ begin function
             end set local var fps (5 0)
 
 
-[104] fps.anchor = {x=1.05 y=1.05}
+[129] fps.anchor = {x=1.05 y=1.05}
 
             begin set property
               begin object 2
@@ -1106,7 +1105,7 @@ begin function
             end set property ret values 0
 
 
-[105] fps.x = this.width
+[130] fps.x = this.width
 
             begin set property
               begin get property
@@ -1118,7 +1117,7 @@ begin function
             end set property ret values 0
 
 
-[106] fps.y = this.height
+[131] fps.y = this.height
 
             begin set property
               begin get property
@@ -1130,7 +1129,7 @@ begin function
             end set property ret values 0
 
 
-[107] fps.color = [0.9, 0.9, 0.0, 1]
+[132] fps.color = [0.9, 0.9, 0.0, 1]
 
             begin set property
               begin array 4
@@ -1155,7 +1154,7 @@ begin function
             end set property ret values 0
 
 
-[109] this.insert(fps)
+[134] this.insert(fps)
 
             begin call method
               push this
@@ -1167,7 +1166,7 @@ begin function
             end call method ret values 0
 
 
-[111] var gcAllocatedBytes = Text("Kb", font)
+[136] var gcAllocatedBytes = Text("Kb", font)
 
             begin set local var
               begin call method
@@ -1183,7 +1182,7 @@ begin function
             end set local var gcAllocatedBytes (6 0)
 
 
-[112] gcAllocatedBytes.anchor = {x=1.05 y=1.05}
+[137] gcAllocatedBytes.anchor = {x=1.05 y=1.05}
 
             begin set property
               begin object 2
@@ -1200,7 +1199,7 @@ begin function
             end set property ret values 0
 
 
-[113] gcAllocatedBytes.x = fps.x
+[138] gcAllocatedBytes.x = fps.x
 
             begin set property
               begin get property
@@ -1212,7 +1211,7 @@ begin function
             end set property ret values 0
 
 
-[114] gcAllocatedBytes.y = fps.y - fps.fontHeight*1.05*1
+[139] gcAllocatedBytes.y = fps.y - fps.fontHeight*1.05*1
 
             begin set property
               begin operator -
@@ -1236,7 +1235,7 @@ begin function
             end set property ret values 0
 
 
-[115] gcAllocatedBytes.color = [0.9, 0.9, 0.0, 1]
+[140] gcAllocatedBytes.color = [0.9, 0.9, 0.0, 1]
 
             begin set property
               begin array 4
@@ -1261,7 +1260,7 @@ begin function
             end set property ret values 0
 
 
-[117] this.insert(gcAllocatedBytes)
+[142] this.insert(gcAllocatedBytes)
 
             begin call method
               push this
@@ -1273,7 +1272,7 @@ begin function
             end call method ret values 0
 
 
-[119] var gcUsedBytes = Text("Kb", font)
+[144] var gcUsedBytes = Text("Kb", font)
 
             begin set local var
               begin call method
@@ -1289,7 +1288,7 @@ begin function
             end set local var gcUsedBytes (7 0)
 
 
-[120] gcUsedBytes.anchor = {x=1.05 y=1.05}
+[145] gcUsedBytes.anchor = {x=1.05 y=1.05}
 
             begin set property
               begin object 2
@@ -1306,7 +1305,7 @@ begin function
             end set property ret values 0
 
 
-[121] gcUsedBytes.x = fps.x
+[146] gcUsedBytes.x = fps.x
 
             begin set property
               begin get property
@@ -1318,7 +1317,7 @@ begin function
             end set property ret values 0
 
 
-[122] gcUsedBytes.y = fps.y - fps.fontHeight*1.05*3
+[147] gcUsedBytes.y = fps.y - fps.fontHeight*1.05*3
 
             begin set property
               begin operator -
@@ -1342,7 +1341,7 @@ begin function
             end set property ret values 0
 
 
-[123] gcUsedBytes.color = [0.9, 0.9, 0.0, 1]
+[148] gcUsedBytes.color = [0.9, 0.9, 0.0, 1]
 
             begin set property
               begin array 4
@@ -1367,7 +1366,7 @@ begin function
             end set property ret values 0
 
 
-[125] this.insert(gcUsedBytes)
+[150] this.insert(gcUsedBytes)
 
             begin call method
               push this
@@ -1379,7 +1378,7 @@ begin function
             end call method ret values 0
 
 
-[127] var gcCachedBytes = Text("Kb", font)
+[152] var gcCachedBytes = Text("Kb", font)
 
             begin set local var
               begin call method
@@ -1395,7 +1394,7 @@ begin function
             end set local var gcCachedBytes (8 0)
 
 
-[128] gcCachedBytes.anchor = {x=1.05 y=1.05}
+[153] gcCachedBytes.anchor = {x=1.05 y=1.05}
 
             begin set property
               begin object 2
@@ -1412,7 +1411,7 @@ begin function
             end set property ret values 0
 
 
-[129] gcCachedBytes.x = fps.x
+[154] gcCachedBytes.x = fps.x
 
             begin set property
               begin get property
@@ -1424,7 +1423,7 @@ begin function
             end set property ret values 0
 
 
-[130] gcCachedBytes.y = fps.y - fps.fontHeight*1.05*2
+[155] gcCachedBytes.y = fps.y - fps.fontHeight*1.05*2
 
             begin set property
               begin operator -
@@ -1448,7 +1447,7 @@ begin function
             end set property ret values 0
 
 
-[131] gcCachedBytes.color = [0.9, 0.9, 0.0, 1]
+[156] gcCachedBytes.color = [0.9, 0.9, 0.0, 1]
 
             begin set property
               begin array 4
@@ -1473,7 +1472,7 @@ begin function
             end set property ret values 0
 
 
-[133] this.insert(gcCachedBytes)
+[158] this.insert(gcCachedBytes)
 
             begin call method
               push this
@@ -1485,7 +1484,7 @@ begin function
             end call method ret values 0
 
 
-[135] var gcNumValues = Text("0", font)
+[160] var gcNumObjects = Text("0", font)
 
             begin set local var
               begin call method
@@ -1498,10 +1497,10 @@ begin function
                   get local var font (4 0)
                 end params ret values 3
               end call method ret values 1
-            end set local var gcNumValues (9 0)
+            end set local var gcNumObjects (9 0)
 
 
-[136] gcNumValues.anchor = {x=1.05 y=1.05}
+[161] gcNumObjects.anchor = {x=1.05 y=1.05}
 
             begin set property
               begin object 2
@@ -1513,24 +1512,24 @@ begin function
                   push const number 1.05
                 end set by name: [y]
               end object
-              get local var auto create gcNumValues (9 0)
+              get local var auto create gcNumObjects (9 0)
               push const string "anchor"
             end set property ret values 0
 
 
-[137] gcNumValues.x = fps.x
+[162] gcNumObjects.x = fps.x
 
             begin set property
               begin get property
                 get local var fps (5 0)
                 push const string "x"
               end get property ret values 1
-              get local var auto create gcNumValues (9 0)
+              get local var auto create gcNumObjects (9 0)
               push const string "x"
             end set property ret values 0
 
 
-[138] gcNumValues.y = fps.y - fps.fontHeight*1.05*4
+[163] gcNumObjects.y = fps.y - fps.fontHeight*1.05*4
 
             begin set property
               begin operator -
@@ -1549,12 +1548,12 @@ begin function
                   push const number 4
                 end operator *
               end operator -
-              get local var auto create gcNumValues (9 0)
+              get local var auto create gcNumObjects (9 0)
               push const string "y"
             end set property ret values 0
 
 
-[139] gcNumValues.color = [0.9, 0.9, 0.0, 1]
+[164] gcNumObjects.color = [0.9, 0.9, 0.0, 1]
 
             begin set property
               begin array 4
@@ -1574,24 +1573,24 @@ begin function
                   push const number 1
                 end set auto index
               end array
-              get local var auto create gcNumValues (9 0)
+              get local var auto create gcNumObjects (9 0)
               push const string "color"
             end set property ret values 0
 
 
-[141] this.insert(gcNumValues)
+[166] this.insert(gcNumObjects)
 
             begin call method
               push this
               begin params 2
                 push const string "insert"
                 ,
-                get local var gcNumValues (9 0)
+                get local var gcNumObjects (9 0)
               end params ret values 2
             end call method ret values 0
 
 
-[143] this.setTimeout(function(){
+[168] this.setTimeout(function(){
 
             begin call method
               push this
@@ -1604,7 +1603,7 @@ begin function
                     1 _G
                   end locals
 
-[144] fps.string = math.round(1 / director.deltaTime, 1).." fps"
+[169] fps.string = math.round(1 / director.deltaTime, 1).." fps"
 
                   begin set property
                     begin operator ..
@@ -1631,7 +1630,7 @@ begin function
                   end set property ret values 0
 
 
-[145] gcAllocatedBytes.string = math.round(GC.allocatedBytes / 1024).." Kb allocated"
+[170] gcAllocatedBytes.string = math.round(GC.allocatedBytes / 1024).." Kb allocated"
 
                   begin set property
                     begin operator ..
@@ -1656,7 +1655,7 @@ begin function
                   end set property ret values 0
 
 
-[146] gcUsedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
+[171] gcUsedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
 
                   begin set property
                     begin operator ..
@@ -1687,7 +1686,7 @@ begin function
                   end set property ret values 0
 
 
-[147] gcCachedBytes.string = math.round(GC.cachedBytes / 1024).." Kb cached"
+[172] gcCachedBytes.string = math.round(GC.cachedBytes / 1024).." Kb cached"
 
                   begin set property
                     begin operator ..
@@ -1712,23 +1711,23 @@ begin function
                   end set property ret values 0
 
 
-[148] gcNumValues.string = GC.numValues.." values"
+[173] gcNumObjects.string = GC.numObjects.." gc objects"
 
                   begin set property
                     begin operator ..
                       begin get property
                         get env var GC
-                        push const string "numValues"
+                        push const string "numObjects"
                       end get property ret values 1
-                      push const string " values"
+                      push const string " gc objects"
                     end operator ..
-                    get local var auto create gcNumValues (9 1)
+                    get local var auto create gcNumObjects (9 1)
                     push const string "string"
                   end set property ret values 0
                 end function
                 ,
 
-[149] }, 0.3, true)
+[174] }, 0.3, true)
 
                 push const number 0.3
                 ,
@@ -1737,7 +1736,7 @@ begin function
             end call method ret values 0
 
 
-[151] for(var i = 0; i < 10; i++){
+[176] for(var i = 0; i < 10; i++){
 
             begin scope
               begin locals 1
@@ -1763,7 +1762,7 @@ begin function
                 end if ret values 0
 
 
-[152] var monster = ((i % 2) == 0 ? Sprite : Image)("monster-01.png")
+[177] var monster = ((i % 2) == 0 ? Sprite : Image)("monster-01.png")
 
                 begin scope
                   begin locals 2
@@ -1796,7 +1795,7 @@ begin function
                   end set local var monster (11 0)
 
 
-[154] var anim = monster.animation {
+[179] var anim = monster.animation {
 
                   begin set local var
                     begin call method
@@ -1806,47 +1805,47 @@ begin function
                         ,
                         begin object 6
 
-[155] cols = 9
+[180] cols = 9
 
                           begin set by name
                             push const number 9
                           end set by name: [cols]
                           ,
 
-[156] rows = 10
+[181] rows = 10
 
                           begin set by name
                             push const number 10
                           end set by name: [rows]
                           ,
 
-[157] delay = 0.08 // math.random(0.05, 0.1)
+[182] delay = 0.08 // math.random(0.05, 0.1)
 
                           begin set by name
                             push const number 0.08
                           end set by name: [delay]
                           ,
 
-[158] start = 0
+[183] start = 0
 
                           begin set by name
                             push const number 0
                           end set by name: [start]
                           ,
 
-[159] frames = 17
+[184] frames = 17
 
                           begin set by name
                             push const number 17
                           end set by name: [frames]
                           ,
 
-[160] rect = {
+[185] rect = {
 
                           begin set by name
                             begin object 3
 
-[161] center = {x=0.48, y:0.45}
+[186] center = {x=0.48, y:0.45}
 
                               begin set by name
                                 begin object 2
@@ -1861,14 +1860,14 @@ begin function
                               end set by name: [center]
                               ,
 
-[162] width = 0.5 * 1.2
+[187] width = 0.5 * 1.2
 
                               begin set by name
                                 push const number 0.6
                               end set by name: [width]
                               ,
 
-[163] height = 0.74 * 1.2
+[188] height = 0.74 * 1.2
 
                               begin set by name
                                 push const number 0.888
@@ -1881,7 +1880,7 @@ begin function
                   end set local var anim (12 0)
 
 
-[166] anim.index = math.random(#anim.frames)
+[191] anim.index = math.random(#anim.frames)
 
                   begin set property
                     begin call method
@@ -1902,7 +1901,7 @@ begin function
                   end set property ret values 0
 
 
-[167] monster.x = this.width * math.random(0.2, 0.8)
+[192] monster.x = this.width * math.random(0.2, 0.8)
 
                   begin set property
                     begin operator *
@@ -1926,7 +1925,7 @@ begin function
                   end set property ret values 0
 
 
-[168] monster.y = this.height * math.random(0.2, 0.8)
+[193] monster.y = this.height * math.random(0.2, 0.8)
 
                   begin set property
                     begin operator *
@@ -1950,7 +1949,7 @@ begin function
                   end set property ret values 0
 
 
-[169] monster.zOrder = monster.y
+[194] monster.zOrder = monster.y
 
                   begin set property
                     begin get property
@@ -1962,7 +1961,7 @@ begin function
                   end set property ret values 0
 
 
-[170] monster.color = color()
+[195] monster.color = color()
 
                   begin set property
                     begin call
@@ -1975,7 +1974,7 @@ begin function
                   end set property ret values 0
 
 
-[171] monster.timeSpeed = math.random(0.5, 5.0)
+[196] monster.timeSpeed = math.random(0.5, 5.0)
 
                   begin set property
                     begin call method
@@ -1993,7 +1992,7 @@ begin function
                   end set property ret values 0
 
 
-[173] this.insert(monster)
+[198] this.insert(monster)
 
                   begin call method
                     push this
@@ -2005,11 +2004,11 @@ begin function
                   end call method ret values 0
 
 
-[192] }.call(monster)
+[217] }.call(monster)
 
                   begin call method
 
-[175] function(){
+[200] function(){
 
                     begin function
                       begin locals, total 6
@@ -2021,7 +2020,7 @@ begin function
                         5 sy
                       end locals
 
-[176] var tx, ty, sx, sy
+[201] var tx, ty, sx, sy
 
                       begin params 4
                         new local var tx (2 0)
@@ -2034,7 +2033,7 @@ begin function
                       end params ret values 0
 
 
-[177] this.addEventListener("touch", function(touch){
+[202] this.addEventListener("touch", function(touch){
 
                       begin call method
                         push this
@@ -2050,7 +2049,7 @@ begin function
                               2 _G
                             end locals
 
-[178] if(touch.phase == "start"){
+[203] if(touch.phase == "start"){
 
                             begin if
                               begin bool exp
@@ -2064,7 +2063,7 @@ begin function
                               end bool exp
                               begin then
 
-[179] tx, ty, sx, sy = touch.x, touch.y, this.x, this.y
+[204] tx, ty, sx, sy = touch.x, touch.y, this.x, this.y
 
                                 begin scope
                                   begin set local var
@@ -2098,7 +2097,7 @@ begin function
                                   end set local var tx (2 1)
 
 
-[180] this.zOrder = this.y
+[205] this.zOrder = this.y
 
                                   begin set property
                                     begin get property
@@ -2112,7 +2111,7 @@ begin function
                               end then
                               begin else
 
-[183] }else if(touch.phase == "move"){
+[208] }else if(touch.phase == "move"){
 
                                 begin if
                                   begin bool exp
@@ -2126,7 +2125,7 @@ begin function
                                   end bool exp
                                   begin then
 
-[184] this.x, this.y = sx + touch.x - tx, sy + touch.y - ty
+[209] this.x, this.y = sx + touch.x - tx, sy + touch.y - ty
 
                                     begin scope
                                       begin set property
@@ -2162,7 +2161,7 @@ begin function
                                       end set property ret values 0
 
 
-[185] this.zOrder = this.y
+[210] this.zOrder = this.y
 
                                       begin set property
                                         begin get property
@@ -2176,7 +2175,7 @@ begin function
                                   end then
                                   begin else
 
-[187] }else if(touch.phase == "end"){
+[212] }else if(touch.phase == "end"){
 
                                     begin if
                                       begin bool exp
@@ -2190,7 +2189,7 @@ begin function
                                       end bool exp
                                       begin then
 
-[190] }
+[215] }
 
                                         begin scope
                                         end scope ret values 0
@@ -2205,7 +2204,7 @@ begin function
                       end call method ret values 0
                     end function
 
-[192] }.call(monster)
+[217] }.call(monster)
 
                     begin params 2
                       push const string "call"
@@ -2216,7 +2215,7 @@ begin function
                 end scope ret values 0
 
 
-[151] for(var i = 0; i < 10; i++){
+[176] for(var i = 0; i < 10; i++){
 
                 begin code list
                   begin set local var
@@ -2230,7 +2229,7 @@ begin function
             end scope ret values 0
 
 
-[198] var rect = Image("award-first.png")
+[223] var rect = Image("award-first.png")
 
             begin scope
               begin locals 1
@@ -2248,7 +2247,7 @@ begin function
               end set local var rect (13 0)
 
 
-[199] rect.speed = math.random(0.2 0.5)
+[224] rect.speed = math.random(0.2 0.5)
 
               begin set property
                 begin call method
@@ -2266,7 +2265,7 @@ begin function
               end set property ret values 0
 
 
-[200] rect.anchor = {x = 0 y = 1}
+[225] rect.anchor = {x = 0 y = 1}
 
               begin set property
                 begin object 2
@@ -2283,7 +2282,7 @@ begin function
               end set property ret values 0
 
 
-[201] rect.setRect(
+[226] rect.setRect(
 
               begin call method
                 get local var rect (13 0)
@@ -2291,7 +2290,7 @@ begin function
                   push const string "setRect"
                   ,
 
-[202] this.width * 0.0
+[227] this.width * 0.0
 
                   begin operator *
                     begin get property
@@ -2302,7 +2301,7 @@ begin function
                   end operator *
                   ,
 
-[203] this.height * 1.0
+[228] this.height * 1.0
 
                   begin operator *
                     begin get property
@@ -2313,19 +2312,19 @@ begin function
                   end operator *
                   ,
 
-[204] 100
+[229] 100
 
                   push const number 100
                   ,
 
-[205] 200
+[230] 200
 
                   push const number 200
                 end params ret values 5
               end call method ret values 0
 
 
-[207] rect.color = color()
+[232] rect.color = color()
 
               begin set property
                 begin call
@@ -2338,7 +2337,7 @@ begin function
               end set property ret values 0
 
 
-[210] rect.transition {
+[235] rect.transition {
 
               begin call method
                 get local var rect (13 0)
@@ -2347,14 +2346,14 @@ begin function
                   ,
                   begin object 4
 
-[211] delay = 2
+[236] delay = 2
 
                     begin set by name
                       push const number 2
                     end set by name: [delay]
                     ,
 
-[212] easy = Easy.inOutBounce
+[237] easy = Easy.inOutBounce
 
                     begin set by name
                       begin get property
@@ -2364,28 +2363,28 @@ begin function
                     end set by name: [easy]
                     ,
 
-[214] repeat = true
+[239] repeat = true
 
                     begin set by name
                       const true
                     end set by name: [repeat]
                     ,
 
-[226] sequence = [{
+[240] sequence = [{
 
                     begin set by name
                       begin array 5
                         begin set auto index
                           begin object 8
 
-[227] duration = 3
+[241] duration = 3
 
                             begin set by name
                               push const number 3
                             end set by name: [duration]
                             ,
 
-[228] x = this.width * 0.4
+[242] x = this.width * 0.4
 
                             begin set by name
                               begin operator *
@@ -2398,7 +2397,7 @@ begin function
                             end set by name: [x]
                             ,
 
-[229] y = this.height * 0.7
+[243] y = this.height * 0.7
 
                             begin set by name
                               begin operator *
@@ -2411,35 +2410,35 @@ begin function
                             end set by name: [y]
                             ,
 
-[230] anchorX = 0.5
+[244] anchorX = 0.5
 
                             begin set by name
                               push const number 0.5
                             end set by name: [anchorX]
                             ,
 
-[231] anchorY = 0.5
+[245] anchorY = 0.5
 
                             begin set by name
                               push const number 0.5
                             end set by name: [anchorY]
                             ,
 
-[232] rotation = 45
+[246] rotation = 45
 
                             begin set by name
                               push const number 45
                             end set by name: [rotation]
                             ,
 
-[233] zOrder = 1
+[247] zOrder = 1
 
                             begin set by name
                               push const number 1
                             end set by name: [zOrder]
                             ,
 
-[234] opacity = 0.7
+[248] opacity = 0.7
 
                             begin set by name
                               push const number 0.7
@@ -2448,19 +2447,19 @@ begin function
                         end set auto index
                         ,
 
-[235] }, {
+[249] }, {
 
                         begin set auto index
                           begin object 8
 
-[236] duration = 1
+[250] duration = 1
 
                             begin set by name
                               push const number 1
                             end set by name: [duration]
                             ,
 
-[237] x = this.width * 0.7
+[251] x = this.width * 0.7
 
                             begin set by name
                               begin operator *
@@ -2473,7 +2472,7 @@ begin function
                             end set by name: [x]
                             ,
 
-[238] y = this.height * 0.3
+[252] y = this.height * 0.3
 
                             begin set by name
                               begin operator *
@@ -2486,35 +2485,35 @@ begin function
                             end set by name: [y]
                             ,
 
-[239] anchorX = 0.5
+[253] anchorX = 0.5
 
                             begin set by name
                               push const number 0.5
                             end set by name: [anchorX]
                             ,
 
-[240] anchorY = 0.5
+[254] anchorY = 0.5
 
                             begin set by name
                               push const number 0.5
                             end set by name: [anchorY]
                             ,
 
-[241] rotation = 45
+[255] rotation = 45
 
                             begin set by name
                               push const number 45
                             end set by name: [rotation]
                             ,
 
-[242] zOrder = 1
+[256] zOrder = 1
 
                             begin set by name
                               push const number 1
                             end set by name: [zOrder]
                             ,
 
-[243] opacity = 0.7
+[257] opacity = 0.7
 
                             begin set by name
                               push const number 0.7
@@ -2523,19 +2522,19 @@ begin function
                         end set auto index
                         ,
 
-[244] }, {
+[258] }, {
 
                         begin set auto index
                           begin object 5
 
-[245] duration = 1
+[259] duration = 1
 
                             begin set by name
                               push const number 1
                             end set by name: [duration]
                             ,
 
-[246] x = this.width * 0.3
+[260] x = this.width * 0.3
 
                             begin set by name
                               begin operator *
@@ -2548,7 +2547,7 @@ begin function
                             end set by name: [x]
                             ,
 
-[247] y = this.height * 0.7
+[261] y = this.height * 0.7
 
                             begin set by name
                               begin operator *
@@ -2561,7 +2560,7 @@ begin function
                             end set by name: [y]
                             ,
 
-[248] rotation = -45
+[262] rotation = -45
 
                             begin set by name
                               begin neg
@@ -2570,7 +2569,7 @@ begin function
                             end set by name: [rotation]
                             ,
 
-[249] opacity = 1.0
+[263] opacity = 1.0
 
                             begin set by name
                               push const number 1.0
@@ -2579,19 +2578,19 @@ begin function
                         end set auto index
                         ,
 
-[250] }, {
+[264] }, {
 
                         begin set auto index
                           begin object 4
 
-[251] duration = 1
+[265] duration = 1
 
                             begin set by name
                               push const number 1
                             end set by name: [duration]
                             ,
 
-[252] x = this.width * 0.1
+[266] x = this.width * 0.1
 
                             begin set by name
                               begin operator *
@@ -2604,7 +2603,7 @@ begin function
                             end set by name: [x]
                             ,
 
-[253] y = this.height * 0.1
+[267] y = this.height * 0.1
 
                             begin set by name
                               begin operator *
@@ -2617,7 +2616,7 @@ begin function
                             end set by name: [y]
                             ,
 
-[254] rotation = 270
+[268] rotation = 270
 
                             begin set by name
                               push const number 270
@@ -2626,19 +2625,19 @@ begin function
                         end set auto index
                         ,
 
-[255] }, {
+[269] }, {
 
                         begin set auto index
                           begin object 6
 
-[256] duration = 1
+[270] duration = 1
 
                             begin set by name
                               push const number 1
                             end set by name: [duration]
                             ,
 
-[257] x = this.width * 0.0
+[271] x = this.width * 0.0
 
                             begin set by name
                               begin operator *
@@ -2651,7 +2650,7 @@ begin function
                             end set by name: [x]
                             ,
 
-[258] y = this.height * 1.0
+[272] y = this.height * 1.0
 
                             begin set by name
                               begin operator *
@@ -2664,21 +2663,21 @@ begin function
                             end set by name: [y]
                             ,
 
-[259] anchorX = 0
+[273] anchorX = 0
 
                             begin set by name
                               push const number 0
                             end set by name: [anchorX]
                             ,
 
-[260] anchorY = 1
+[274] anchorY = 1
 
                             begin set by name
                               push const number 1
                             end set by name: [anchorY]
                             ,
 
-[261] rotation = 0
+[275] rotation = 0
 
                             begin set by name
                               push const number 0
@@ -2692,7 +2691,7 @@ begin function
               end call method ret values 0
 
 
-[267] this.insert(rect)
+[281] this.insert(rect)
 
               begin call method
                 push this
@@ -2705,7 +2704,7 @@ begin function
             end scope ret values 0
 
 
-[271] for(var i = 0; i < 0; i++){
+[285] for(var i = 0; i < 0; i++){
 
             begin scope
               begin locals 1
@@ -2731,7 +2730,7 @@ begin function
                 end if ret values 0
 
 
-[272] var rect = MyColorNode()
+[286] var rect = MyColorNode()
 
                 begin scope
                   begin locals 1
@@ -2747,7 +2746,7 @@ begin function
                   end set local var rect (15 0)
 
 
-[273] rect.speed = math.random(0.2 0.5)
+[287] rect.speed = math.random(0.2 0.5)
 
                   begin set property
                     begin call method
@@ -2765,7 +2764,7 @@ begin function
                   end set property ret values 0
 
 
-[274] rect.setRect(
+[288] rect.setRect(
 
                   begin call method
                     get local var rect (15 0)
@@ -2773,7 +2772,7 @@ begin function
                       push const string "setRect"
                       ,
 
-[275] this.width * math.random(0.1 0.7)
+[289] this.width * math.random(0.1 0.7)
 
                       begin operator *
                         begin get property
@@ -2793,7 +2792,7 @@ begin function
                       end operator *
                       ,
 
-[276] this.height * math.random(0.1 0.7)
+[290] this.height * math.random(0.1 0.7)
 
                       begin operator *
                         begin get property
@@ -2813,7 +2812,7 @@ begin function
                       end operator *
                       ,
 
-[277] this.width * math.random(0.1 0.2)
+[291] this.width * math.random(0.1 0.2)
 
                       begin operator *
                         begin get property
@@ -2833,7 +2832,7 @@ begin function
                       end operator *
                       ,
 
-[278] this.width * math.random(0.1 0.2)
+[292] this.width * math.random(0.1 0.2)
 
                       begin operator *
                         begin get property
@@ -2855,7 +2854,7 @@ begin function
                   end call method ret values 0
 
 
-[280] rect.color = color()
+[294] rect.color = color()
 
                   begin set property
                     begin call
@@ -2868,7 +2867,7 @@ begin function
                   end set property ret values 0
 
 
-[281] this.insert(rect)
+[295] this.insert(rect)
 
                   begin call method
                     push this
@@ -2881,7 +2880,7 @@ begin function
                 end scope ret values 0
 
 
-[271] for(var i = 0; i < 0; i++){
+[285] for(var i = 0; i < 0; i++){
 
                 begin code list
                   begin set local var
@@ -2895,14 +2894,14 @@ begin function
             end scope ret values 0
 
 
-[285] var scene = this
+[299] var scene = this
 
             begin set local var
               push this
             end set local var scene (16 0)
 
 
-[286] for(var i = 0; i < 5; i++){
+[300] for(var i = 0; i < 5; i++){
 
             begin scope
               begin locals 1
@@ -2928,15 +2927,15 @@ begin function
                 end if ret values 0
 
 
-[287] function(){
+[301] function(){
 
                 begin scope
 
-[358] }()
+[372] }()
 
                   begin call
 
-[287] function(){
+[301] function(){
 
                     begin function
                       begin locals, total 16
@@ -2958,7 +2957,7 @@ begin function
                         15 time
                       end locals
 
-[288] var self = Image("award-first.png") // ColorNode()
+[302] var self = Image("award-first.png") // ColorNode()
 
                       begin set local var
                         begin call method
@@ -2972,7 +2971,7 @@ begin function
                       end set local var self (2 0)
 
 
-[289] self.anchor = { x = 0.5 y = 0.38 }
+[303] self.anchor = { x = 0.5 y = 0.38 }
 
                       begin set property
                         begin object 2
@@ -2989,7 +2988,7 @@ begin function
                       end set property ret values 0
 
 
-[290] var speed = math.random(0.2 0.5)
+[304] var speed = math.random(0.2 0.5)
 
                       begin set local var
                         begin call method
@@ -3005,7 +3004,7 @@ begin function
                       end set local var speed (3 0)
 
 
-[291] self.setRect(
+[305] self.setRect(
 
                       begin call method
                         get local var self (2 0)
@@ -3013,7 +3012,7 @@ begin function
                           push const string "setRect"
                           ,
 
-[292] scene.width * math.random(0.1 0.7)
+[306] scene.width * math.random(0.1 0.7)
 
                           begin operator *
                             begin get property
@@ -3033,7 +3032,7 @@ begin function
                           end operator *
                           ,
 
-[293] scene.height * math.random(0.1 0.7)
+[307] scene.height * math.random(0.1 0.7)
 
                           begin operator *
                             begin get property
@@ -3053,7 +3052,7 @@ begin function
                           end operator *
                           ,
 
-[294] scene.width * math.random(0.1 0.2)
+[308] scene.width * math.random(0.1 0.2)
 
                           begin operator *
                             begin get property
@@ -3073,7 +3072,7 @@ begin function
                           end operator *
                           ,
 
-[295] scene.width * math.random(0.1 0.2)
+[309] scene.width * math.random(0.1 0.2)
 
                           begin operator *
                             begin get property
@@ -3095,7 +3094,7 @@ begin function
                       end call method ret values 0
 
 
-[297] self.color = color()
+[311] self.color = color()
 
                       begin set property
                         begin call
@@ -3108,7 +3107,7 @@ begin function
                       end set property ret values 0
 
 
-[298] scene.insert(self)
+[312] scene.insert(self)
 
                       begin call method
                         get local var scene (16 1)
@@ -3120,7 +3119,7 @@ begin function
                       end call method ret values 0
 
 
-[300] var dx, dy, touched, timer
+[314] var dx, dy, touched, timer
 
                       begin params 4
                         new local var dx (4 0)
@@ -3133,7 +3132,7 @@ begin function
                       end params ret values 0
 
 
-[301] var function changeDir(){
+[315] var function changeDir(){
 
                       begin set local var
                         begin function
@@ -3142,7 +3141,7 @@ begin function
                             1 _G
                           end locals
 
-[302] dx = math.random(-1 1)
+[316] dx = math.random(-1 1)
 
                           begin set local var
                             begin call method
@@ -3160,7 +3159,7 @@ begin function
                           end set local var dx (4 1)
 
 
-[303] dy = math.random(-1 1)
+[317] dy = math.random(-1 1)
 
                           begin set local var
                             begin call method
@@ -3178,7 +3177,7 @@ begin function
                           end set local var dy (5 1)
 
 
-[304] timer = self.setTimeout(changeDir, math.random(3.0 5.0))
+[318] timer = self.setTimeout(changeDir, math.random(3.0 5.0))
 
                           begin set local var
                             begin call method
@@ -3205,7 +3204,7 @@ begin function
                       end set local var changeDir (8 0)
 
 
-[306] changeDir()
+[320] changeDir()
 
                       begin call
                         get local var changeDir (8 0)
@@ -3214,7 +3213,7 @@ begin function
                       end call ret values 0
 
 
-[308] var tx, ty, sx, sy
+[322] var tx, ty, sx, sy
 
                       begin params 4
                         new local var tx (9 0)
@@ -3227,7 +3226,7 @@ begin function
                       end params ret values 0
 
 
-[309] self.addEventListener("touch", function(touch){
+[323] self.addEventListener("touch", function(touch){
 
                       begin call method
                         get local var self (2 0)
@@ -3243,7 +3242,7 @@ begin function
                               2 _G
                             end locals
 
-[310] if(touch.phase == "start"){
+[324] if(touch.phase == "start"){
 
                             begin if
                               begin bool exp
@@ -3257,7 +3256,7 @@ begin function
                               end bool exp
                               begin then
 
-[311] tx, ty, sx, sy = touch.x, touch.y, this.x, this.y
+[325] tx, ty, sx, sy = touch.x, touch.y, this.x, this.y
 
                                 begin scope
                                   begin set local var
@@ -3291,14 +3290,14 @@ begin function
                                   end set local var tx (9 1)
 
 
-[312] touched = true
+[326] touched = true
 
                                   begin set local var
                                     const true
                                   end set local var touched (6 1)
 
 
-[313] this.zOrder = 1
+[327] this.zOrder = 1
 
                                   begin set property
                                     push const number 1
@@ -3307,7 +3306,7 @@ begin function
                                   end set property ret values 0
 
 
-[314] this.clearTimeout(timer)
+[328] this.clearTimeout(timer)
 
                                   begin call method
                                     push this
@@ -3321,7 +3320,7 @@ begin function
                               end then
                               begin else
 
-[315] }else if(touch.phase == "move"){
+[329] }else if(touch.phase == "move"){
 
                                 begin if
                                   begin bool exp
@@ -3335,7 +3334,7 @@ begin function
                                   end bool exp
                                   begin then
 
-[316] this.x, this.y = sx + touch.x - tx, sy + touch.y - ty
+[330] this.x, this.y = sx + touch.x - tx, sy + touch.y - ty
 
                                     begin scope
                                       begin set property
@@ -3373,7 +3372,7 @@ begin function
                                   end then
                                   begin else
 
-[317] }else if(touch.phase == "end"){
+[331] }else if(touch.phase == "end"){
 
                                     begin if
                                       begin bool exp
@@ -3387,7 +3386,7 @@ begin function
                                       end bool exp
                                       begin then
 
-[318] touched = false
+[332] touched = false
 
                                         begin scope
                                           begin set local var
@@ -3395,7 +3394,7 @@ begin function
                                           end set local var touched (6 1)
 
 
-[319] this.zOrder = 0
+[333] this.zOrder = 0
 
                                           begin set property
                                             push const number 0
@@ -3404,7 +3403,7 @@ begin function
                                           end set property ret values 0
 
 
-[320] this.opacity = 1
+[334] this.opacity = 1
 
                                           begin set property
                                             push const number 1
@@ -3413,7 +3412,7 @@ begin function
                                           end set property ret values 0
 
 
-[321] changeDir()
+[335] changeDir()
 
                                           begin call
                                             get local var changeDir (8 1)
@@ -3432,7 +3431,7 @@ begin function
                       end call method ret values 0
 
 
-[325] var function clamp(a min max){
+[339] var function clamp(a min max){
 
                       begin set local var
                         begin function
@@ -3444,7 +3443,7 @@ begin function
                             4 _G
                           end locals
 
-[326] if(a < min) return min
+[340] if(a < min) return min
 
                           begin if
                             begin bool exp
@@ -3463,7 +3462,7 @@ begin function
                           end if ret values 0
 
 
-[327] if(a > max) return max
+[341] if(a > max) return max
 
                           begin if
                             begin bool exp
@@ -3482,7 +3481,7 @@ begin function
                           end if ret values 0
 
 
-[328] return a
+[342] return a
 
                           begin code list
                             begin return
@@ -3493,7 +3492,7 @@ begin function
                       end set local var clamp (13 0)
 
 
-[331] var rotSpeed = math.random(0.8 1.5)
+[345] var rotSpeed = math.random(0.8 1.5)
 
                       begin set local var
                         begin call method
@@ -3509,14 +3508,14 @@ begin function
                       end set local var rotSpeed (14 0)
 
 
-[332] var time = 0
+[346] var time = 0
 
                       begin set local var
                         push const number 0
                       end set local var time (15 0)
 
 
-[333] self.addEventListener("enterFrame", function(params){
+[347] self.addEventListener("enterFrame", function(params){
 
                       begin call method
                         get local var self (2 0)
@@ -3533,7 +3532,7 @@ begin function
                               3 offs
                             end locals
 
-[334] if(touched){
+[348] if(touched){
 
                             begin if
                               begin bool exp
@@ -3541,7 +3540,7 @@ begin function
                               end bool exp
                               begin then
 
-[335] this.scaleX = 1 + (math.cos(this.time * math.PI * rotSpeed) + 1) / 2 * 0.5
+[349] this.scaleX = 1 + (math.cos(this.time * math.PI * rotSpeed) + 1) / 2 * 0.5
 
                                 begin scope
                                   begin set property
@@ -3582,7 +3581,7 @@ begin function
                                   end set property ret values 0
 
 
-[336] this.scaleY = 1 + (math.sin(this.time * math.PI * rotSpeed * 3) + 1) / 2 * 0.5
+[350] this.scaleY = 1 + (math.sin(this.time * math.PI * rotSpeed * 3) + 1) / 2 * 0.5
 
                                   begin set property
                                     begin operator +
@@ -3625,7 +3624,7 @@ begin function
                                   end set property ret values 0
 
 
-[337] this.opacity = 0.5 + (math.sin(this.time * math.PI * rotSpeed * 2) + 1) / 2 * 1.0
+[351] this.opacity = 0.5 + (math.sin(this.time * math.PI * rotSpeed * 2) + 1) / 2 * 1.0
 
                                   begin set property
                                     begin operator +
@@ -3668,7 +3667,7 @@ begin function
                                   end set property ret values 0
 
 
-[338] return
+[352] return
 
                                   return
                                 end scope ret values 0
@@ -3676,7 +3675,7 @@ begin function
                             end if ret values 0
 
 
-[340] time = time + params.deltaTime
+[354] time = time + params.deltaTime
 
                             begin set local var
                               begin operator +
@@ -3689,7 +3688,7 @@ begin function
                             end set local var time (15 1)
 
 
-[341] this.rotation = math.deg(math.sin(time * math.PI * rotSpeed))
+[355] this.rotation = math.deg(math.sin(time * math.PI * rotSpeed))
 
                             begin set property
                               begin call method
@@ -3721,7 +3720,7 @@ begin function
                             end set property ret values 0
 
 
-[343] var offs = director.width * speed * params.deltaTime
+[357] var offs = director.width * speed * params.deltaTime
 
                             begin set local var
                               begin operator *
@@ -3740,7 +3739,7 @@ begin function
                             end set local var offs (3 0)
 
 
-[345] this.x = this.x + dx * offs
+[359] this.x = this.x + dx * offs
 
                             begin set property
                               begin operator +
@@ -3758,7 +3757,7 @@ begin function
                             end set property ret values 0
 
 
-[346] this.y = this.y + dy * offs
+[360] this.y = this.y + dy * offs
 
                             begin set property
                               begin operator +
@@ -3776,7 +3775,7 @@ begin function
                             end set property ret values 0
 
 
-[348] if(this.x < 0 || this.x > this.parent.width){
+[362] if(this.x < 0 || this.x > this.parent.width){
 
                             begin if
                               begin bool exp
@@ -3805,7 +3804,7 @@ begin function
                               end bool exp
                               begin then
 
-[349] dx = -dx
+[363] dx = -dx
 
                                 begin scope
                                   begin set local var
@@ -3815,7 +3814,7 @@ begin function
                                   end set local var dx (4 1)
 
 
-[350] this.x = clamp(this.x, 0, this.parent.width)
+[364] this.x = clamp(this.x, 0, this.parent.width)
 
                                   begin set property
                                     begin call
@@ -3845,7 +3844,7 @@ begin function
                             end if ret values 0
 
 
-[352] if(this.y < 0 || this.y > this.parent.height){
+[366] if(this.y < 0 || this.y > this.parent.height){
 
                             begin if
                               begin bool exp
@@ -3874,7 +3873,7 @@ begin function
                               end bool exp
                               begin then
 
-[353] dy = -dy
+[367] dy = -dy
 
                                 begin scope
                                   begin set local var
@@ -3884,7 +3883,7 @@ begin function
                                   end set local var dy (5 1)
 
 
-[354] this.y = clamp(this.y, 0, this.parent.height)
+[368] this.y = clamp(this.y, 0, this.parent.height)
 
                                   begin set property
                                     begin call
@@ -3917,7 +3916,7 @@ begin function
                       end call method ret values 0
                     end function
 
-[358] }()
+[372] }()
 
                     begin params 0
                     end params ret values 0
@@ -3925,7 +3924,7 @@ begin function
                 end scope ret values 0
 
 
-[286] for(var i = 0; i < 5; i++){
+[300] for(var i = 0; i < 5; i++){
 
                 begin code list
                   begin set local var
@@ -3939,364 +3938,1803 @@ begin function
             end scope ret values 0
 
 
-[362] var bg = Image("bg.jpg")
+[375] if(true){
 
-            begin scope
-              begin locals 13
-                18 bg
-                19 ball
-                20 friction
-                21 gravity
-                22 screenWidth
-                23 screenHeight
-                24 speedX
-                25 speedY
-                26 radius
-                27 prevX
-                28 prevY
-                29 trackVelocity
-                30 physUpdate
-              end locals
-              begin set local var
-                begin call method
-                  get local var _E (0 0)
-                  begin params 2
-                    push const string "Image"
-                    ,
-                    push const string "bg.jpg"
-                  end params ret values 2
-                end call method ret values 1
-              end set local var bg (18 0)
+            begin if
+              begin bool exp
+                const true
+              end bool exp
+              begin then
 
+[376] var bg = Image("bg.jpg")
 
-[363] bg.x = this.width / 2
-
-              begin set property
-                begin operator /
-                  begin get property
-                    push this
-                    push const string "width"
-                  end get property ret values 1
-                  push const number 2
-                end operator /
-                get local var auto create bg (18 0)
-                push const string "x"
-              end set property ret values 0
+                begin scope
+                  begin locals 8
+                    18 bg
+                    19 extractPoint
+                    20 extractSize
+                    21 getShapeBoxVertices
+                    22 bounce
+                    23 friction
+                    24 walls
+                    25 colors
+                  end locals
+                  begin set local var
+                    begin call method
+                      get local var _E (0 0)
+                      begin params 2
+                        push const string "Image"
+                        ,
+                        push const string "bg.jpg"
+                      end params ret values 2
+                    end call method ret values 1
+                  end set local var bg (18 0)
 
 
-[364] bg.y = this.height / 2
+[377] bg.x = this.width / 2
 
-              begin set property
-                begin operator /
-                  begin get property
-                    push this
-                    push const string "height"
-                  end get property ret values 1
-                  push const number 2
-                end operator /
-                get local var auto create bg (18 0)
-                push const string "y"
-              end set property ret values 0
-
-
-[365] bg.scale = math.max(this.width / bg.width, this.height / bg.height)
-
-              begin set property
-                begin call method
-                  get env var math
-                  begin params 3
-                    push const string "max"
-                    ,
+                  begin set property
                     begin operator /
                       begin get property
                         push this
                         push const string "width"
                       end get property ret values 1
-                      begin get property
-                        get local var bg (18 0)
-                        push const string "width"
-                      end get property ret values 1
+                      push const number 2
                     end operator /
-                    ,
+                    get local var auto create bg (18 0)
+                    push const string "x"
+                  end set property ret values 0
+
+
+[378] bg.y = this.height / 2
+
+                  begin set property
                     begin operator /
                       begin get property
                         push this
                         push const string "height"
                       end get property ret values 1
-                      begin get property
-                        get local var bg (18 0)
-                        push const string "height"
-                      end get property ret values 1
+                      push const number 2
                     end operator /
-                  end params ret values 3
-                end call method ret values 1
-                get local var auto create bg (18 0)
-                push const string "scale"
-              end set property ret values 0
+                    get local var auto create bg (18 0)
+                    push const string "y"
+                  end set property ret values 0
 
 
-[366] this.insert(bg, -10)
+[379] bg.scale = math.max(this.width / bg.width, this.height / bg.height)
 
-              begin call method
-                push this
-                begin params 3
-                  push const string "insert"
-                  ,
-                  get local var bg (18 0)
-                  ,
-                  begin neg
-                    push const number 10
-                  end neg
-                end params ret values 3
-              end call method ret values 0
-
-
-[368] var ball = Image("ball.png")
-
-              begin set local var
-                begin call method
-                  get local var _E (0 0)
-                  begin params 2
-                    push const string "Image"
-                    ,
-                    push const string "ball.png"
-                  end params ret values 2
-                end call method ret values 1
-              end set local var ball (19 0)
-
-
-[369] ball.x = this.width / 2
-
-              begin set property
-                begin operator /
-                  begin get property
-                    push this
-                    push const string "width"
-                  end get property ret values 1
-                  push const number 2
-                end operator /
-                get local var auto create ball (19 0)
-                push const string "x"
-              end set property ret values 0
-
-
-[370] ball.y = this.height / 2
-
-              begin set property
-                begin operator /
-                  begin get property
-                    push this
-                    push const string "height"
-                  end get property ret values 1
-                  push const number 2
-                end operator /
-                get local var auto create ball (19 0)
-                push const string "y"
-              end set property ret values 0
-
-
-[371] ball.zOrder = 1000
-
-              begin set property
-                push const number 1000
-                get local var auto create ball (19 0)
-                push const string "zOrder"
-              end set property ret values 0
-
-
-[372] this.insert(ball)
-
-              begin call method
-                push this
-                begin params 2
-                  push const string "insert"
-                  ,
-                  get local var ball (19 0)
-                end params ret values 2
-              end call method ret values 0
-
-
-[374] var friction, gravity = 0.9, 9
-
-              begin set local var
-                begin set local var
-                  begin params 2
-                    push const number 0.9
-                    ,
-                    push const number 9
-                  end params ret values 2
-                end set local var gravity (21 0)
-              end set local var friction (20 0)
-
-
-[375] var screenWidth, screenHeight = this.width, this.height
-
-              begin set local var
-                begin set local var
-                  begin params 2
-                    begin get property
-                      push this
-                      push const string "width"
-                    end get property ret values 1
-                    ,
-                    begin get property
-                      push this
-                      push const string "height"
-                    end get property ret values 1
-                  end params ret values 2
-                end set local var screenHeight (23 0)
-              end set local var screenWidth (22 0)
-
-
-[376] var speedX, speedY = math.random(-0.5, 0.5)*screenWidth, math.random(0.5, 1)*screenWidth
-
-              begin set local var
-                begin set local var
-                  begin params 2
-                    begin operator *
-                      begin call method
-                        get env var math
-                        begin params 3
-                          push const string "random"
-                          ,
-                          begin neg
-                            push const number 0.5
-                          end neg
-                          ,
-                          push const number 0.5
-                        end params ret values 3
-                      end call method ret values 1
-                      get local var screenWidth (22 0)
-                    end operator *
-                    ,
-                    begin operator *
-                      begin call method
-                        get env var math
-                        begin params 3
-                          push const string "random"
-                          ,
-                          push const number 0.5
-                          ,
-                          push const number 1
-                        end params ret values 3
-                      end call method ret values 1
-                      get local var screenWidth (22 0)
-                    end operator *
-                  end params ret values 2
-                end set local var speedY (25 0)
-              end set local var speedX (24 0)
-
-
-[377] var radius = ball.width/2
-
-              begin set local var
-                begin operator /
-                  begin get property
-                    get local var ball (19 0)
-                    push const string "width"
-                  end get property ret values 1
-                  push const number 2
-                end operator /
-              end set local var radius (26 0)
-
-
-[379] ball.addEventListener("touch", function(touch){
-
-              begin call method
-                get local var ball (19 0)
-                begin params 3
-                  push const string "addEventListener"
-                  ,
-                  push const string "touch"
-                  ,
-                  begin function
-                    begin locals, total 3
-                      0 touch (param)
-                      1 _E
-                      2 _G
-                    end locals
-
-[380] if(touch.phase == "start"){
-
-                    begin if
-                      begin bool exp
-                        begin logic ==
+                  begin set property
+                    begin call method
+                      get env var math
+                      begin params 3
+                        push const string "max"
+                        ,
+                        begin operator /
                           begin get property
-                            get local var touch (0 0 param)
-                            push const string "phase"
+                            push this
+                            push const string "width"
                           end get property ret values 1
-                          push const string "start"
-                        end logic ==
-                      end bool exp
-                      begin then
+                          begin get property
+                            get local var bg (18 0)
+                            push const string "width"
+                          end get property ret values 1
+                        end operator /
+                        ,
+                        begin operator /
+                          begin get property
+                            push this
+                            push const string "height"
+                          end get property ret values 1
+                          begin get property
+                            get local var bg (18 0)
+                            push const string "height"
+                          end get property ret values 1
+                        end operator /
+                      end params ret values 3
+                    end call method ret values 1
+                    get local var auto create bg (18 0)
+                    push const string "scale"
+                  end set property ret values 0
 
-[382] this.x0, this.y0 = touch.x - this.x, touch.y - this.y
 
-                        begin scope
-                          begin set property
-                            begin set property
-                              begin params 2
-                                begin operator -
-                                  begin get property
-                                    get local var touch (0 0 param)
-                                    push const string "x"
-                                  end get property ret values 1
-                                  begin get property
-                                    push this
-                                    push const string "x"
-                                  end get property ret values 1
-                                end operator -
+[380] this.insert(bg, -10)
+
+                  begin call method
+                    push this
+                    begin params 3
+                      push const string "insert"
+                      ,
+                      get local var bg (18 0)
+                      ,
+                      begin neg
+                        push const number 10
+                      end neg
+                    end params ret values 3
+                  end call method ret values 0
+
+
+[398] var function extractPoint(p){
+
+                  begin set local var
+                    begin function
+                      begin locals, total 3
+                        0 p (param)
+                        1 _E
+                        2 _G
+                      end locals
+
+[399] if(arrayof p){
+
+                      begin if
+                        begin bool exp
+                          begin arrayof
+                            get local var p (0 0 param)
+                          end arrayof
+                        end bool exp
+                        begin then
+
+[400] return p[0], p[1]
+
+                          begin scope
+                            begin return
+                              begin get property
+                                get local var p (0 0 param)
+                                push const number 0
+                              end get property ret values 1
+                              ,
+                              begin get property
+                                get local var p (0 0 param)
+                                push const number 1
+                              end get property ret values 1
+                            end return values 2
+                          end scope ret values 0
+                        end then
+                      end if ret values 0
+
+
+[402] return p.x, p.y
+
+                      begin code list
+                        begin return
+                          begin get property
+                            get local var p (0 0 param)
+                            push const string "x"
+                          end get property ret values 1
+                          ,
+                          begin get property
+                            get local var p (0 0 param)
+                            push const string "y"
+                          end get property ret values 1
+                        end return values 2
+                      end code list ret values 0
+                    end function
+                  end set local var extractPoint (19 0)
+
+
+[405] var function extractSize(p){
+
+                  begin set local var
+                    begin function
+                      begin locals, total 3
+                        0 p (param)
+                        1 _E
+                        2 _G
+                      end locals
+
+[406] if(arrayof p){
+
+                      begin if
+                        begin bool exp
+                          begin arrayof
+                            get local var p (0 0 param)
+                          end arrayof
+                        end bool exp
+                        begin then
+
+[407] return p[0], p[1]
+
+                          begin scope
+                            begin return
+                              begin get property
+                                get local var p (0 0 param)
+                                push const number 0
+                              end get property ret values 1
+                              ,
+                              begin get property
+                                get local var p (0 0 param)
+                                push const number 1
+                              end get property ret values 1
+                            end return values 2
+                          end scope ret values 0
+                        end then
+                      end if ret values 0
+
+
+[409] return p.width, p.height
+
+                      begin code list
+                        begin return
+                          begin get property
+                            get local var p (0 0 param)
+                            push const string "width"
+                          end get property ret values 1
+                          ,
+                          begin get property
+                            get local var p (0 0 param)
+                            push const string "height"
+                          end get property ret values 1
+                        end return values 2
+                      end code list ret values 0
+                    end function
+                  end set local var extractSize (20 0)
+
+
+[412] var function getShapeBoxVertices(leftTopCorner, size){
+
+                  begin set local var
+                    begin function
+                      begin locals, total 8
+                        0 leftTopCorner (param)
+                        1 size (param)
+                        2 _E
+                        3 _G
+                        4 x
+                        5 y
+                        6 width
+                        7 height
+                      end locals
+
+[413] var x, y = extractPoint(leftTopCorner)
+
+                      begin set local var
+                        begin set local var
+                          begin call
+                            get local var extractPoint (19 1)
+                            begin params 1
+                              get local var leftTopCorner (0 0 param)
+                            end params ret values 1
+                          end call ret values 2
+                        end set local var y (5 0)
+                      end set local var x (4 0)
+
+
+[414] var width, height = extractSize(size)
+
+                      begin set local var
+                        begin set local var
+                          begin call
+                            get local var extractSize (20 1)
+                            begin params 1
+                              get local var size (1 0 param)
+                            end params ret values 1
+                          end call ret values 2
+                        end set local var height (7 0)
+                      end set local var width (6 0)
+
+
+[415] return [ [x, y], [x + width, y], [x + width, y + height], [x, y + height] ]
+
+                      begin code list
+                        begin return
+                          begin array 4
+                            begin set auto index
+                              begin array 2
+                                begin set auto index
+                                  get local var x (4 0)
+                                end set auto index
                                 ,
-                                begin operator -
-                                  begin get property
-                                    get local var touch (0 0 param)
+                                begin set auto index
+                                  get local var y (5 0)
+                                end set auto index
+                              end array
+                            end set auto index
+                            ,
+                            begin set auto index
+                              begin array 2
+                                begin set auto index
+                                  begin operator +
+                                    get local var x (4 0)
+                                    get local var width (6 0)
+                                  end operator +
+                                end set auto index
+                                ,
+                                begin set auto index
+                                  get local var y (5 0)
+                                end set auto index
+                              end array
+                            end set auto index
+                            ,
+                            begin set auto index
+                              begin array 2
+                                begin set auto index
+                                  begin operator +
+                                    get local var x (4 0)
+                                    get local var width (6 0)
+                                  end operator +
+                                end set auto index
+                                ,
+                                begin set auto index
+                                  begin operator +
+                                    get local var y (5 0)
+                                    get local var height (7 0)
+                                  end operator +
+                                end set auto index
+                              end array
+                            end set auto index
+                            ,
+                            begin set auto index
+                              begin array 2
+                                begin set auto index
+                                  get local var x (4 0)
+                                end set auto index
+                                ,
+                                begin set auto index
+                                  begin operator +
+                                    get local var y (5 0)
+                                    get local var height (7 0)
+                                  end operator +
+                                end set auto index
+                              end array
+                            end set auto index
+                          end array
+                        end return values 1
+                      end code list ret values 0
+                    end function
+                  end set local var getShapeBoxVertices (21 0)
+
+
+[418] var bounce = 0.8
+
+                  begin set local var
+                    push const number 0.8
+                  end set local var bounce (22 0)
+
+
+[419] var friction = 0.2
+
+                  begin set local var
+                    push const number 0.2
+                  end set local var friction (23 0)
+
+
+[420] var walls = physics.createBody {
+
+                  begin set local var
+                    begin call method
+                      get local var physics (8 1)
+                      begin params 2
+                        push const string "createBody"
+                        ,
+                        begin object 2
+
+[421] type = "static"
+
+                          begin set by name
+                            push const string "static"
+                          end set by name: [type]
+                          ,
+
+[422] fixture = {
+
+                          begin set by name
+                            begin object 3
+
+[423] shapes = [
+
+                              begin set by name
+                                begin array 4
+
+[424] getShapeBoxVertices([0, director.height], [director.width, director.height*0.1]),
+
+                                  begin set auto index
+                                    begin call
+                                      get local var getShapeBoxVertices (21 0)
+                                      begin params 2
+                                        begin array 2
+                                          begin set auto index
+                                            push const number 0
+                                          end set auto index
+                                          ,
+                                          begin set auto index
+                                            begin get property
+                                              get local var director (7 1)
+                                              push const string "height"
+                                            end get property ret values 1
+                                          end set auto index
+                                        end array
+                                        ,
+                                        begin array 2
+                                          begin set auto index
+                                            begin get property
+                                              get local var director (7 1)
+                                              push const string "width"
+                                            end get property ret values 1
+                                          end set auto index
+                                          ,
+                                          begin set auto index
+                                            begin operator *
+                                              begin get property
+                                                get local var director (7 1)
+                                                push const string "height"
+                                              end get property ret values 1
+                                              push const number 0.1
+                                            end operator *
+                                          end set auto index
+                                        end array
+                                      end params ret values 2
+                                    end call ret values 1
+                                  end set auto index
+                                  ,
+
+[425] getShapeBoxVertices([0, director.height*-0.1], [director.width, director.height*0.1]),
+
+                                  begin set auto index
+                                    begin call
+                                      get local var getShapeBoxVertices (21 0)
+                                      begin params 2
+                                        begin array 2
+                                          begin set auto index
+                                            push const number 0
+                                          end set auto index
+                                          ,
+                                          begin set auto index
+                                            begin operator *
+                                              begin get property
+                                                get local var director (7 1)
+                                                push const string "height"
+                                              end get property ret values 1
+                                              begin neg
+                                                push const number 0.1
+                                              end neg
+                                            end operator *
+                                          end set auto index
+                                        end array
+                                        ,
+                                        begin array 2
+                                          begin set auto index
+                                            begin get property
+                                              get local var director (7 1)
+                                              push const string "width"
+                                            end get property ret values 1
+                                          end set auto index
+                                          ,
+                                          begin set auto index
+                                            begin operator *
+                                              begin get property
+                                                get local var director (7 1)
+                                                push const string "height"
+                                              end get property ret values 1
+                                              push const number 0.1
+                                            end operator *
+                                          end set auto index
+                                        end array
+                                      end params ret values 2
+                                    end call ret values 1
+                                  end set auto index
+                                  ,
+
+[426] getShapeBoxVertices([director.width*-0.1, 0], [director.width*0.1, director.height]),
+
+                                  begin set auto index
+                                    begin call
+                                      get local var getShapeBoxVertices (21 0)
+                                      begin params 2
+                                        begin array 2
+                                          begin set auto index
+                                            begin operator *
+                                              begin get property
+                                                get local var director (7 1)
+                                                push const string "width"
+                                              end get property ret values 1
+                                              begin neg
+                                                push const number 0.1
+                                              end neg
+                                            end operator *
+                                          end set auto index
+                                          ,
+                                          begin set auto index
+                                            push const number 0
+                                          end set auto index
+                                        end array
+                                        ,
+                                        begin array 2
+                                          begin set auto index
+                                            begin operator *
+                                              begin get property
+                                                get local var director (7 1)
+                                                push const string "width"
+                                              end get property ret values 1
+                                              push const number 0.1
+                                            end operator *
+                                          end set auto index
+                                          ,
+                                          begin set auto index
+                                            begin get property
+                                              get local var director (7 1)
+                                              push const string "height"
+                                            end get property ret values 1
+                                          end set auto index
+                                        end array
+                                      end params ret values 2
+                                    end call ret values 1
+                                  end set auto index
+                                  ,
+
+[427] getShapeBoxVertices([director.width, 0], [director.width*0.1, director.height]),
+
+                                  begin set auto index
+                                    begin call
+                                      get local var getShapeBoxVertices (21 0)
+                                      begin params 2
+                                        begin array 2
+                                          begin set auto index
+                                            begin get property
+                                              get local var director (7 1)
+                                              push const string "width"
+                                            end get property ret values 1
+                                          end set auto index
+                                          ,
+                                          begin set auto index
+                                            push const number 0
+                                          end set auto index
+                                        end array
+                                        ,
+                                        begin array 2
+                                          begin set auto index
+                                            begin operator *
+                                              begin get property
+                                                get local var director (7 1)
+                                                push const string "width"
+                                              end get property ret values 1
+                                              push const number 0.1
+                                            end operator *
+                                          end set auto index
+                                          ,
+                                          begin set auto index
+                                            begin get property
+                                              get local var director (7 1)
+                                              push const string "height"
+                                            end get property ret values 1
+                                          end set auto index
+                                        end array
+                                      end params ret values 2
+                                    end call ret values 1
+                                  end set auto index
+                                end array
+                              end set by name: [shapes]
+                              ,
+
+[429] bounce = bounce
+
+                              begin set by name
+                                get local var bounce (22 0)
+                              end set by name: [bounce]
+                              ,
+
+[430] friction = friction
+
+                              begin set by name
+                                get local var friction (23 0)
+                              end set by name: [friction]
+                            end object
+                          end set by name: [fixture]
+                        end object
+                      end params ret values 2
+                    end call method ret values 1
+                  end set local var walls (24 0)
+
+
+[434] var colors = [ [0.9 0.7 0.7], [0.7 0.9 0.7], [0.7 0.7 0.9] ]
+
+                  begin set local var
+                    begin array 3
+                      begin set auto index
+                        begin array 3
+                          begin set auto index
+                            push const number 0.9
+                          end set auto index
+                          ,
+                          begin set auto index
+                            push const number 0.7
+                          end set auto index
+                          ,
+                          begin set auto index
+                            push const number 0.7
+                          end set auto index
+                        end array
+                      end set auto index
+                      ,
+                      begin set auto index
+                        begin array 3
+                          begin set auto index
+                            push const number 0.7
+                          end set auto index
+                          ,
+                          begin set auto index
+                            push const number 0.9
+                          end set auto index
+                          ,
+                          begin set auto index
+                            push const number 0.7
+                          end set auto index
+                        end array
+                      end set auto index
+                      ,
+                      begin set auto index
+                        begin array 3
+                          begin set auto index
+                            push const number 0.7
+                          end set auto index
+                          ,
+                          begin set auto index
+                            push const number 0.7
+                          end set auto index
+                          ,
+                          begin set auto index
+                            push const number 0.9
+                          end set auto index
+                        end array
+                      end set auto index
+                    end array
+                  end set local var colors (25 0)
+
+
+[435] for(var i = 0; i < 5; i++){
+
+                  begin scope
+                    begin locals 1
+                      26 i
+                    end locals
+                    begin set local var
+                      push const number 0
+                    end set local var i (26 0)
+
+                    begin loop
+                      begin if
+                        begin bool exp
+                          begin logic not
+                            begin logic <
+                              get local var i (26 0)
+                              push const number 5
+                            end logic <
+                          end logic not
+                        end bool exp
+                        begin then
+                          break
+                        end then
+                      end if ret values 0
+
+
+[436] function(){
+
+                      begin scope
+
+[503] }.call(this)
+
+                        begin call method
+
+[436] function(){
+
+                          begin function
+                            begin locals, total 9
+                              0 _E
+                              1 _G
+                              2 ball
+                              3 body
+                              4 prevX
+                              5 prevY
+                              6 speedX
+                              7 speedY
+                              8 dragging
+                            end locals
+
+[437] var ball, body
+
+                            begin params 2
+                              new local var ball (2 0)
+                              ,
+                              new local var body (3 0)
+                            end params ret values 0
+
+
+[438] if(i % 3 != 0){
+
+                            begin if
+                              begin bool exp
+                                begin logic !=
+                                  begin operator %
+                                    get local var i (26 1)
+                                    push const number 3
+                                  end operator %
+                                  push const number 0
+                                end logic !=
+                              end bool exp
+                              begin then
+
+[439] ball = Image("ball.png")
+
+                                begin scope
+                                  begin set local var
+                                    begin call method
+                                      get local var _E (0 0)
+                                      begin params 2
+                                        push const string "Image"
+                                        ,
+                                        push const string "ball.png"
+                                      end params ret values 2
+                                    end call method ret values 1
+                                  end set local var ball (2 0)
+
+
+[440] ball.x = this.width * math.random(0.1, 0.9)
+
+                                  begin set property
+                                    begin operator *
+                                      begin get property
+                                        push this
+                                        push const string "width"
+                                      end get property ret values 1
+                                      begin call method
+                                        get env var math
+                                        begin params 3
+                                          push const string "random"
+                                          ,
+                                          push const number 0.1
+                                          ,
+                                          push const number 0.9
+                                        end params ret values 3
+                                      end call method ret values 1
+                                    end operator *
+                                    get local var auto create ball (2 0)
+                                    push const string "x"
+                                  end set property ret values 0
+
+
+[441] ball.y = this.height * 0.1
+
+                                  begin set property
+                                    begin operator *
+                                      begin get property
+                                        push this
+                                        push const string "height"
+                                      end get property ret values 1
+                                      push const number 0.1
+                                    end operator *
+                                    get local var auto create ball (2 0)
                                     push const string "y"
-                                  end get property ret values 1
-                                  begin get property
+                                  end set property ret values 0
+
+
+[442] ball.zOrder = 1000
+
+                                  begin set property
+                                    push const number 1000
+                                    get local var auto create ball (2 0)
+                                    push const string "zOrder"
+                                  end set property ret values 0
+
+
+[443] ball.color = colors[i % #colors]
+
+                                  begin set property
+                                    begin get property
+                                      get local var colors (25 1)
+                                      begin operator %
+                                        get local var i (26 1)
+                                        begin length
+                                          get local var colors (25 1)
+                                        end length
+                                      end operator %
+                                    end get property ret values 1
+                                    get local var auto create ball (2 0)
+                                    push const string "color"
+                                  end set property ret values 0
+
+
+[444] this.insert(ball)
+
+                                  begin call method
                                     push this
+                                    begin params 2
+                                      push const string "insert"
+                                      ,
+                                      get local var ball (2 0)
+                                    end params ret values 2
+                                  end call method ret values 0
+
+
+[446] body = ball.addPhysicsBody {
+
+                                  begin set local var
+                                    begin call method
+                                      get local var ball (2 0)
+                                      begin params 2
+                                        push const string "addPhysicsBody"
+                                        ,
+                                        begin object 2
+
+[447] type = "dynamic"
+
+                                          begin set by name
+                                            push const string "dynamic"
+                                          end set by name: [type]
+                                          ,
+
+[448] fixture = {
+
+                                          begin set by name
+                                            begin object 4
+
+[449] shape = {
+
+                                              begin set by name
+                                                begin object 1
+
+[450] radius = ball.width/2
+
+                                                  begin set by name
+                                                    begin operator /
+                                                      begin get property
+                                                        get local var ball (2 0)
+                                                        push const string "width"
+                                                      end get property ret values 1
+                                                      push const number 2
+                                                    end operator /
+                                                  end set by name: [radius]
+                                                end object
+                                              end set by name: [shape]
+                                              ,
+
+[452] density = 1
+
+                                              begin set by name
+                                                push const number 1
+                                              end set by name: [density]
+                                              ,
+
+[453] bounce = bounce
+
+                                              begin set by name
+                                                get local var bounce (22 1)
+                                              end set by name: [bounce]
+                                              ,
+
+[454] friction = friction
+
+                                              begin set by name
+                                                get local var friction (23 1)
+                                              end set by name: [friction]
+                                            end object
+                                          end set by name: [fixture]
+                                        end object
+                                      end params ret values 2
+                                    end call method ret values 1
+                                  end set local var body (3 0)
+                                end scope ret values 0
+                              end then
+                              begin else
+
+[458] ball = Image("box.jpg")
+
+                                begin scope
+                                  begin set local var
+                                    begin call method
+                                      get local var _E (0 0)
+                                      begin params 2
+                                        push const string "Image"
+                                        ,
+                                        push const string "box.jpg"
+                                      end params ret values 2
+                                    end call method ret values 1
+                                  end set local var ball (2 0)
+
+
+[459] ball.x = this.width * math.random(0.1, 0.9)
+
+                                  begin set property
+                                    begin operator *
+                                      begin get property
+                                        push this
+                                        push const string "width"
+                                      end get property ret values 1
+                                      begin call method
+                                        get env var math
+                                        begin params 3
+                                          push const string "random"
+                                          ,
+                                          push const number 0.1
+                                          ,
+                                          push const number 0.9
+                                        end params ret values 3
+                                      end call method ret values 1
+                                    end operator *
+                                    get local var auto create ball (2 0)
+                                    push const string "x"
+                                  end set property ret values 0
+
+
+[460] ball.y = this.height * 0.1
+
+                                  begin set property
+                                    begin operator *
+                                      begin get property
+                                        push this
+                                        push const string "height"
+                                      end get property ret values 1
+                                      push const number 0.1
+                                    end operator *
+                                    get local var auto create ball (2 0)
                                     push const string "y"
-                                  end get property ret values 1
-                                end operator -
-                              end params ret values 2
-                              push this
-                              push const string "y0"
-                            end set property ret values 1
+                                  end set property ret values 0
+
+
+[462] ball.zOrder = 1000
+
+                                  begin set property
+                                    push const number 1000
+                                    get local var auto create ball (2 0)
+                                    push const string "zOrder"
+                                  end set property ret values 0
+
+
+[463] ball.color = colors[i % #colors]
+
+                                  begin set property
+                                    begin get property
+                                      get local var colors (25 1)
+                                      begin operator %
+                                        get local var i (26 1)
+                                        begin length
+                                          get local var colors (25 1)
+                                        end length
+                                      end operator %
+                                    end get property ret values 1
+                                    get local var auto create ball (2 0)
+                                    push const string "color"
+                                  end set property ret values 0
+
+
+[464] this.insert(ball)
+
+                                  begin call method
+                                    push this
+                                    begin params 2
+                                      push const string "insert"
+                                      ,
+                                      get local var ball (2 0)
+                                    end params ret values 2
+                                  end call method ret values 0
+
+
+[466] body = ball.addPhysicsBody {
+
+                                  begin set local var
+                                    begin call method
+                                      get local var ball (2 0)
+                                      begin params 2
+                                        push const string "addPhysicsBody"
+                                        ,
+                                        begin object 2
+
+[467] type = "dynamic"
+
+                                          begin set by name
+                                            push const string "dynamic"
+                                          end set by name: [type]
+                                          ,
+
+[468] fixture = {
+
+                                          begin set by name
+                                            begin object 4
+
+[470] shape = getShapeBoxVertices([-ball.width/2, -ball.height/2], [ball.width, ball.height])
+
+                                              begin set by name
+                                                begin call
+                                                  get local var getShapeBoxVertices (21 1)
+                                                  begin params 2
+                                                    begin array 2
+                                                      begin set auto index
+                                                        begin operator /
+                                                          begin neg
+                                                            begin get property
+                                                              get local var ball (2 0)
+                                                              push const string "width"
+                                                            end get property ret values 1
+                                                          end neg
+                                                          push const number 2
+                                                        end operator /
+                                                      end set auto index
+                                                      ,
+                                                      begin set auto index
+                                                        begin operator /
+                                                          begin neg
+                                                            begin get property
+                                                              get local var ball (2 0)
+                                                              push const string "height"
+                                                            end get property ret values 1
+                                                          end neg
+                                                          push const number 2
+                                                        end operator /
+                                                      end set auto index
+                                                    end array
+                                                    ,
+                                                    begin array 2
+                                                      begin set auto index
+                                                        begin get property
+                                                          get local var ball (2 0)
+                                                          push const string "width"
+                                                        end get property ret values 1
+                                                      end set auto index
+                                                      ,
+                                                      begin set auto index
+                                                        begin get property
+                                                          get local var ball (2 0)
+                                                          push const string "height"
+                                                        end get property ret values 1
+                                                      end set auto index
+                                                    end array
+                                                  end params ret values 2
+                                                end call ret values 1
+                                              end set by name: [shape]
+                                              ,
+
+[471] density = 1
+
+                                              begin set by name
+                                                push const number 1
+                                              end set by name: [density]
+                                              ,
+
+[472] bounce = bounce
+
+                                              begin set by name
+                                                get local var bounce (22 1)
+                                              end set by name: [bounce]
+                                              ,
+
+[473] friction = friction
+
+                                              begin set by name
+                                                get local var friction (23 1)
+                                              end set by name: [friction]
+                                            end object
+                                          end set by name: [fixture]
+                                        end object
+                                      end params ret values 2
+                                    end call method ret values 1
+                                  end set local var body (3 0)
+
+
+[476] body.angularVelocity = 180
+
+                                  begin set property
+                                    push const number 180
+                                    get local var auto create body (3 0)
+                                    push const string "angularVelocity"
+                                  end set property ret values 0
+                                end scope ret values 0
+                              end else
+                            end if ret values 0
+
+
+[478] body.linearVelocity = [this.width * math.random(-1, 1), this.width * math.random(-1, 1)]
+
+                            begin set property
+                              begin array 2
+                                begin set auto index
+                                  begin operator *
+                                    begin get property
+                                      push this
+                                      push const string "width"
+                                    end get property ret values 1
+                                    begin call method
+                                      get env var math
+                                      begin params 3
+                                        push const string "random"
+                                        ,
+                                        begin neg
+                                          push const number 1
+                                        end neg
+                                        ,
+                                        push const number 1
+                                      end params ret values 3
+                                    end call method ret values 1
+                                  end operator *
+                                end set auto index
+                                ,
+                                begin set auto index
+                                  begin operator *
+                                    begin get property
+                                      push this
+                                      push const string "width"
+                                    end get property ret values 1
+                                    begin call method
+                                      get env var math
+                                      begin params 3
+                                        push const string "random"
+                                        ,
+                                        begin neg
+                                          push const number 1
+                                        end neg
+                                        ,
+                                        push const number 1
+                                      end params ret values 3
+                                    end call method ret values 1
+                                  end operator *
+                                end set auto index
+                              end array
+                              get local var auto create body (3 0)
+                              push const string "linearVelocity"
+                            end set property ret values 0
+
+
+[480] var prevX, prevY, speedX, speedY = 0, 0, 0, 0
+
+                            begin set local var
+                              begin set local var
+                                begin set local var
+                                  begin set local var
+                                    begin params 4
+                                      push const number 0
+                                      ,
+                                      push const number 0
+                                      ,
+                                      push const number 0
+                                      ,
+                                      push const number 0
+                                    end params ret values 4
+                                  end set local var speedY (7 0)
+                                end set local var speedX (6 0)
+                              end set local var prevY (5 0)
+                            end set local var prevX (4 0)
+
+
+[481] var function dragging(params){
+
+                            begin set local var
+                              begin function
+                                begin locals, total 3
+                                  0 params (param)
+                                  1 _E
+                                  2 _G
+                                end locals
+
+[482] speedX = (this.x - prevX) / params.deltaTime
+
+                                begin set local var
+                                  begin operator /
+                                    begin operator -
+                                      begin get property
+                                        push this
+                                        push const string "x"
+                                      end get property ret values 1
+                                      get local var prevX (4 1)
+                                    end operator -
+                                    begin get property
+                                      get local var params (0 0 param)
+                                      push const string "deltaTime"
+                                    end get property ret values 1
+                                  end operator /
+                                end set local var speedX (6 1)
+
+
+[483] speedY = (this.y - prevY) / params.deltaTime
+
+                                begin set local var
+                                  begin operator /
+                                    begin operator -
+                                      begin get property
+                                        push this
+                                        push const string "y"
+                                      end get property ret values 1
+                                      get local var prevY (5 1)
+                                    end operator -
+                                    begin get property
+                                      get local var params (0 0 param)
+                                      push const string "deltaTime"
+                                    end get property ret values 1
+                                  end operator /
+                                end set local var speedY (7 1)
+
+
+[484] prevX, prevY = this.x, this.y
+
+                                begin set local var
+                                  begin set local var
+                                    begin params 2
+                                      begin get property
+                                        push this
+                                        push const string "x"
+                                      end get property ret values 1
+                                      ,
+                                      begin get property
+                                        push this
+                                        push const string "y"
+                                      end get property ret values 1
+                                    end params ret values 2
+                                  end set local var prevY (5 1)
+                                end set local var prevX (4 1)
+
+
+[485] body.linearVelocity, body.gravityScale = [0, 0], 0
+
+                                begin set property
+                                  begin set property
+                                    begin params 2
+                                      begin array 2
+                                        begin set auto index
+                                          push const number 0
+                                        end set auto index
+                                        ,
+                                        begin set auto index
+                                          push const number 0
+                                        end set auto index
+                                      end array
+                                      ,
+                                      push const number 0
+                                    end params ret values 2
+                                    get local var auto create body (3 1)
+                                    push const string "gravityScale"
+                                  end set property ret values 1
+                                  get local var auto create body (3 1)
+                                  push const string "linearVelocity"
+                                end set property ret values 0
+                              end function
+                            end set local var dragging (8 0)
+
+
+[487] ball.addEventListener("touch", function(touch){
+
+                            begin call method
+                              get local var ball (2 0)
+                              begin params 3
+                                push const string "addEventListener"
+                                ,
+                                push const string "touch"
+                                ,
+                                begin function
+                                  begin locals, total 3
+                                    0 touch (param)
+                                    1 _E
+                                    2 _G
+                                  end locals
+
+[488] if(touch.phase == "start"){
+
+                                  begin if
+                                    begin bool exp
+                                      begin logic ==
+                                        begin get property
+                                          get local var touch (0 0 param)
+                                          push const string "phase"
+                                        end get property ret values 1
+                                        push const string "start"
+                                      end logic ==
+                                    end bool exp
+                                    begin then
+
+[490] this.x0, this.y0 = touch.x - this.x, touch.y - this.y
+
+                                      begin scope
+                                        begin set property
+                                          begin set property
+                                            begin params 2
+                                              begin operator -
+                                                begin get property
+                                                  get local var touch (0 0 param)
+                                                  push const string "x"
+                                                end get property ret values 1
+                                                begin get property
+                                                  push this
+                                                  push const string "x"
+                                                end get property ret values 1
+                                              end operator -
+                                              ,
+                                              begin operator -
+                                                begin get property
+                                                  get local var touch (0 0 param)
+                                                  push const string "y"
+                                                end get property ret values 1
+                                                begin get property
+                                                  push this
+                                                  push const string "y"
+                                                end get property ret values 1
+                                              end operator -
+                                            end params ret values 2
+                                            push this
+                                            push const string "y0"
+                                          end set property ret values 1
+                                          push this
+                                          push const string "x0"
+                                        end set property ret values 0
+
+
+[493] this.addEventListener("enterFrame", dragging)
+
+                                        begin call method
+                                          push this
+                                          begin params 3
+                                            push const string "addEventListener"
+                                            ,
+                                            push const string "enterFrame"
+                                            ,
+                                            get local var dragging (8 1)
+                                          end params ret values 3
+                                        end call method ret values 0
+                                      end scope ret values 0
+                                    end then
+                                    begin else
+
+[494] }else if(touch.phase == "move"){
+
+                                      begin if
+                                        begin bool exp
+                                          begin logic ==
+                                            begin get property
+                                              get local var touch (0 0 param)
+                                              push const string "phase"
+                                            end get property ret values 1
+                                            push const string "move"
+                                          end logic ==
+                                        end bool exp
+                                        begin then
+
+[495] this.x, this.y = touch.x - this.x0, touch.y - this.y0
+
+                                          begin scope
+                                            begin set property
+                                              begin set property
+                                                begin params 2
+                                                  begin operator -
+                                                    begin get property
+                                                      get local var touch (0 0 param)
+                                                      push const string "x"
+                                                    end get property ret values 1
+                                                    begin get property
+                                                      push this
+                                                      push const string "x0"
+                                                    end get property ret values 1
+                                                  end operator -
+                                                  ,
+                                                  begin operator -
+                                                    begin get property
+                                                      get local var touch (0 0 param)
+                                                      push const string "y"
+                                                    end get property ret values 1
+                                                    begin get property
+                                                      push this
+                                                      push const string "y0"
+                                                    end get property ret values 1
+                                                  end operator -
+                                                end params ret values 2
+                                                push this
+                                                push const string "y"
+                                              end set property ret values 1
+                                              push this
+                                              push const string "x"
+                                            end set property ret values 0
+
+
+[496] body.position = [this.x, this.y]
+
+                                            begin set property
+                                              begin array 2
+                                                begin set auto index
+                                                  begin get property
+                                                    push this
+                                                    push const string "x"
+                                                  end get property ret values 1
+                                                end set auto index
+                                                ,
+                                                begin set auto index
+                                                  begin get property
+                                                    push this
+                                                    push const string "y"
+                                                  end get property ret values 1
+                                                end set auto index
+                                              end array
+                                              get local var auto create body (3 1)
+                                              push const string "position"
+                                            end set property ret values 0
+                                          end scope ret values 0
+                                        end then
+                                        begin else
+
+[498] }else if(touch.phase == "end" || touch.phase == "cancel"){
+
+                                          begin if
+                                            begin bool exp
+                                              begin logic ||
+                                                begin logic ==
+                                                  begin get property
+                                                    get local var touch (0 0 param)
+                                                    push const string "phase"
+                                                  end get property ret values 1
+                                                  push const string "end"
+                                                end logic ==
+                                                begin logic ==
+                                                  begin get property
+                                                    get local var touch (0 0 param)
+                                                    push const string "phase"
+                                                  end get property ret values 1
+                                                  push const string "cancel"
+                                                end logic ==
+                                              end logic ||
+                                            end bool exp
+                                            begin then
+
+[499] body.linearVelocity, body.gravityScale, body.isAwake = [speedX, speedY], 1, true
+
+                                              begin scope
+                                                begin set property
+                                                  begin set property
+                                                    begin set property
+                                                      begin params 3
+                                                        begin array 2
+                                                          begin set auto index
+                                                            get local var speedX (6 1)
+                                                          end set auto index
+                                                          ,
+                                                          begin set auto index
+                                                            get local var speedY (7 1)
+                                                          end set auto index
+                                                        end array
+                                                        ,
+                                                        push const number 1
+                                                        ,
+                                                        const true
+                                                      end params ret values 3
+                                                      get local var auto create body (3 1)
+                                                      push const string "isAwake"
+                                                    end set property ret values 2
+                                                    get local var auto create body (3 1)
+                                                    push const string "gravityScale"
+                                                  end set property ret values 1
+                                                  get local var auto create body (3 1)
+                                                  push const string "linearVelocity"
+                                                end set property ret values 0
+
+
+[500] this.removeEventListener("enterFrame", dragging)
+
+                                                begin call method
+                                                  push this
+                                                  begin params 3
+                                                    push const string "removeEventListener"
+                                                    ,
+                                                    push const string "enterFrame"
+                                                    ,
+                                                    get local var dragging (8 1)
+                                                  end params ret values 3
+                                                end call method ret values 0
+                                              end scope ret values 0
+                                            end then
+                                          end if ret values 0
+                                        end else
+                                      end if ret values 0
+                                    end else
+                                  end if ret values 0
+                                end function
+                              end params ret values 3
+                            end call method ret values 0
+                          end function
+
+[503] }.call(this)
+
+                          begin params 2
+                            push const string "call"
+                            ,
                             push this
-                            push const string "x0"
-                          end set property ret values 0
+                          end params ret values 2
+                        end call method ret values 0
+                      end scope ret values 0
 
 
-[383] this.removeEventListener("enterFrame", physUpdate)
+[435] for(var i = 0; i < 5; i++){
 
+                      begin code list
+                        begin set local var
+                          begin operator +
+                            get local var i (26 0)
+                            push const number 1
+                          end operator +
+                        end set local var i (26 0)
+                      end code list ret values 0
+                    end loop ret values 0
+                  end scope ret values 0
+                end scope ret values 0
+              end then
+            end if ret values 0
+
+
+[507] if(false){
+
+            begin if
+              begin bool exp
+                const false
+              end bool exp
+              begin then
+
+[508] var bg = Image("bg.jpg")
+
+                begin scope
+                  begin locals 13
+                    27 bg
+                    28 ball
+                    29 friction
+                    30 gravity
+                    31 screenWidth
+                    32 screenHeight
+                    33 speedX
+                    34 speedY
+                    35 radius
+                    36 prevX
+                    37 prevY
+                    38 trackVelocity
+                    39 physUpdate
+                  end locals
+                  begin set local var
+                    begin call method
+                      get local var _E (0 0)
+                      begin params 2
+                        push const string "Image"
+                        ,
+                        push const string "bg.jpg"
+                      end params ret values 2
+                    end call method ret values 1
+                  end set local var bg (27 0)
+
+
+[509] bg.x = this.width / 2
+
+                  begin set property
+                    begin operator /
+                      begin get property
+                        push this
+                        push const string "width"
+                      end get property ret values 1
+                      push const number 2
+                    end operator /
+                    get local var auto create bg (27 0)
+                    push const string "x"
+                  end set property ret values 0
+
+
+[510] bg.y = this.height / 2
+
+                  begin set property
+                    begin operator /
+                      begin get property
+                        push this
+                        push const string "height"
+                      end get property ret values 1
+                      push const number 2
+                    end operator /
+                    get local var auto create bg (27 0)
+                    push const string "y"
+                  end set property ret values 0
+
+
+[511] bg.scale = math.max(this.width / bg.width, this.height / bg.height)
+
+                  begin set property
+                    begin call method
+                      get env var math
+                      begin params 3
+                        push const string "max"
+                        ,
+                        begin operator /
+                          begin get property
+                            push this
+                            push const string "width"
+                          end get property ret values 1
+                          begin get property
+                            get local var bg (27 0)
+                            push const string "width"
+                          end get property ret values 1
+                        end operator /
+                        ,
+                        begin operator /
+                          begin get property
+                            push this
+                            push const string "height"
+                          end get property ret values 1
+                          begin get property
+                            get local var bg (27 0)
+                            push const string "height"
+                          end get property ret values 1
+                        end operator /
+                      end params ret values 3
+                    end call method ret values 1
+                    get local var auto create bg (27 0)
+                    push const string "scale"
+                  end set property ret values 0
+
+
+[512] this.insert(bg, -10)
+
+                  begin call method
+                    push this
+                    begin params 3
+                      push const string "insert"
+                      ,
+                      get local var bg (27 0)
+                      ,
+                      begin neg
+                        push const number 10
+                      end neg
+                    end params ret values 3
+                  end call method ret values 0
+
+
+[514] var ball = Image("ball.png")
+
+                  begin set local var
+                    begin call method
+                      get local var _E (0 0)
+                      begin params 2
+                        push const string "Image"
+                        ,
+                        push const string "ball.png"
+                      end params ret values 2
+                    end call method ret values 1
+                  end set local var ball (28 0)
+
+
+[515] ball.x = this.width / 2
+
+                  begin set property
+                    begin operator /
+                      begin get property
+                        push this
+                        push const string "width"
+                      end get property ret values 1
+                      push const number 2
+                    end operator /
+                    get local var auto create ball (28 0)
+                    push const string "x"
+                  end set property ret values 0
+
+
+[516] ball.y = this.height / 2
+
+                  begin set property
+                    begin operator /
+                      begin get property
+                        push this
+                        push const string "height"
+                      end get property ret values 1
+                      push const number 2
+                    end operator /
+                    get local var auto create ball (28 0)
+                    push const string "y"
+                  end set property ret values 0
+
+
+[517] ball.zOrder = 1000
+
+                  begin set property
+                    push const number 1000
+                    get local var auto create ball (28 0)
+                    push const string "zOrder"
+                  end set property ret values 0
+
+
+[518] this.insert(ball)
+
+                  begin call method
+                    push this
+                    begin params 2
+                      push const string "insert"
+                      ,
+                      get local var ball (28 0)
+                    end params ret values 2
+                  end call method ret values 0
+
+
+[520] var friction, gravity = 0.9, 9
+
+                  begin set local var
+                    begin set local var
+                      begin params 2
+                        push const number 0.9
+                        ,
+                        push const number 9
+                      end params ret values 2
+                    end set local var gravity (30 0)
+                  end set local var friction (29 0)
+
+
+[521] var screenWidth, screenHeight = this.width, this.height
+
+                  begin set local var
+                    begin set local var
+                      begin params 2
+                        begin get property
+                          push this
+                          push const string "width"
+                        end get property ret values 1
+                        ,
+                        begin get property
+                          push this
+                          push const string "height"
+                        end get property ret values 1
+                      end params ret values 2
+                    end set local var screenHeight (32 0)
+                  end set local var screenWidth (31 0)
+
+
+[522] var speedX, speedY = math.random(-0.5, 0.5)*screenWidth, math.random(0.5, 1)*screenWidth
+
+                  begin set local var
+                    begin set local var
+                      begin params 2
+                        begin operator *
                           begin call method
-                            push this
+                            get env var math
                             begin params 3
-                              push const string "removeEventListener"
+                              push const string "random"
                               ,
-                              push const string "enterFrame"
+                              begin neg
+                                push const number 0.5
+                              end neg
                               ,
-                              get local var physUpdate (30 1)
+                              push const number 0.5
                             end params ret values 3
-                          end call method ret values 0
-
-
-[384] this.addEventListener("enterFrame", trackVelocity)
-
+                          end call method ret values 1
+                          get local var screenWidth (31 0)
+                        end operator *
+                        ,
+                        begin operator *
                           begin call method
-                            push this
+                            get env var math
                             begin params 3
-                              push const string "addEventListener"
+                              push const string "random"
                               ,
-                              push const string "enterFrame"
+                              push const number 0.5
                               ,
-                              get local var trackVelocity (29 1)
+                              push const number 1
                             end params ret values 3
-                          end call method ret values 0
-                        end scope ret values 0
-                      end then
-                      begin else
+                          end call method ret values 1
+                          get local var screenWidth (31 0)
+                        end operator *
+                      end params ret values 2
+                    end set local var speedY (34 0)
+                  end set local var speedX (33 0)
 
-[385] }else if(touch.phase == "move"){
+
+[523] var radius = ball.width/2
+
+                  begin set local var
+                    begin operator /
+                      begin get property
+                        get local var ball (28 0)
+                        push const string "width"
+                      end get property ret values 1
+                      push const number 2
+                    end operator /
+                  end set local var radius (35 0)
+
+
+[525] ball.addEventListener("touch", function(touch){
+
+                  begin call method
+                    get local var ball (28 0)
+                    begin params 3
+                      push const string "addEventListener"
+                      ,
+                      push const string "touch"
+                      ,
+                      begin function
+                        begin locals, total 3
+                          0 touch (param)
+                          1 _E
+                          2 _G
+                        end locals
+
+[526] if(touch.phase == "start"){
 
                         begin if
                           begin bool exp
@@ -4305,12 +5743,12 @@ begin function
                                 get local var touch (0 0 param)
                                 push const string "phase"
                               end get property ret values 1
-                              push const string "move"
+                              push const string "start"
                             end logic ==
                           end bool exp
                           begin then
 
-[386] this.x, this.y = touch.x - this.x0, touch.y - this.y0
+[528] this.x0, this.y0 = touch.x - this.x, touch.y - this.y
 
                             begin scope
                               begin set property
@@ -4323,7 +5761,7 @@ begin function
                                       end get property ret values 1
                                       begin get property
                                         push this
-                                        push const string "x0"
+                                        push const string "x"
                                       end get property ret values 1
                                     end operator -
                                     ,
@@ -4334,421 +5772,503 @@ begin function
                                       end get property ret values 1
                                       begin get property
                                         push this
-                                        push const string "y0"
+                                        push const string "y"
                                       end get property ret values 1
                                     end operator -
                                   end params ret values 2
                                   push this
-                                  push const string "y"
+                                  push const string "y0"
                                 end set property ret values 1
                                 push this
-                                push const string "x"
+                                push const string "x0"
                               end set property ret values 0
+
+
+[529] this.removeEventListener("enterFrame", physUpdate)
+
+                              begin call method
+                                push this
+                                begin params 3
+                                  push const string "removeEventListener"
+                                  ,
+                                  push const string "enterFrame"
+                                  ,
+                                  get local var physUpdate (39 1)
+                                end params ret values 3
+                              end call method ret values 0
+
+
+[530] this.addEventListener("enterFrame", trackVelocity)
+
+                              begin call method
+                                push this
+                                begin params 3
+                                  push const string "addEventListener"
+                                  ,
+                                  push const string "enterFrame"
+                                  ,
+                                  get local var trackVelocity (38 1)
+                                end params ret values 3
+                              end call method ret values 0
                             end scope ret values 0
                           end then
                           begin else
 
-[387] }else if(touch.phase == "end" || touch.phase == "cancel"){
+[531] }else if(touch.phase == "move"){
 
                             begin if
                               begin bool exp
-                                begin logic ||
-                                  begin logic ==
-                                    begin get property
-                                      get local var touch (0 0 param)
-                                      push const string "phase"
-                                    end get property ret values 1
-                                    push const string "end"
-                                  end logic ==
-                                  begin logic ==
-                                    begin get property
-                                      get local var touch (0 0 param)
-                                      push const string "phase"
-                                    end get property ret values 1
-                                    push const string "cancel"
-                                  end logic ==
-                                end logic ||
+                                begin logic ==
+                                  begin get property
+                                    get local var touch (0 0 param)
+                                    push const string "phase"
+                                  end get property ret values 1
+                                  push const string "move"
+                                end logic ==
                               end bool exp
                               begin then
 
-[388] this.addEventListener("enterFrame", physUpdate)
+[532] this.x, this.y = touch.x - this.x0, touch.y - this.y0
 
                                 begin scope
-                                  begin call method
+                                  begin set property
+                                    begin set property
+                                      begin params 2
+                                        begin operator -
+                                          begin get property
+                                            get local var touch (0 0 param)
+                                            push const string "x"
+                                          end get property ret values 1
+                                          begin get property
+                                            push this
+                                            push const string "x0"
+                                          end get property ret values 1
+                                        end operator -
+                                        ,
+                                        begin operator -
+                                          begin get property
+                                            get local var touch (0 0 param)
+                                            push const string "y"
+                                          end get property ret values 1
+                                          begin get property
+                                            push this
+                                            push const string "y0"
+                                          end get property ret values 1
+                                        end operator -
+                                      end params ret values 2
+                                      push this
+                                      push const string "y"
+                                    end set property ret values 1
                                     push this
-                                    begin params 3
-                                      push const string "addEventListener"
-                                      ,
-                                      push const string "enterFrame"
-                                      ,
-                                      get local var physUpdate (30 1)
-                                    end params ret values 3
-                                  end call method ret values 0
-
-
-[389] this.removeEventListener("enterFrame", trackVelocity)
-
-                                  begin call method
-                                    push this
-                                    begin params 3
-                                      push const string "removeEventListener"
-                                      ,
-                                      push const string "enterFrame"
-                                      ,
-                                      get local var trackVelocity (29 1)
-                                    end params ret values 3
-                                  end call method ret values 0
+                                    push const string "x"
+                                  end set property ret values 0
                                 end scope ret values 0
                               end then
+                              begin else
+
+[533] }else if(touch.phase == "end" || touch.phase == "cancel"){
+
+                                begin if
+                                  begin bool exp
+                                    begin logic ||
+                                      begin logic ==
+                                        begin get property
+                                          get local var touch (0 0 param)
+                                          push const string "phase"
+                                        end get property ret values 1
+                                        push const string "end"
+                                      end logic ==
+                                      begin logic ==
+                                        begin get property
+                                          get local var touch (0 0 param)
+                                          push const string "phase"
+                                        end get property ret values 1
+                                        push const string "cancel"
+                                      end logic ==
+                                    end logic ||
+                                  end bool exp
+                                  begin then
+
+[534] this.addEventListener("enterFrame", physUpdate)
+
+                                    begin scope
+                                      begin call method
+                                        push this
+                                        begin params 3
+                                          push const string "addEventListener"
+                                          ,
+                                          push const string "enterFrame"
+                                          ,
+                                          get local var physUpdate (39 1)
+                                        end params ret values 3
+                                      end call method ret values 0
+
+
+[535] this.removeEventListener("enterFrame", trackVelocity)
+
+                                      begin call method
+                                        push this
+                                        begin params 3
+                                          push const string "removeEventListener"
+                                          ,
+                                          push const string "enterFrame"
+                                          ,
+                                          get local var trackVelocity (38 1)
+                                        end params ret values 3
+                                      end call method ret values 0
+                                    end scope ret values 0
+                                  end then
+                                end if ret values 0
+                              end else
                             end if ret values 0
                           end else
                         end if ret values 0
-                      end else
-                    end if ret values 0
-                  end function
-                end params ret values 3
-              end call method ret values 0
+                      end function
+                    end params ret values 3
+                  end call method ret values 0
 
 
-[393] var prevX, prevY = 0, 0
-
-              begin set local var
-                begin set local var
-                  begin params 2
-                    push const number 0
-                    ,
-                    push const number 0
-                  end params ret values 2
-                end set local var prevY (28 0)
-              end set local var prevX (27 0)
-
-
-[394] var function trackVelocity(params){
-
-              begin set local var
-                begin function
-                  begin locals, total 3
-                    0 params (param)
-                    1 _E
-                    2 _G
-                  end locals
-
-[395] speedX = (this.x - prevX) / params.deltaTime
-
-                  begin set local var
-                    begin operator /
-                      begin operator -
-                        begin get property
-                          push this
-                          push const string "x"
-                        end get property ret values 1
-                        get local var prevX (27 1)
-                      end operator -
-                      begin get property
-                        get local var params (0 0 param)
-                        push const string "deltaTime"
-                      end get property ret values 1
-                    end operator /
-                  end set local var speedX (24 1)
-
-
-[396] speedY = (this.y - prevY) / params.deltaTime
-
-                  begin set local var
-                    begin operator /
-                      begin operator -
-                        begin get property
-                          push this
-                          push const string "y"
-                        end get property ret values 1
-                        get local var prevY (28 1)
-                      end operator -
-                      begin get property
-                        get local var params (0 0 param)
-                        push const string "deltaTime"
-                      end get property ret values 1
-                    end operator /
-                  end set local var speedY (25 1)
-
-
-[397] prevX, prevY = this.x, this.y
+[539] var prevX, prevY = 0, 0
 
                   begin set local var
                     begin set local var
                       begin params 2
-                        begin get property
-                          push this
-                          push const string "x"
-                        end get property ret values 1
+                        push const number 0
                         ,
-                        begin get property
-                          push this
-                          push const string "y"
-                        end get property ret values 1
+                        push const number 0
                       end params ret values 2
-                    end set local var prevY (28 1)
-                  end set local var prevX (27 1)
-                end function
-              end set local var trackVelocity (29 0)
+                    end set local var prevY (37 0)
+                  end set local var prevX (36 0)
 
 
-[400] var function physUpdate(params){
-
-              begin set local var
-                begin function
-                  begin locals, total 3
-                    0 params (param)
-                    1 _E
-                    2 _G
-                  end locals
-
-[401] speedY = speedY + gravity
+[540] var function trackVelocity(params){
 
                   begin set local var
-                    begin operator +
-                      get local var speedY (25 1)
-                      get local var gravity (21 1)
-                    end operator +
-                  end set local var speedY (25 1)
+                    begin function
+                      begin locals, total 3
+                        0 params (param)
+                        1 _E
+                        2 _G
+                      end locals
+
+[541] speedX = (this.x - prevX) / params.deltaTime
+
+                      begin set local var
+                        begin operator /
+                          begin operator -
+                            begin get property
+                              push this
+                              push const string "x"
+                            end get property ret values 1
+                            get local var prevX (36 1)
+                          end operator -
+                          begin get property
+                            get local var params (0 0 param)
+                            push const string "deltaTime"
+                          end get property ret values 1
+                        end operator /
+                      end set local var speedX (33 1)
 
 
-[402] this.x = this.x + speedX * params.deltaTime
+[542] speedY = (this.y - prevY) / params.deltaTime
 
-                  begin set property
-                    begin operator +
-                      begin get property
+                      begin set local var
+                        begin operator /
+                          begin operator -
+                            begin get property
+                              push this
+                              push const string "y"
+                            end get property ret values 1
+                            get local var prevY (37 1)
+                          end operator -
+                          begin get property
+                            get local var params (0 0 param)
+                            push const string "deltaTime"
+                          end get property ret values 1
+                        end operator /
+                      end set local var speedY (34 1)
+
+
+[543] prevX, prevY = this.x, this.y
+
+                      begin set local var
+                        begin set local var
+                          begin params 2
+                            begin get property
+                              push this
+                              push const string "x"
+                            end get property ret values 1
+                            ,
+                            begin get property
+                              push this
+                              push const string "y"
+                            end get property ret values 1
+                          end params ret values 2
+                        end set local var prevY (37 1)
+                      end set local var prevX (36 1)
+                    end function
+                  end set local var trackVelocity (38 0)
+
+
+[546] var function physUpdate(params){
+
+                  begin set local var
+                    begin function
+                      begin locals, total 3
+                        0 params (param)
+                        1 _E
+                        2 _G
+                      end locals
+
+[547] speedY = speedY + gravity
+
+                      begin set local var
+                        begin operator +
+                          get local var speedY (34 1)
+                          get local var gravity (30 1)
+                        end operator +
+                      end set local var speedY (34 1)
+
+
+[548] this.x = this.x + speedX * params.deltaTime
+
+                      begin set property
+                        begin operator +
+                          begin get property
+                            push this
+                            push const string "x"
+                          end get property ret values 1
+                          begin operator *
+                            get local var speedX (33 1)
+                            begin get property
+                              get local var params (0 0 param)
+                              push const string "deltaTime"
+                            end get property ret values 1
+                          end operator *
+                        end operator +
                         push this
                         push const string "x"
-                      end get property ret values 1
-                      begin operator *
-                        get local var speedX (24 1)
-                        begin get property
-                          get local var params (0 0 param)
-                          push const string "deltaTime"
-                        end get property ret values 1
-                      end operator *
-                    end operator +
-                    push this
-                    push const string "x"
-                  end set property ret values 0
+                      end set property ret values 0
 
 
-[403] this.y = this.y + speedY * params.deltaTime
+[549] this.y = this.y + speedY * params.deltaTime
 
-                  begin set property
-                    begin operator +
-                      begin get property
+                      begin set property
+                        begin operator +
+                          begin get property
+                            push this
+                            push const string "y"
+                          end get property ret values 1
+                          begin operator *
+                            get local var speedY (34 1)
+                            begin get property
+                              get local var params (0 0 param)
+                              push const string "deltaTime"
+                            end get property ret values 1
+                          end operator *
+                        end operator +
                         push this
                         push const string "y"
-                      end get property ret values 1
-                      begin operator *
-                        get local var speedY (25 1)
-                        begin get property
-                          get local var params (0 0 param)
-                          push const string "deltaTime"
-                        end get property ret values 1
-                      end operator *
-                    end operator +
-                    push this
-                    push const string "y"
-                  end set property ret values 0
+                      end set property ret values 0
 
 
-[404] if(this.x >= screenWidth - radius){
-
-                  begin if
-                    begin bool exp
-                      begin logic >=
-                        begin get property
-                          push this
-                          push const string "x"
-                        end get property ret values 1
-                        begin operator -
-                          get local var screenWidth (22 1)
-                          get local var radius (26 1)
-                        end operator -
-                      end logic >=
-                    end bool exp
-                    begin then
-
-[405] this.x = screenWidth - radius
-
-                      begin scope
-                        begin set property
-                          begin operator -
-                            get local var screenWidth (22 1)
-                            get local var radius (26 1)
-                          end operator -
-                          push this
-                          push const string "x"
-                        end set property ret values 0
-
-
-[406] speedX = speedX * -friction
-
-                        begin set local var
-                          begin operator *
-                            get local var speedX (24 1)
-                            begin neg
-                              get local var friction (20 1)
-                            end neg
-                          end operator *
-                        end set local var speedX (24 1)
-                      end scope ret values 0
-                    end then
-                    begin else
-
-[407] }else if(this.x <= radius){
+[550] if(this.x >= screenWidth - radius){
 
                       begin if
                         begin bool exp
-                          begin logic <=
+                          begin logic >=
                             begin get property
                               push this
                               push const string "x"
                             end get property ret values 1
-                            get local var radius (26 1)
-                          end logic <=
+                            begin operator -
+                              get local var screenWidth (31 1)
+                              get local var radius (35 1)
+                            end operator -
+                          end logic >=
                         end bool exp
                         begin then
 
-[408] this.x = radius
+[551] this.x = screenWidth - radius
 
                           begin scope
                             begin set property
-                              get local var radius (26 1)
+                              begin operator -
+                                get local var screenWidth (31 1)
+                                get local var radius (35 1)
+                              end operator -
                               push this
                               push const string "x"
                             end set property ret values 0
 
 
-[409] speedX = speedX * -friction
+[552] speedX = speedX * -friction
 
                             begin set local var
                               begin operator *
-                                get local var speedX (24 1)
+                                get local var speedX (33 1)
                                 begin neg
-                                  get local var friction (20 1)
+                                  get local var friction (29 1)
                                 end neg
                               end operator *
-                            end set local var speedX (24 1)
+                            end set local var speedX (33 1)
                           end scope ret values 0
                         end then
+                        begin else
+
+[553] }else if(this.x <= radius){
+
+                          begin if
+                            begin bool exp
+                              begin logic <=
+                                begin get property
+                                  push this
+                                  push const string "x"
+                                end get property ret values 1
+                                get local var radius (35 1)
+                              end logic <=
+                            end bool exp
+                            begin then
+
+[554] this.x = radius
+
+                              begin scope
+                                begin set property
+                                  get local var radius (35 1)
+                                  push this
+                                  push const string "x"
+                                end set property ret values 0
+
+
+[555] speedX = speedX * -friction
+
+                                begin set local var
+                                  begin operator *
+                                    get local var speedX (33 1)
+                                    begin neg
+                                      get local var friction (29 1)
+                                    end neg
+                                  end operator *
+                                end set local var speedX (33 1)
+                              end scope ret values 0
+                            end then
+                          end if ret values 0
+                        end else
                       end if ret values 0
-                    end else
-                  end if ret values 0
 
 
-[411] if(this.y >= screenHeight - radius){
-
-                  begin if
-                    begin bool exp
-                      begin logic >=
-                        begin get property
-                          push this
-                          push const string "y"
-                        end get property ret values 1
-                        begin operator -
-                          get local var screenHeight (23 1)
-                          get local var radius (26 1)
-                        end operator -
-                      end logic >=
-                    end bool exp
-                    begin then
-
-[412] this.y = screenHeight - radius
-
-                      begin scope
-                        begin set property
-                          begin operator -
-                            get local var screenHeight (23 1)
-                            get local var radius (26 1)
-                          end operator -
-                          push this
-                          push const string "y"
-                        end set property ret values 0
-
-
-[413] speedY = speedY * -friction
-
-                        begin set local var
-                          begin operator *
-                            get local var speedY (25 1)
-                            begin neg
-                              get local var friction (20 1)
-                            end neg
-                          end operator *
-                        end set local var speedY (25 1)
-
-
-[414] speedX = speedX * friction
-
-                        begin set local var
-                          begin operator *
-                            get local var speedX (24 1)
-                            get local var friction (20 1)
-                          end operator *
-                        end set local var speedX (24 1)
-                      end scope ret values 0
-                    end then
-                    begin else
-
-[415] }else if(this.y <= radius){
+[557] if(this.y >= screenHeight - radius){
 
                       begin if
                         begin bool exp
-                          begin logic <=
+                          begin logic >=
                             begin get property
                               push this
                               push const string "y"
                             end get property ret values 1
-                            get local var radius (26 1)
-                          end logic <=
+                            begin operator -
+                              get local var screenHeight (32 1)
+                              get local var radius (35 1)
+                            end operator -
+                          end logic >=
                         end bool exp
                         begin then
 
-[416] this.y = radius
+[558] this.y = screenHeight - radius
 
                           begin scope
                             begin set property
-                              get local var radius (26 1)
+                              begin operator -
+                                get local var screenHeight (32 1)
+                                get local var radius (35 1)
+                              end operator -
                               push this
                               push const string "y"
                             end set property ret values 0
 
 
-[417] speedY = speedY * -friction
+[559] speedY = speedY * -friction
 
                             begin set local var
                               begin operator *
-                                get local var speedY (25 1)
+                                get local var speedY (34 1)
                                 begin neg
-                                  get local var friction (20 1)
+                                  get local var friction (29 1)
                                 end neg
                               end operator *
-                            end set local var speedY (25 1)
+                            end set local var speedY (34 1)
+
+
+[560] speedX = speedX * friction
+
+                            begin set local var
+                              begin operator *
+                                get local var speedX (33 1)
+                                get local var friction (29 1)
+                              end operator *
+                            end set local var speedX (33 1)
                           end scope ret values 0
                         end then
+                        begin else
+
+[561] }else if(this.y <= radius){
+
+                          begin if
+                            begin bool exp
+                              begin logic <=
+                                begin get property
+                                  push this
+                                  push const string "y"
+                                end get property ret values 1
+                                get local var radius (35 1)
+                              end logic <=
+                            end bool exp
+                            begin then
+
+[562] this.y = radius
+
+                              begin scope
+                                begin set property
+                                  get local var radius (35 1)
+                                  push this
+                                  push const string "y"
+                                end set property ret values 0
+
+
+[563] speedY = speedY * -friction
+
+                                begin set local var
+                                  begin operator *
+                                    get local var speedY (34 1)
+                                    begin neg
+                                      get local var friction (29 1)
+                                    end neg
+                                  end operator *
+                                end set local var speedY (34 1)
+                              end scope ret values 0
+                            end then
+                          end if ret values 0
+                        end else
                       end if ret values 0
-                    end else
-                  end if ret values 0
-                end function
-              end set local var physUpdate (30 0)
+                    end function
+                  end set local var physUpdate (39 0)
 
 
-[420] ball.addEventListener("enterFrame", physUpdate)
+[566] ball.addEventListener("enterFrame", physUpdate)
 
-              begin call method
-                get local var ball (19 0)
-                begin params 3
-                  push const string "addEventListener"
-                  ,
-                  push const string "enterFrame"
-                  ,
-                  get local var physUpdate (30 0)
-                end params ret values 3
-              end call method ret values 0
-            end scope ret values 0
+                  begin call method
+                    get local var ball (28 0)
+                    begin params 3
+                      push const string "addEventListener"
+                      ,
+                      push const string "enterFrame"
+                      ,
+                      get local var physUpdate (39 0)
+                    end params ret values 3
+                  end call method ret values 0
+                end scope ret values 0
+              end then
+            end if ret values 0
           end function
         end set by name: [__construct]
       end object
@@ -4756,7 +6276,7 @@ begin function
   end set env var MyScene
 
 
-[425] director.scene = MyScene()
+[571] director.scene = MyScene()
 
   begin set property
     begin call method
@@ -4768,18 +6288,6 @@ begin function
     get local var auto create director (7 0)
     push const string "scene"
   end set property ret values 0
-
-
-[427] require("bitmapfont")
-
-  begin call method
-    get local var _E (0 0)
-    begin params 2
-      push const string "require"
-      ,
-      push const string "bitmapfont"
-    end params ret values 2
-  end call method ret values 0
 
   begin code list
     begin return
