@@ -320,14 +320,18 @@ begin function
                         begin set property
                           begin operator **
                             begin operator +
-                              begin operator *
-                                get local var dx (3 0)
-                                get local var dx (3 0)
-                              end operator *
-                              begin operator *
-                                get local var dy (4 0)
-                                get local var dy (4 0)
-                              end operator *
+                              begin binary operator by locals
+                                begin operator *
+                                  get local var dx (3 0)
+                                  get local var dx (3 0)
+                                end operator *
+                              end binary operator by locals
+                              begin binary operator by locals
+                                begin operator *
+                                  get local var dy (4 0)
+                                  get local var dy (4 0)
+                                end operator *
+                              end binary operator by locals
                             end operator +
                             push const number 0.5
                           end operator **
@@ -439,14 +443,18 @@ begin function
                             begin set local var
                               begin operator **
                                 begin operator +
-                                  begin operator *
-                                    get local var dx (5 0)
-                                    get local var dx (5 0)
-                                  end operator *
-                                  begin operator *
-                                    get local var dy (6 0)
-                                    get local var dy (6 0)
-                                  end operator *
+                                  begin binary operator by locals
+                                    begin operator *
+                                      get local var dx (5 0)
+                                      get local var dx (5 0)
+                                    end operator *
+                                  end binary operator by locals
+                                  begin binary operator by locals
+                                    begin operator *
+                                      get local var dy (6 0)
+                                      get local var dy (6 0)
+                                    end operator *
+                                  end binary operator by locals
                                 end operator +
                                 push const number 0.5
                               end operator **
