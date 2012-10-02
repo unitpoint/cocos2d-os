@@ -1,0 +1,11 @@
+includepaths
+{
+    "source"
+}
+
+files
+{
+    ("source")
+    WavReader.cpp
+    WavReader.h
+}

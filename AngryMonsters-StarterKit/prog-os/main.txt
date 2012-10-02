@@ -663,7 +663,7 @@ begin function
 [62] anim[animName] = {}.merge(generalParams, params)
 
                           begin scope
-                            begin set property
+                            begin set property by locals auto create
                               begin call method
                                 begin object 0
                                 end object
@@ -677,7 +677,7 @@ begin function
                               end call method ret values 1
                               get local var auto create anim (6 0)
                               get local var animName (8 0)
-                            end set property ret values 0
+                            end set property by locals auto create ret values 0
                           end scope ret values 0
                         end loop ret values 0
                       end code list ret values 0
@@ -920,14 +920,18 @@ begin function
                       begin set local var
                         begin operator **
                           begin operator +
-                            begin operator *
-                              get local var dx (2 0)
-                              get local var dx (2 0)
-                            end operator *
-                            begin operator *
-                              get local var dy (3 0)
-                              get local var dy (3 0)
-                            end operator *
+                            begin binary operator by locals
+                              begin operator *
+                                get local var dx (2 0)
+                                get local var dx (2 0)
+                              end operator *
+                            end binary operator by locals
+                            begin binary operator by locals
+                              begin operator *
+                                get local var dy (3 0)
+                                get local var dy (3 0)
+                              end operator *
+                            end binary operator by locals
                           end operator +
                           push const number 0.5
                         end operator **
@@ -938,10 +942,12 @@ begin function
 
                       begin pop
                         begin logic ||
-                          begin logic >
-                            get local var len (4 0)
-                            push const number 0
-                          end logic >
+                          begin binary operator by local & number
+                            begin logic >
+                              get local var len (4 0)
+                              push const number 0
+                            end logic >
+                          end binary operator by local & number
                           begin code list
                             return
                           end code list ret values 1
@@ -954,15 +960,19 @@ begin function
                       begin set local var
                         begin set local var
                           begin params 2
-                            begin operator /
-                              get local var dx (2 0)
-                              get local var len (4 0)
-                            end operator /
+                            begin binary operator by locals
+                              begin operator /
+                                get local var dx (2 0)
+                                get local var len (4 0)
+                              end operator /
+                            end binary operator by locals
                             ,
-                            begin operator /
-                              get local var dy (3 0)
-                              get local var len (4 0)
-                            end operator /
+                            begin binary operator by locals
+                              begin operator /
+                                get local var dy (3 0)
+                                get local var len (4 0)
+                              end operator /
+                            end binary operator by locals
                           end params ret values 2
                         end set local var dy (3 0)
                       end set local var dx (2 0)
@@ -1019,10 +1029,12 @@ begin function
                           begin if
                             begin bool exp
                               begin logic &&
-                                begin logic >
-                                  get local var dy (3 0)
-                                  push const number 0.85
-                                end logic >
+                                begin binary operator by local & number
+                                  begin logic >
+                                    get local var dy (3 0)
+                                    push const number 0.85
+                                  end logic >
+                                end binary operator by local & number
                                 begin in
                                   push const string "walkDown"
                                   begin get property
@@ -1074,10 +1086,12 @@ begin function
 [100] this.flipX = dx < 0
 
                                 begin set property
-                                  begin logic <
-                                    get local var dx (2 0)
-                                    push const number 0
-                                  end logic <
+                                  begin binary operator by local & number
+                                    begin logic <
+                                      get local var dx (2 0)
+                                      push const number 0
+                                    end logic <
+                                  end binary operator by local & number
                                   push this
                                   push const string "flipX"
                                 end set property ret values 0
@@ -1254,17 +1268,19 @@ begin function
                               end set by name: [y]
                               ,
 
-[116] duration = len * 10.0 / director.width
+[116] duration = len * 10.0 / director.contentWidth
 
                               begin set by name
                                 begin operator /
-                                  begin operator *
-                                    get local var len (5 0)
-                                    push const number 10.0
-                                  end operator *
+                                  begin binary operator by local & number
+                                    begin operator *
+                                      get local var len (5 0)
+                                      push const number 10.0
+                                    end operator *
+                                  end binary operator by local & number
                                   begin get property
                                     get local var director (2 2)
-                                    push const string "width"
+                                    push const string "contentWidth"
                                   end get property ret values 1
                                 end operator /
                               end set by name: [duration]
@@ -2294,10 +2310,12 @@ begin function
                 begin if
                   begin bool exp
                     begin logic not
-                      begin logic <
-                        get local var i (20 0)
-                        push const number 20
-                      end logic <
+                      begin binary operator by local & number
+                        begin logic <
+                          get local var i (20 0)
+                          push const number 20
+                        end logic <
+                      end binary operator by local & number
                     end logic not
                   end bool exp
                   begin then
@@ -2320,12 +2338,14 @@ begin function
 [202] for(var i = 0; i < 20; i++){ // create initial monsters
 
                 begin code list
-                  begin set local var
-                    begin operator +
-                      get local var i (20 0)
-                      push const number 1
-                    end operator +
-                  end set local var i (20 0)
+                  begin set local var by bin operator local & number
+                    begin binary operator by local & number
+                      begin operator +
+                        get local var i (20 0)
+                        push const number 1
+                      end operator +
+                    end binary operator by local & number
+                  end set local var by bin operator local & number i (20 0)
                 end code list ret values 0
               end loop ret values 0
             end scope ret values 0
@@ -2557,12 +2577,14 @@ begin function
                             begin locals 1
                               4 j
                             end locals
-                            begin set local var
-                              begin operator +
-                                get local var i (2 0)
-                                push const number 1
-                              end operator +
-                            end set local var j (4 0)
+                            begin set local var by bin operator local & number
+                              begin binary operator by local & number
+                                begin operator +
+                                  get local var i (2 0)
+                                  push const number 1
+                                end operator +
+                              end binary operator by local & number
+                            end set local var by bin operator local & number j (4 0)
 
                             begin loop
                               begin if
@@ -2668,12 +2690,14 @@ begin function
 [219] for(var j = i+1; j < #monsters; j++){
 
                               begin code list
-                                begin set local var
-                                  begin operator +
-                                    get local var j (4 0)
-                                    push const number 1
-                                  end operator +
-                                end set local var j (4 0)
+                                begin set local var by bin operator local & number
+                                  begin binary operator by local & number
+                                    begin operator +
+                                      get local var j (4 0)
+                                      push const number 1
+                                    end operator +
+                                  end binary operator by local & number
+                                end set local var by bin operator local & number j (4 0)
                               end code list ret values 0
                             end loop ret values 0
                           end scope ret values 0

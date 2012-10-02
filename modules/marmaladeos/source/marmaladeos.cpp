@@ -2,6 +2,7 @@
 
 #include "marmaladeos.h"
 #include "glos.h"
+#include "box2d-os.h"
 
 #include "stddef.h"
 
@@ -79,6 +80,7 @@ bool MarmaladeOS::init(MemoryManager * mem)
 	initAppModule();
 	initTextureClass();
 	initLabelBMFontClass();
+	initBox2d(this);
 
 	return true;
 }
@@ -169,7 +171,7 @@ void MarmaladeOS::initAppModule()
 			return 0;
 		}
 	};
-	FuncDef list[] = {
+	FuncDef funcs[] = {
 		// {"getScreenWidth", App::getScreenWidth},
 		{"__get@screenWidth", App::getScreenWidth},
 		// {"getScreenHeight", App::getScreenHeight},
@@ -191,7 +193,165 @@ void MarmaladeOS::initAppModule()
 		{}
 	};
 	getModule("app");
-	setFuncs(list);
+	setFuncs(funcs);
+
+	NumberDef numbers[] = {
+		{"ESC", s3eKeyEsc},
+		{"TAB", s3eKeyTab},
+		{"BACKSPACE", s3eKeyBackspace},
+		{"ENTER", s3eKeyEnter},
+		{"LEFT_SHIFT", s3eKeyLeftShift},
+		{"LEFT_CTRL", s3eKeyLeftControl},
+		{"SPACE", s3eKeySpace},
+		{"LEFT", s3eKeyLeft},
+		{"UP", s3eKeyUp},
+		{"RIGHT", s3eKeyRight},
+		{"DOWN", s3eKeyDown},
+		{"0", s3eKey0},
+		{"1", s3eKey1},
+		{"2", s3eKey2},
+		{"3", s3eKey3},
+		{"4", s3eKey4},
+		{"5", s3eKey5},
+		{"6", s3eKey6},
+		{"7", s3eKey7},
+		{"8", s3eKey8},
+		{"9", s3eKey9},
+		{"A", s3eKeyA},
+		{"B", s3eKeyB},
+		{"C", s3eKeyC},
+		{"D", s3eKeyD},
+		{"E", s3eKeyE},
+		{"F", s3eKeyF},
+		{"G", s3eKeyG},
+		{"H", s3eKeyH},
+		{"I", s3eKeyI},
+		{"J", s3eKeyJ},
+		{"K", s3eKeyK},
+		{"L", s3eKeyL},
+		{"M", s3eKeyM},
+		{"N", s3eKeyN},
+		{"O", s3eKeyO},
+		{"P", s3eKeyP},
+		{"Q", s3eKeyQ},
+		{"R", s3eKeyR},
+		{"S", s3eKeyS},
+		{"T", s3eKeyT},
+		{"U", s3eKeyU},
+		{"V", s3eKeyV},
+		{"W", s3eKeyW},
+		{"X", s3eKeyX},
+		{"Y", s3eKeyY},
+		{"Z", s3eKeyZ},
+		{"F1", s3eKeyF1},
+		{"F2", s3eKeyF2},
+		{"F3", s3eKeyF3},
+		{"F4", s3eKeyF4},
+		{"F5", s3eKeyF5},
+		{"F6", s3eKeyF6},
+		{"F7", s3eKeyF7},
+		{"F8", s3eKeyF8},
+		{"F9", s3eKeyF9},
+		{"F10", s3eKeyF10},
+		{"NUM_PAD_0", s3eKeyNumPad0},
+		{"NUM_PAD_1", s3eKeyNumPad1},
+		{"NUM_PAD_2", s3eKeyNumPad2},
+		{"NUM_PAD_3", s3eKeyNumPad3},
+		{"NUM_PAD_4", s3eKeyNumPad4},
+		{"NUM_PAD_5", s3eKeyNumPad5},
+		{"NUM_PAD_6", s3eKeyNumPad6},
+		{"NUM_PAD_7", s3eKeyNumPad7},
+		{"NUM_PAD_8", s3eKeyNumPad8},
+		{"NUM_PAD_9", s3eKeyNumPad9},
+		{"NUM_PAD_PLUS", s3eKeyNumPadPlus},
+		{"NUM_PAD_MINUS", s3eKeyNumPadMinus},
+		{"NUM_PAD_ENTER", s3eKeyNumPadEnter},
+		{"RSK", s3eKeyRSK}, //!< Right soft key.
+		{"LSK", s3eKeyLSK}, //!< Left soft key.
+		{"LS", s3eKeyLS}, //!< Left shoulder button.
+		{"RS", s3eKeyRS}, //!< Right shoulder button.
+		{"#", s3eKeyHash}, //!< # Key.
+		{"*", s3eKeyStar}, //!< * Key (on keyboard numberpad for normal keyboards).
+
+		// Select/ok button
+		{"OK", s3eKeyOk}, //!< Select key.
+		{"CLR", s3eKeyCLR}, //!< CLR key.
+
+		// Volume
+		{"VOLUME_UP", s3eKeyVolUp}, //!< Volume Up key.
+		{"VOLUME_DOWN", s3eKeyVolDown}, //!< Volume Down key.
+
+		//Misc.
+		{"CAMERA", s3eKeyCamera}, //!< Camera button.
+		{"MIC", s3eKeyMic}, //!< Microphone button.
+		{"FN", s3eKeyFn}, //!< Fn button.
+		{"SYM", s3eKeySym}, //!< Sym button.
+
+		//Call
+		{"ACCEPT", s3eKeyAccept}, //!< call accept (talk).
+		{"END", s3eKeyEnd}, //!< call end (reject).
+		{"HOME", s3eKeyHomePage}, //!< Home key.
+
+		{"BUTTON_1", s3eKeyButton1}, //!< Generic Button1.
+		{"BUTTON_2", s3eKeyButton2}, //!< Generic Button2.
+		{"BUTTON_3", s3eKeyButton3}, //!< Generic Button3.
+		{"BUTTON_4", s3eKeyButton4}, //!< Generic Button4.
+		{"BUTTON_5", s3eKeyButton5}, //!< Generic Button5.
+		{"BUTTON_6", s3eKeyButton6}, //!< Generic Button6.
+		{"BUTTON_7", s3eKeyButton7}, //!< Generic Button7.
+		{"BUTTON_8", s3eKeyButton8}, //!< Generic Button8.
+
+		{"F11", s3eKeyF11}, //!< Key F11.
+		{"F12", s3eKeyF12}, //!< Key F12.
+		{"LEFT_ALT", s3eKeyLeftAlt}, //!< Left Alt key.
+
+		{"RIGHT_CTRL", s3eKeyRightControl}, //!< Right Control Key.
+		{"RIGHT_ALT", s3eKeyRightAlt}, //!< Right Alt Key.
+		{"RIGHT_SHIFT", s3eKeyRightShift}, //!< Right Shift Key.
+		{"`", s3eKeyBacktick}, //!< Backtick '`' Key.
+		{",", s3eKeyComma}, //!< Comma ',' Key.
+		{".", s3eKeyPeriod}, //!< Period '.' Key.
+		{"/", s3eKeySlash}, //!< Forward slash '/' Key.
+		{"\\", s3eKeyBackSlash}, //!< Back slash '\' Key.
+		{";", s3eKeySemicolon}, //!< Semicolon ';' Key.
+		{"'", s3eKeyApostrophe}, //!< Apostrophe (') Key.
+		{"[", s3eKeyLeftBracket}, //!< Left Bracket '[' Key.
+		{"]", s3eKeyRightBracket}, //!< Right Bracket ']' Key.
+		{"=", s3eKeyEquals}, //!< Equals '=' Key.
+		{"-", s3eKeyMinus}, //!< Minus '-' key on main keyboard.
+		{"CAPS_LOCK", s3eKeyCapsLock}, //!< Caps Lock key
+
+		{"NUM_PAD_PERIOD", s3eKeyNumPadPeriod}, //!< Period '.' key on numberpad
+		{"NUM_PAD_SLASH", s3eKeyNumPadSlash}, //!< Slash '/' key on numberpad
+		{"NUM_LOCK", s3eKeyNumLock}, //!< NumLock key
+		{"INSERT", s3eKeyInsert}, //!< Insert key
+		{"HOME", s3eKeyHome}, //!< Home key
+		{"PAGE_UP", s3eKeyPageUp}, //!< Page Up key
+		{"PAGE_DOWN", s3eKeyPageDown}, //!< Page Down key
+		{"END_KB", s3eKeyKbEnd}, //!< End key (on keyboard)
+		{"DELETE", s3eKeyDelete}, //!< Delete key
+		{"PAUSE", s3eKeyPause}, //!< Pause key
+		{"@", s3eKeyAt}, //!< At '@' key
+		{"BACK", s3eKeyBack}, //!< Back key
+		{"MENU", s3eKeyMenu}, //!< Menu key
+		{"SEARCH", s3eKeySearch}, //!< Search key
+		{"3D_MODE", s3eKey3DMode}, //!< 3D Mode key
+
+		{"GAME_KEY_A", s3eKeyAbsGameA}, //!< Abstract Game keyA.
+		{"GAME_KEY_B", s3eKeyAbsGameB}, //!< Abstract Game keyB.
+		{"GAME_KEY_C", s3eKeyAbsGameC}, //!< Abstract Game keyC.
+		{"GAME_KEY_D", s3eKeyAbsGameD}, //!< Abstract Game keyD.
+		{"GAME_UP", s3eKeyAbsUp}, //!< Abstract Up.
+		{"GAME_DOWN", s3eKeyAbsDown}, //!< Abstract Down.
+		{"GAME_LEFT", s3eKeyAbsLeft}, //!< Abstract Left.
+		{"GAME_RIGHT", s3eKeyAbsRight}, //!< Abstract Right.
+		{"GAME_OK", s3eKeyAbsOk}, //!< Abstract Ok.
+		{"GAME_ASK", s3eKeyAbsASK}, //!< Abstract action softkey.
+		{"GAME_BSK", s3eKeyAbsBSK}, //!< Abstract backwards softkey.
+		{}
+	};
+	getObject("keys");
+	setNumbers(numbers);
 	pop();
 
 	require("app"); // add some additional
@@ -210,7 +370,7 @@ bool MarmaladeOS::getColor(int offs, float color[4])
 		for(int i = 0; i < 4; i++){
 			pushStackValue(offs);
 			pushNumber(i);
-			getProperty(false, false);
+			getProperty(false);
 			color[i] = !isNumber() ? (pop(), 1.0f) : clampUnit(popFloat());
 		}
 		return true;
@@ -444,6 +604,20 @@ void MarmaladeOS::initTextureClass()
 		{
 			MarmaladeOS * os = (MarmaladeOS*)p_os;
 			String filename = os->toString(-params);
+			const char * ext[2];
+			if(os->getFilenameExt(filename) == ".jpg"){
+				ext[0] = ".jpg";
+				ext[1] = ".png";
+			}else{
+				ext[0] = ".png";
+				ext[1] = ".jpg";
+			}
+			for(int i = 0; i < 2; i++){
+				filename = os->changeFilenameExt(filename, ext[i]);
+				if(os->isFileExist(filename)){
+					break;
+				}
+			}
 			cocos2d::CCTexture2D * texture = cocos2d::CCTextureCache::sharedTextureCache()->addImage(filename);
 			if(texture){
 				texture->retain();
@@ -749,6 +923,16 @@ void MarmaladeOS::initLabelBMFontClass()
 	setProperty();
 }
 
+void MarmaladeOS::registerKeyEvent(int key, bool pressed)
+{
+	getGlobal("app");
+	getProperty("registerKeyEvent");
+	getGlobal("app"); // push 'this' for registerTouchEvent
+	pushNumber(key);
+	pushBool(pressed);
+	call(2, 0);
+}
+
 void MarmaladeOS::registerTouchEvent(int x, int y, ETouchPhase phase, int id)
 {
 	getGlobal("app");
@@ -828,11 +1012,16 @@ int32 MarmaladeOS::multiMotionEventHandler(void* system_data, void* user_data)
 
 int32 MarmaladeOS::keyEventHandler(void* system_data, void* user_data)
 {
+	MarmaladeOS * os = (MarmaladeOS*)user_data;
+	s3eKeyboardEvent * ev = (s3eKeyboardEvent*)system_data;
+	os->registerKeyEvent(ev->m_Key, ev->m_Pressed != 0);
 	return 0;
 }
 
 int32 MarmaladeOS::charEventHandler(void* system_data, void* user_data)
 {
+	MarmaladeOS * os = (MarmaladeOS*)user_data;
+	s3eKeyboardCharEvent * ev = (s3eKeyboardCharEvent*)system_data;
 	return 0;
 }
 

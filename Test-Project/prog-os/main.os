@@ -13,7 +13,7 @@ body.createFixture {
 		radius = 125
 	}
 	friction = 0.2
-	restitution = 0
+	bounce = 0
 	density = 0
 	categoryBits = 0x0001
 	maskBits = 0xfff
@@ -28,6 +28,7 @@ var node = require("node")
 var image = require("image")
 var text = require("text")
 var director = require("director")
+var physics = require("physics")
 
 print "Hello World!"
 
@@ -85,7 +86,7 @@ MyColorNode = extends ColorNode {
 	update = function(params){
 		if(this.touched) return;
 		
-		var offs = director.width * this.speed * params.deltaTime
+		var offs = director.contentWidth * this.speed * params.deltaTime
 		
 		this.x = this.x + this.dx * offs
 		this.y = this.y + this.dy * offs
@@ -353,7 +354,7 @@ MyScene = extends Scene {
 					time = time + params.deltaTime
 					this.rotation = math.deg(math.sin(time * math.PI * rotSpeed))
 					
-					var offs = director.width * speed * params.deltaTime
+					var offs = director.contentWidth * speed * params.deltaTime
 					
 					this.x = this.x + dx * offs
 					this.y = this.y + dy * offs
@@ -378,14 +379,8 @@ MyScene = extends Scene {
 			bg.scale = math.max(this.width / bg.width, this.height / bg.height)
 			this.insert(bg, -10)
 			
-			var ball = Image("ball.png")
-			ball.x = this.width * 0.5
-			ball.y = this.height * 0.1
-			ball.zOrder = 1000
-			this.insert(ball)
-			
-			var physicsMetricScale = 1/100
-			var physics = b2World({x=0, y=9.8}, true)
+			/*
+			var physics = b2World({x=0, y=980}, true)
 			var physicsHz = 60
 			var physicsTimeStep = 1.0f / physicsHz
 			var physicsVelocityIterations = 10
@@ -398,115 +393,95 @@ MyScene = extends Scene {
 					physicsTimeAccumulator = physicsTimeAccumulator - physicsTimeStep
 				}
 			})
+			*/
 			
-			var restitution = 0.8
-			var friction = 0.3
-			physics.createBody {
+			var bounce = 0.8
+			var friction = 0.2
+			var walls = physics.createBody {
 				type = "static"
-				fixtures = [
-					{
-						shape = {
-							type = "polygon",
-							vertices = [
-								{x=0, y=director.height*physicsMetricScale},
-								{x=director.width*physicsMetricScale, y=director.height*physicsMetricScale},
-								{x=director.width*physicsMetricScale, y=director.height*1.1*physicsMetricScale},
-								{x=0, y=director.height*1.1*physicsMetricScale},
-							],
-						}
-						restitution = restitution
-						friction = friction
-					},
-					{
-						shape = {
-							type = "polygon",
-							vertices = [
-								{x=0, y=director.height*-0.1*physicsMetricScale},
-								{x=director.width*physicsMetricScale, y=director.height*-0.1*physicsMetricScale},
-								{x=director.width*physicsMetricScale, y=0},
-								{x=0, y=0},
-							],
-						}
-						restitution = restitution
-						friction = friction
-					},
-					{
-						shape = {
-							type = "polygon",
-							vertices = [
-								{x=director.width*-0.1*physicsMetricScale, y=0},
-								{x=0, y=0},
-								{x=0, y=director.height*physicsMetricScale},
-								{x=director.width*-0.1*physicsMetricScale, y=director.height*physicsMetricScale},
-							],
-						}
-						restitution = restitution
-						friction = friction
-					},
-					{
-						shape = {
-							type = "polygon",
-							vertices = [
-								{x=director.width*physicsMetricScale, y=0},
-								{x=director.width*1.1*physicsMetricScale, y=0},
-								{x=director.width*1.1*physicsMetricScale, y=director.height*physicsMetricScale},
-								{x=director.width*physicsMetricScale, y=director.height*physicsMetricScale},
-							],
-						}
-						restitution = restitution
-						friction = friction
-					},
-				],
-			}
-			
-			var body = physics.createBody {
-				type = "dynamic"
-				x = ball.x*physicsMetricScale
-				y = ball.y*physicsMetricScale
 				fixture = {
-					shape = {
-						type = "circle"
-						radius = ball.width/2*physicsMetricScale
-					}
-					density = 1
-					restitution = restitution
+					shapes = [ 
+						getBoxShapeVertices([0, director.contentHeight], [director.contentWidth, director.contentHeight*0.1]),
+						getBoxShapeVertices([0, director.contentHeight*-0.1], [director.contentWidth, director.contentHeight*0.1]),
+						getBoxShapeVertices([director.contentWidth*-0.1, 0], [director.contentWidth*0.1, director.contentHeight]),
+						getBoxShapeVertices([director.contentWidth, 0], [director.contentWidth*0.1, director.contentHeight]),
+					],
+					bounce = bounce
 					friction = friction
 				}
 			}
-			ball.addEventListener("enterFrame", function(){
-				var position = body.position
-				this.x, this.y = position.x/physicsMetricScale, position.y/physicsMetricScale
-				this.rotation = math.deg(body.angle)
-			})
-			var prevX, prevY, speedX, speedY = 0, 0, 0, 0
-			var function trackVelocity(params){
-				speedX = (this.x - prevX) / params.deltaTime
-				speedY = (this.y - prevY) / params.deltaTime
-				prevX, prevY = this.x, this.y
+			
+			var colors = [ [0.9 0.7 0.7], [0.7 0.9 0.7], [0.7 0.7 0.9] ]
+			for(var i = 0; i < 5; i++){
+				function(){
+					var ball, body
+					if(i % 3 != 0){
+						ball = Image("ball.png")
+						ball.x = this.width * math.random(0.1, 0.9)
+						ball.y = this.height * 0.1
+						ball.zOrder = 1000
+						ball.color = colors[i % #colors]
+						this.insert(ball)
+						
+						body = ball.addPhysicsBody {
+							type = "dynamic"
+							fixture = {
+								shape = {
+									radius = ball.width/2
+								}
+								density = 1
+								bounce = bounce
+								friction = friction
+							}
+						}
+					}else{
+						ball = Image("box.jpg")
+						ball.x = this.width * math.random(0.1, 0.9)
+						ball.y = this.height * 0.1
+						// ball.anchor = [0, 0]
+						ball.zOrder = 1000
+						ball.color = colors[i % #colors]
+						this.insert(ball)
+						
+						body = ball.addPhysicsBody {
+							type = "dynamic"
+							fixture = {
+								// shape = getBoxShapeVertices([0, 0], [ball.width, ball.height])
+								shape = getBoxShapeVertices([-ball.width/2, -ball.height/2], [ball.width, ball.height])
+								density = 1
+								bounce = bounce
+								friction = friction
+							}
+						}
+						body.angularVelocity = 180
+					}
+					body.linearVelocity = [this.width * math.random(-1, 1), this.width * math.random(-1, 1)]
+					
+					var prevX, prevY, speedX, speedY = 0, 0, 0, 0
+					var function dragging(params){
+						speedX = (this.x - prevX) / params.deltaTime
+						speedY = (this.y - prevY) / params.deltaTime
+						prevX, prevY = this.x, this.y
+						body.linearVelocity, body.gravityScale = [0, 0], 0
+					}
+					ball.addEventListener("touch", function(touch){
+						if(touch.phase == "start"){
+							// tx, ty, sx, sy = touch.x, touch.y, this.x, this.y
+							this.x0, this.y0 = touch.x - this.x, touch.y - this.y
+							// body.type = "kinematic"
+							// this.clearTimeout(setDynamicType)
+							this.addEventListener("enterFrame", dragging)
+						}else if(touch.phase == "move"){
+							this.x, this.y = touch.x - this.x0, touch.y - this.y0
+							body.position = [this.x, this.y]
+							// body.linearVelocity = [0, 0]
+						}else if(touch.phase == "end" || touch.phase == "cancel"){
+							body.linearVelocity, body.gravityScale, body.isAwake = [speedX, speedY], 1, true
+							this.removeEventListener("enterFrame", dragging)
+						}
+					})
+				}.call(this)
 			}
-			var function bodyDragging(){
-				body.linearVelocity = [0, 0]
-				body.gravityScale = 0
-			}
-			ball.addEventListener("touch", function(touch){
-				if(touch.phase == "start"){
-					// tx, ty, sx, sy = touch.x, touch.y, this.x, this.y
-					this.x0, this.y0 = touch.x - this.x, touch.y - this.y
-					// body.type = "kinematic"
-					// this.clearTimeout(setDynamicType)
-					this.addEventListener("enterFrame", bodyDragging)
-					this.addEventListener("enterFrame", trackVelocity)
-				}else if(touch.phase == "move"){
-					this.x, this.y = touch.x - this.x0, touch.y - this.y0
-					body.position = [this.x*physicsMetricScale, this.y*physicsMetricScale]
-					// body.linearVelocity = [0, 0]
-				}else if(touch.phase == "end" || touch.phase == "cancel"){
-					body.linearVelocity = [speedX*physicsMetricScale, speedY*physicsMetricScale]
-					body.gravityScale = 1
-					this.removeEventListener("enterFrame", bodyDragging)
-					this.removeEventListener("enterFrame", trackVelocity)
-				}
-			})
 		}
 		
 		if(false){
