@@ -229,40 +229,40 @@ begin function
             end call method ret values 0
 
 
-[22] var Monster = extends Image {
+[22] var Monster = extends Image { // lets create Monster class so we can create a lot instances (monsters) if necessary
 
             begin set local var
               begin extends
                 get env var Image
                 begin object 6
 
-[23] __object = {
+[23] __object = { // all instances of this class will have following properies by default
 
                   begin set by name
                     begin object 5
 
-[24] curAnimName = ""
+[24] curAnimName = "" // playing animation name
 
                       begin set by name
                         push const string ""
                       end set by name: [curAnimName]
                       ,
 
-[25] curAnim = null
+[25] curAnim = null	// playing animation object
 
                       begin set by name
                         const null
                       end set by name: [curAnim]
                       ,
 
-[26] moveTransition = null
+[26] moveTransition = null // move transition object
 
                       begin set by name
                         const null
                       end set by name: [moveTransition]
                       ,
 
-[27] prevX = 0
+[27] prevX = 0 // prev x && prev y to track monster speed
 
                       begin set by name
                         push const number 0
@@ -289,7 +289,7 @@ begin function
                         3 _G
                       end locals
 
-[32] super(filename)
+[32] super(filename) // call constructor of class we extend, so create image
 
                       begin call
                         super
@@ -308,7 +308,7 @@ begin function
                       end set property ret values 0
 
 
-[34] this.setTimeout(this.trackMove, 0.1, true)
+[34] this.setTimeout(this.trackMove, 0.1, true) // call this.trackMove every 0.1 seconds until we clear this timeout
 
                       begin call method
                         push this
@@ -327,7 +327,7 @@ begin function
                       end call method ret values 0
 
 
-[35] this.runAnimation("walkRight")
+[35] this.runAnimation("walkRight") // run "walkRight" animation by default
 
                       begin call method
                         push this
@@ -341,7 +341,7 @@ begin function
                   end set by name: [__construct]
                   ,
 
-[38] trackMove = function(){
+[38] trackMove = function(){ // determine the direction of moving to switch animation
 
                   begin set by name
                     begin function
@@ -407,7 +407,7 @@ begin function
                       end set property ret values 0
 
 
-[41] var len = (dx*dx + dy*dy)**0.5
+[41] var len = (dx*dx + dy*dy)**0.5 // calculate length of the direction
 
                       begin set local var
                         begin operator **
@@ -460,7 +460,7 @@ begin function
                       end set local var dx (2 0)
 
 
-[44] if(dy < -0.85){
+[44] if(dy < -0.85){ // monster goes up
 
                       begin if
                         begin bool exp
@@ -497,7 +497,7 @@ begin function
                         end then
                         begin else
 
-[47] }else if(dy > 0.85){
+[47] }else if(dy > 0.85){ // monster goes down
 
                           begin if
                             begin bool exp
@@ -564,7 +564,7 @@ begin function
                   end set by name: [trackMove]
                   ,
 
-[56] runAnimation = function(name){
+[56] runAnimation = function(name){ // start animation
 
                   begin set by name
                     begin function
@@ -640,7 +640,7 @@ begin function
                   end set by name: [runAnimation]
                   ,
 
-[63] move = function(x, y){
+[63] move = function(x, y){ // move monster to position x,y
 
                   begin set by name
                     begin function
@@ -698,7 +698,7 @@ begin function
                       end call method ret values 0
 
 
-[66] this.moveTransition = this.transition {
+[66] this.moveTransition = this.transition { // lets use transition to move monster
 
                       begin set property
                         begin call method
@@ -737,7 +737,7 @@ begin function
                           end params ret values 2
                         end call method ret values 1
 
-[66] this.moveTransition = this.transition {
+[66] this.moveTransition = this.transition { // lets use transition to move monster
 
                         push this
                         push const string "moveTransition"
@@ -746,7 +746,7 @@ begin function
                   end set by name: [move]
                   ,
 
-[72] __set@y = function(y){
+[72] __set@y = function(y){ // track changing y position
 
                   begin set by name
                     begin function
@@ -756,7 +756,7 @@ begin function
                         2 _G
                       end locals
 
-[73] super(y)
+[73] super(y) // call the same method of "super" class because we want to add behavior, not override
 
                       begin call
                         super
@@ -766,7 +766,7 @@ begin function
                       end call ret values 0
 
 
-[74] this.zOrder = y
+[74] this.zOrder = y // set zOrder, so bottom monsters will be front of top monsters
 
                       begin set property
                         get local var y (0 0 param)
@@ -780,7 +780,7 @@ begin function
             end set local var Monster (4 0)
 
 
-[78] var monster = Monster("monster-01.png", {
+[78] var monster = Monster("monster-01.png", { // create our monster
 
             begin set local var
               begin call
@@ -977,7 +977,7 @@ begin function
             end set property ret values 0
 
 
-[87] monster.scale = 1.5
+[87] monster.scale = 1.5 // scale monster to make them bigger
 
             begin set property
               push const number 1.5
@@ -986,7 +986,7 @@ begin function
             end set property ret values 0
 
 
-[88] this.insert(monster)
+[88] this.insert(monster) // insert monster to the scene
 
             begin call method
               push this

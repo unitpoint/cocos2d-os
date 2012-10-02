@@ -5,6 +5,8 @@ options
 	module_path="../modules/cocos2dx/proj.marmalade"
 	module_path="../modules/objectscript"
 	module_path="../modules/marmaladeos"
+	module_path="../modules/box2d"
+	module_path="../modules/wavreader"
 }
 
 includepaths
@@ -24,9 +26,7 @@ subprojects
 #	libxml2
 #	freetype
 #	libjpeg
-	cocos2dx
 #	cocos2dos
-	objectscript
 	marmaladeos
 }
 

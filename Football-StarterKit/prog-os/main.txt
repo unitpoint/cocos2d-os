@@ -278,19 +278,19 @@ begin function
                       end call ret values 0
 
 
-[29] var screenWidth, screen = director.width, director.height
+[29] var screenWidth, screen = director.contentWidth, director.contentHeight
 
                       begin set local var
                         begin set local var
                           begin params 2
                             begin get property
                               get local var director (2 2)
-                              push const string "width"
+                              push const string "contentWidth"
                             end get property ret values 1
                             ,
                             begin get property
                               get local var director (2 2)
-                              push const string "height"
+                              push const string "contentHeight"
                             end get property ret values 1
                           end params ret values 2
                         end set local var screen (4 0)
@@ -543,10 +543,12 @@ begin function
                                   push this
                                   push const string "x"
                                 end get property ret values 1
-                                begin operator -
-                                  get local var parentWidth (3 0)
-                                  get local var radius (5 0)
-                                end operator -
+                                begin binary operator by locals
+                                  begin operator -
+                                    get local var parentWidth (3 0)
+                                    get local var radius (5 0)
+                                  end operator -
+                                end binary operator by locals
                               end logic >=
                             end bool exp
                             begin then
@@ -555,10 +557,12 @@ begin function
 
                               begin scope
                                 begin set property
-                                  begin operator -
-                                    get local var parentWidth (3 0)
-                                    get local var radius (5 0)
-                                  end operator -
+                                  begin binary operator by locals
+                                    begin operator -
+                                      get local var parentWidth (3 0)
+                                      get local var radius (5 0)
+                                    end operator -
+                                  end binary operator by locals
                                   push this
                                   push const string "x"
                                 end set property ret values 0
@@ -628,10 +632,12 @@ begin function
                                   push this
                                   push const string "y"
                                 end get property ret values 1
-                                begin operator -
-                                  get local var parentHeight (4 0)
-                                  get local var radius (5 0)
-                                end operator -
+                                begin binary operator by locals
+                                  begin operator -
+                                    get local var parentHeight (4 0)
+                                    get local var radius (5 0)
+                                  end operator -
+                                end binary operator by locals
                               end logic >=
                             end bool exp
                             begin then
@@ -640,10 +646,12 @@ begin function
 
                               begin scope
                                 begin set property
-                                  begin operator -
-                                    get local var parentHeight (4 0)
-                                    get local var radius (5 0)
-                                  end operator -
+                                  begin binary operator by locals
+                                    begin operator -
+                                      get local var parentHeight (4 0)
+                                      get local var radius (5 0)
+                                    end operator -
+                                  end binary operator by locals
                                   push this
                                   push const string "y"
                                 end set property ret values 0
@@ -1014,10 +1022,12 @@ begin function
                 begin if
                   begin bool exp
                     begin logic not
-                      begin logic <
-                        get local var i (6 0)
-                        push const number 3
-                      end logic <
+                      begin binary operator by local & number
+                        begin logic <
+                          get local var i (6 0)
+                          push const number 3
+                        end logic <
+                      end binary operator by local & number
                     end logic not
                   end bool exp
                   begin then
@@ -1122,12 +1132,14 @@ begin function
 [80] for(var i = 0; i < 3; i++){
 
                 begin code list
-                  begin set local var
-                    begin operator +
-                      get local var i (6 0)
-                      push const number 1
-                    end operator +
-                  end set local var i (6 0)
+                  begin set local var by bin operator local & number
+                    begin binary operator by local & number
+                      begin operator +
+                        get local var i (6 0)
+                        push const number 1
+                      end operator +
+                    end binary operator by local & number
+                  end set local var by bin operator local & number i (6 0)
                 end code list ret values 0
               end loop ret values 0
             end scope ret values 0

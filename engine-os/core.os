@@ -172,3 +172,15 @@ function deepClone(p){
 	}
 	return p
 }
+
+function math.clamp(a min max){
+	return a < min ? min : a > max ? max : a
+}
+
+function Object.flip(){
+	var r = {}
+	for(var i, v in this){
+		r[v] = i
+	}
+	return r
+}

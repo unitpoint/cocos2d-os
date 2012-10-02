@@ -46,7 +46,8 @@ ImageAnimation = extends FunctionNode {
 	__construct = function(params, target, onComplete){
 		super()
 		this.target, this.onComplete = target, functionof onComplete
-		var cols, rows, start, count = params.cols, params.rows, params.start, params.frames
+		var cols, rows = params.cols, params.rows
+		var start, count = ("start" in params ? params.start : 0), ("frames" in params ? params.frames : cols * rows)
 		
 		var frameWidth, frameHeight = target.texture.width / cols, target.texture.height / rows
 		var end = start + (count || cols * rows) - 1
