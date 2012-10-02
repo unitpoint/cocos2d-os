@@ -826,15 +826,15 @@ begin function
 
           begin scope
             begin return
-              begin get property
+              begin get property by local & number
                 get local var p (0 0 param)
                 push const number 0
-              end get property ret values 1
+              end get property by local & number ret values 1
               ,
-              begin get property
+              begin get property by local & number
                 get local var p (0 0 param)
                 push const number 1
-              end get property ret values 1
+              end get property by local & number ret values 1
             end return values 2
           end scope ret values 0
         end then
@@ -884,15 +884,15 @@ begin function
 
           begin scope
             begin return
-              begin get property
+              begin get property by local & number
                 get local var p (0 0 param)
                 push const number 0
-              end get property ret values 1
+              end get property by local & number ret values 1
               ,
-              begin get property
+              begin get property by local & number
                 get local var p (0 0 param)
                 push const number 1
-              end get property ret values 1
+              end get property by local & number ret values 1
             end return values 2
           end scope ret values 0
         end then
@@ -985,10 +985,12 @@ begin function
             begin set auto index
               begin array 2
                 begin set auto index
-                  begin operator +
-                    get local var x (4 0)
-                    get local var width (6 0)
-                  end operator +
+                  begin binary operator by locals
+                    begin operator +
+                      get local var x (4 0)
+                      get local var width (6 0)
+                    end operator +
+                  end binary operator by locals
                 end set auto index
                 ,
                 begin set auto index
@@ -1000,17 +1002,21 @@ begin function
             begin set auto index
               begin array 2
                 begin set auto index
-                  begin operator +
-                    get local var x (4 0)
-                    get local var width (6 0)
-                  end operator +
+                  begin binary operator by locals
+                    begin operator +
+                      get local var x (4 0)
+                      get local var width (6 0)
+                    end operator +
+                  end binary operator by locals
                 end set auto index
                 ,
                 begin set auto index
-                  begin operator +
-                    get local var y (5 0)
-                    get local var height (7 0)
-                  end operator +
+                  begin binary operator by locals
+                    begin operator +
+                      get local var y (5 0)
+                      get local var height (7 0)
+                    end operator +
+                  end binary operator by locals
                 end set auto index
               end array
             end set auto index
@@ -1022,10 +1028,12 @@ begin function
                 end set auto index
                 ,
                 begin set auto index
-                  begin operator +
-                    get local var y (5 0)
-                    get local var height (7 0)
-                  end operator +
+                  begin binary operator by locals
+                    begin operator +
+                      get local var y (5 0)
+                      get local var height (7 0)
+                    end operator +
+                  end binary operator by locals
                 end set auto index
               end array
             end set auto index
@@ -1034,6 +1042,9 @@ begin function
       end code list ret values 0
     end function
   end set env var getBoxShapeVertices
+
+
+[104] }
 
   begin code list
     begin return

@@ -86,7 +86,7 @@ MyColorNode = extends ColorNode {
 	update = function(params){
 		if(this.touched) return;
 		
-		var offs = director.width * this.speed * params.deltaTime
+		var offs = director.contentWidth * this.speed * params.deltaTime
 		
 		this.x = this.x + this.dx * offs
 		this.y = this.y + this.dy * offs
@@ -354,7 +354,7 @@ MyScene = extends Scene {
 					time = time + params.deltaTime
 					this.rotation = math.deg(math.sin(time * math.PI * rotSpeed))
 					
-					var offs = director.width * speed * params.deltaTime
+					var offs = director.contentWidth * speed * params.deltaTime
 					
 					this.x = this.x + dx * offs
 					this.y = this.y + dy * offs
@@ -401,10 +401,10 @@ MyScene = extends Scene {
 				type = "static"
 				fixture = {
 					shapes = [ 
-						getBoxShapeVertices([0, director.height], [director.width, director.height*0.1]),
-						getBoxShapeVertices([0, director.height*-0.1], [director.width, director.height*0.1]),
-						getBoxShapeVertices([director.width*-0.1, 0], [director.width*0.1, director.height]),
-						getBoxShapeVertices([director.width, 0], [director.width*0.1, director.height]),
+						getBoxShapeVertices([0, director.contentHeight], [director.contentWidth, director.contentHeight*0.1]),
+						getBoxShapeVertices([0, director.contentHeight*-0.1], [director.contentWidth, director.contentHeight*0.1]),
+						getBoxShapeVertices([director.contentWidth*-0.1, 0], [director.contentWidth*0.1, director.contentHeight]),
+						getBoxShapeVertices([director.contentWidth, 0], [director.contentWidth*0.1, director.contentHeight]),
 					],
 					bounce = bounce
 					friction = friction

@@ -98,6 +98,7 @@ public:
 	};
 
 	void registerTouchEvent(int x, int y, ETouchPhase phase, int id);
+	void registerKeyEvent(int key, bool pressed);
 	
 	static int32 touchEventHandler(void* system_data, void* user_data);
 	static int32 motionEventHandler(void* system_data, void* user_data);

@@ -26,7 +26,7 @@ MyScene = extends Scene {
 				super(imageFilename || "ball.png") // call constructor of Image class
 
 				// set start speed of the ball
-				var screenWidth, screen = director.width, director.height
+				var screenWidth, screen = director.contentWidth, director.contentHeight
 				var speedX, speedY = math.random(-0.5, 0.5)*screenWidth, math.random(0.5, 1)*screenWidth
 				var prevX, prevY = 0, 0
 				var function trackVelocity(params){	// track velocity of the ball while dragging

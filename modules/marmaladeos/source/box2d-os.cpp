@@ -1,9 +1,8 @@
 #include "box2d-os.h"
 #include "Box2D\Box2D.h"
+#include "os-api-helper.h"
 
-using namespace ObjectScript;
-
-namespace Box2dObjectScript {
+namespace ObjectScript {
 
 // =====================================================================
 
@@ -19,226 +18,39 @@ static float32 fromBox2dMetric(float32 x)
 	return x * physicsMetricScale;
 }
 
-// =====================================================================
+OS_DECL_CTYPE(b2Vec2);
+OS_DECL_CTYPE(b2Transform);
 
-template <class T> struct RemoveConst          { typedef T type; };
-template <class T> struct RemoveConst<const T> { typedef T type; };
-template <class T> struct RemoveConst<const T&> { typedef T type; };
+OS_DECL_CTYPE(b2CircleShape);
+OS_DECL_CTYPE(b2EdgeShape);
+OS_DECL_CTYPE(b2LoopShape);
+OS_DECL_CTYPE(b2PolygonShape);
 
-template <class T> struct RemoveRef		{ typedef T type; };
-template <class T> struct RemoveRef<T&> { typedef T type; };
+OS_DECL_CTYPE(b2RopeJoint);
+OS_DECL_CTYPE(b2RevoluteJoint);
+OS_DECL_CTYPE(b2PulleyJoint);
+OS_DECL_CTYPE(b2PrismaticJoint);
+OS_DECL_CTYPE(b2MouseJoint);
+OS_DECL_CTYPE(b2GearJoint);
+OS_DECL_CTYPE(b2FrictionJoint);
+OS_DECL_CTYPE(b2DistanceJoint);
+OS_DECL_CTYPE(b2WheelJoint);
+OS_DECL_CTYPE(b2WeldJoint);
 
-template <class T> struct RemovePtr		{ typedef T type; };
-template <class T> struct RemovePtr<T*> { typedef T type; };
+OS_DECL_CTYPE(b2Fixture);
+OS_DECL_CTYPE(b2Contact);
+OS_DECL_CTYPE(b2ContactImpulse);
+OS_DECL_CTYPE(b2Body);
+OS_DECL_CTYPE(b2BodyType);
+OS_DECL_CTYPE(b2Manifold);
 
-template <class T> struct PlainType { typedef typename RemovePtr<typename RemoveRef<typename RemoveConst<T>::type>::type>::type type; };
-
-// =====================================================================
-
-template <class T> int getClassId(){ static int id = (int)&id; return id; }
-template <class T> int getId(){ static int id = (int)&id; return id; }
-
-// =====================================================================
-
-template <class T> const char * getClassName();
-
-template <> const char * getClassName<float32>(){ return "float32"; }
-template <> const char * getClassName<int>(){ return "int"; }
-template <> const char * getClassName<bool>(){ return "bool"; }
-template <> const char * getClassName<b2Vec2>(){ return "b2Vec2"; }
-template <> const char * getClassName<b2Transform>(){ return "b2Transform"; }
-
-// template <> const char * getClassName<b2Shape>(){ return "b2Shape"; }
-template <> const char * getClassName<b2CircleShape>(){ return "b2CircleShape"; }
-template <> const char * getClassName<b2EdgeShape>(){ return "b2EdgeShape"; }
-template <> const char * getClassName<b2LoopShape>(){ return "b2LoopShape"; }
-template <> const char * getClassName<b2PolygonShape>(){ return "b2PolygonShape"; }
-
-template <> const char * getClassName<b2RopeJoint>(){ return "b2RopeJoint"; }
-template <> const char * getClassName<b2RevoluteJoint>(){ return "b2RevoluteJoint"; }
-template <> const char * getClassName<b2PulleyJoint>(){ return "b2PulleyJoint"; }
-template <> const char * getClassName<b2PrismaticJoint>(){ return "b2PrismaticJoint"; }
-template <> const char * getClassName<b2MouseJoint>(){ return "b2MouseJoint"; }
-template <> const char * getClassName<b2GearJoint>(){ return "b2GearJoint"; }
-template <> const char * getClassName<b2FrictionJoint>(){ return "b2FrictionJoint"; }
-template <> const char * getClassName<b2DistanceJoint>(){ return "b2DistanceJoint"; }
-template <> const char * getClassName<b2WheelJoint>(){ return "b2WheelJoint"; }
-template <> const char * getClassName<b2WeldJoint>(){ return "b2WeldJoint"; }
-
-// template <> const char * getClassName<b2ManifoldPoint>(){ return "b2ManifoldPoint"; }
-
-template <> const char * getClassName<b2Fixture>(){ return "b2Fixture"; }
-template <> const char * getClassName<b2Contact>(){ return "b2Contact"; }
-template <> const char * getClassName<b2ContactImpulse>(){ return "b2ContactImpulse"; }
-template <> const char * getClassName<b2Body>(){ return "b2Body"; }
-template <> const char * getClassName<b2BodyType>(){ return "b2BodyType"; }
-// template <> const char * getClassName<b2JointEdge>(){ return "b2JointEdge"; }
-// template <> const char * getClassName<b2ContactEdge>(){ return "b2ContactEdge"; }
-// template <> const char * getClassName<b2MassData>(){ return "b2MassData"; }
-template <> const char * getClassName<b2Manifold>(){ return "b2Manifold"; }
-
-template <> const char * getClassName<class World>(){ return "b2World"; }
-
-// =====================================================================
-
-template <class T> void osObjectDestructor(OS * os, void * data, void * user_param)
-{
-}
-
-template <> void osObjectDestructor<b2Body>(OS * os, void * data, void * user_param)
-{
-#if 1
-	b2Body * body = (b2Body*)data;
-	if(body){
-		body->GetWorld()->DestroyBody(body);
-	}
-#endif
-}
-
-void osJointDestructor(OS * os, void * data, void * user_param)
-{
-#if 1
-	b2Joint * joint = (b2Joint*)data;
-	if(joint){
-		b2Body * body = joint->GetBodyA();
-		if(body || (body = joint->GetBodyB())){
-			body->GetWorld()->DestroyJoint(joint);
-		}else{
-			OS_ASSERT(false);
-		}
-	}
-#endif
-}
-
-template <> void osObjectDestructor<b2Joint>(OS * os, void * data, void * user_param)
-{
-	osJointDestructor(os, data, user_param);
-}
-
-// =====================================================================
-
-template <class T>
-struct Box2dValue
-{
-};
-
-// =====================================================================
-
-template <class T>
-struct Box2dValue<T*>
-{
-	typedef typename RemoveConst<T>::type * type;
-
-	static bool isValid(type obj){ return obj != NULL; }
-
-	static type to(typename RemoveConst<T>::type * val){ return (type)val; }
-	static type to(const typename RemoveConst<T>::type * val){ return (type)val; }
-
-	static type to(OS * os, int offs)
-	{
-		return (type)os->toUserdata(getId<T>(), offs);
-	}
-
-	static int getValueId(OS * os, type val)
-	{
-		return (int)val->GetUserData();
-	}
-
-	static void setValueId(OS * os, type val)
-	{
-		val->SetUserData((void*)os->getValueId());
-	}
-
-	static void push(OS * os, type val)
-	{
-		if(!val){
-			os->pushNull();
-			return;
-		}
-		int valueId = getValueId(os, val);
-		if(valueId){
-			os->pushValueById(valueId);
-			if(!os->isNull()){
-				OS_ASSERT(os->isUserdata(getId<T>(), -1));
-				return;
-			}
-			os->pop();
-		}
-		os->pushUserPointer(getId<T>(), val, osObjectDestructor<T>);
-		setValueId(os, val);
-		os->pushStackValue();
-		os->getGlobal(getClassName<T>());
-		OS_ASSERT(os->isUserdata(getClassId<T>(), -1));
-		os->setPrototype(getId<T>());
-	}
-};
-
-template <class T> struct Box2dValue<const T*>: public Box2dValue<T*> {};
-template <class T> struct Box2dValue<const T&>: public Box2dValue<T> {};
+class World;
+OS_DECL_CTYPE_NAME(World, "b2World");
 
 // =====================================================================
 
 template <>
-struct Box2dValue<float32>
-{
-	typedef float32 type;
-
-	static bool isValid(float32){ return true; }
-
-	static type to(float32 val){ return (type)val; }
-	static float32 to(OS * os, int offs)
-	{
-		return os->toFloat(offs);
-	}
-
-	static void push(OS * os, float32 val)
-	{
-		os->pushNumber(val);
-	}
-};
-
-template <>
-struct Box2dValue<int32>
-{
-	typedef int32 type;
-
-	static bool isValid(int32){ return true; }
-
-	static type to(int32 val){ return (type)val; }
-	static int32 to(OS * os, int offs)
-	{
-		return os->toInt(offs);
-	}
-
-	static void push(OS * os, int32 val)
-	{
-		os->pushNumber(val);
-	}
-};
-
-template <>
-struct Box2dValue<bool>
-{
-	typedef bool type;
-
-	static bool isValid(bool){ return true; }
-
-	static type to(bool val){ return (type)val; }
-	static bool to(OS * os, int offs)
-	{
-		return os->toBool(offs);
-	}
-
-	static void push(OS * os, bool val)
-	{
-		os->pushBool(val);
-	}
-};
-
-// =====================================================================
-
-template <>
-struct Box2dValue<b2BodyType>
+struct CtypeValue<b2BodyType>
 {
 	typedef b2BodyType type;
 
@@ -271,7 +83,7 @@ struct Box2dValue<b2BodyType>
 // =====================================================================
 
 template <>
-struct Box2dValue<b2JointType>
+struct CtypeValue<b2JointType>
 {
 	typedef b2JointType type;
 
@@ -335,7 +147,7 @@ struct Box2dValue<b2JointType>
 // =====================================================================
 
 template <>
-struct Box2dValue<b2Vec2>
+struct CtypeValue<b2Vec2>
 {
 	typedef b2Vec2 type;
 
@@ -386,7 +198,7 @@ struct Box2dValue<b2Vec2>
 // =====================================================================
 
 template <>
-struct Box2dValue<b2Color>
+struct CtypeValue<b2Color>
 {
 	typedef b2Color type;
 
@@ -449,7 +261,7 @@ struct Box2dValue<b2Color>
 // =====================================================================
 
 template <>
-struct Box2dValue<b2Transform>
+struct CtypeValue<b2Transform>
 {
 	typedef b2Transform type;
 
@@ -495,7 +307,7 @@ struct Box2dValue<b2Transform>
 // =====================================================================
 
 template <>
-struct Box2dValue<b2Profile>
+struct CtypeValue<b2Profile>
 {
 	typedef b2Profile type;
 
@@ -523,24 +335,70 @@ struct Box2dValue<b2Profile>
 
 // =====================================================================
 
+template <class T> void osObjectDestructor(OS * os, void * data, void * user_param)
+{
+}
+
+template <> void osObjectDestructor<b2Body>(OS * os, void * data, void * user_param)
+{
+#if 1
+	b2Body * body = (b2Body*)data;
+	if(body){
+		body->GetWorld()->DestroyBody(body);
+	}
+#endif
+}
+
+void osJointDestructor(OS * os, void * data, void * user_param)
+{
+#if 1
+	b2Joint * joint = (b2Joint*)data;
+	if(joint){
+		b2Body * body = joint->GetBodyA();
+		if(body || (body = joint->GetBodyB())){
+			body->GetWorld()->DestroyJoint(joint);
+		}else{
+			OS_ASSERT(false);
+		}
+	}
+#endif
+}
+
+template <> void osObjectDestructor<b2Joint>(OS * os, void * data, void * user_param)
+{
+	osJointDestructor(os, data, user_param);
+}
+
+// =====================================================================
+
 template <class T>
-struct Box2dSimpleObject
+struct Box2dObject
 {
 };
 
 template <class T>
-struct Box2dSimpleObject<T*>
+struct Box2dObject<T*>
 {
-	typedef T * type;
+	typedef typename RemoveConst<T>::type * type;
 
 	static bool isValid(type obj){ return obj != NULL; }
 
-	static type to(T * val){ return (type)val; }
-	static type to(const T * val){ return (type)val; }
+	static type to(type val){ return (type)val; }
+	static type to(const typename RemoveConst<T>::type * val){ return (type)val; }
 
 	static type to(OS * os, int offs)
 	{
-		return (type)os->toUserdata(getId<T>(), offs);
+		return (type)os->toUserdata(getInstanceId<T>(), offs);
+	}
+
+	static int getValueId(OS * os, type val)
+	{
+		return (int)val->GetUserData();
+	}
+
+	static void setValueId(OS * os, type val)
+	{
+		val->SetUserData((void*)os->getValueId());
 	}
 
 	static void push(OS * os, type val)
@@ -549,47 +407,91 @@ struct Box2dSimpleObject<T*>
 			os->pushNull();
 			return;
 		}
-		os->pushUserPointer(getId<T>(), val, osObjectDestructor<T>);
+		int valueId = getValueId(os, val);
+		if(valueId){
+			os->pushValueById(valueId);
+			if(!os->isNull()){
+				OS_ASSERT(to(os, -1));
+				return;
+			}
+			os->pop();
+		}
+		os->pushUserPointer(getInstanceId<T>(), val, osObjectDestructor<T>);
+		setValueId(os, val);
 		os->pushStackValue();
-		os->getGlobal(getClassName<T>());
-		OS_ASSERT(os->isUserdata(getClassId<T>(), -1));
-		os->setPrototype(getId<T>());
+		os->getGlobal(getCtypeName<T>());
+		OS_ASSERT(os->isUserdata(getCtypeId<T>(), -1));
+		os->setPrototype(getInstanceId<T>());
 	}
 };
 
 // =====================================================================
 
-template <> struct Box2dValue<b2Contact*>: public Box2dSimpleObject<b2Contact*> {};
+template <> struct CtypeValue<b2Body*>: public Box2dObject<b2Body*> {};
+// template <> struct CtypeValue<const b2Body*>: public Box2dObject<b2Body*> {};
 
 // =====================================================================
 
-template <> struct Box2dValue<b2Manifold*>: public Box2dSimpleObject<b2Manifold*> {};
-template <> struct Box2dValue<const b2Manifold*>: public Box2dSimpleObject<b2Manifold*> {};
+template <> struct CtypeValue<b2Fixture*>: public Box2dObject<b2Fixture*> {};
+// template <> struct CtypeValue<const b2Fixture*>: public Box2dObject<b2Fixture*> {};
 
 // =====================================================================
 
-template <> struct Box2dValue<b2ContactImpulse*>: public Box2dSimpleObject<b2ContactImpulse*> {};
-template <> struct Box2dValue<const b2ContactImpulse*>: public Box2dSimpleObject<b2ContactImpulse*> {};
-
-// =====================================================================
-
-template <class T> T * toBox2dObject(OS * os, int offs)
+template <class T>
+struct Box2dSimpleObject
 {
-	return Box2dValue<T*>::to(os, offs);
-}
+};
 
-template <class T> void pushBox2dValue(OS * os, T obj)
+template <class T>
+struct Box2dSimpleObject<T*>
 {
-	Box2dValue< typename RemoveConst<T>::type >::push(os, 
-		Box2dValue< typename RemoveConst<T>::type >::to(obj));
-}
+	typedef typename RemoveConst<T>::type * type;
+
+	static bool isValid(type obj){ return obj != NULL; }
+
+	static type to(type val){ return (type)val; }
+	static type to(const typename RemoveConst<T>::type * val){ return (type)val; }
+
+	static type to(OS * os, int offs)
+	{
+		return (type)os->toUserdata(getInstanceId<T>(), offs);
+	}
+
+	static void push(OS * os, type val)
+	{
+		if(!val){
+			os->pushNull();
+			return;
+		}
+		os->pushUserPointer(getInstanceId<T>(), val, osObjectDestructor<T>);
+		os->pushStackValue();
+		os->getGlobal(getCtypeName<T>());
+		OS_ASSERT(os->isUserdata(getCtypeId<T>(), -1));
+		os->setPrototype(getInstanceId<T>());
+	}
+};
+
+// =====================================================================
+
+template <> struct CtypeValue<b2Contact*>: public Box2dSimpleObject<b2Contact*> {};
+// template <> struct CtypeValue<const b2Contact*>: public Box2dSimpleObject<b2Contact*> {};
+
+// =====================================================================
+
+template <> struct CtypeValue<b2ContactImpulse*>: public Box2dSimpleObject<b2ContactImpulse*> {};
+// template <> struct CtypeValue<const b2ContactImpulse*>: public Box2dSimpleObject<b2ContactImpulse*> {};
+
+// =====================================================================
+
+template <> struct CtypeValue<b2Manifold*>: public Box2dSimpleObject<b2Manifold*> {};
+// template <> struct CtypeValue<const b2Manifold*>: public Box2dSimpleObject<b2Manifold*> {};
 
 // =====================================================================
 
 void pushXY(OS * os, const b2Vec2& p)
 {
-	os->pushNumber(fromBox2dMetric(p.x));
-	os->pushNumber(fromBox2dMetric(p.y));
+	pushCtypeValue(os, fromBox2dMetric(p.x));
+	pushCtypeValue(os, fromBox2dMetric(p.y));
 }
 
 void pushVertices(OS * os, const b2Vec2* vertices, int count)
@@ -597,7 +499,7 @@ void pushVertices(OS * os, const b2Vec2* vertices, int count)
 	os->newArray(count);
 	for(int i = 0; i < count; i++){
 		os->pushStackValue();
-		pushBox2dValue(os, vertices[i]);
+		pushCtypeValue(os, vertices[i]);
 		os->addProperty();
 	}
 }
@@ -607,179 +509,11 @@ void pushVertices(OS * os, const b2Vec2* vertices, int count)
 template <class T> void clearUserdata(OS * os, T * val)
 {
 	os->pushValueById((int)val->GetUserData());
-	os->clearUserdata(getId<T>());
+	os->clearUserdata(getInstanceId<T>());
 	os->pop();
 }
 
 // =====================================================================
-
-#define GET_SELF(argType) \
-	argType * self = toBox2dObject<argType>(os, -params-1); \
-	if(!self){ \
-		os->triggerError(OS_E_ERROR, OS::String(os, getClassName<argType>())+" this is wrong"); \
-		return 0; \
-	}
-
-#define GET_TEMPLATE_ARG(num, argType) \
-	typename Box2dValue<argType>::type arg##num = Box2dValue<argType>::to(os, -params+num-1); \
-	if(!Box2dValue<argType>::isValid(arg##num)){ \
-		os->triggerError(OS_E_ERROR, OS::String(os, getClassName< PlainType<argType>::type >())+" expected"); \
-		return 0; \
-	}
-
-#define GET_ARG(num, argType) \
-	Box2dValue<argType>::type arg##num = Box2dValue<argType>::to(os, -params+num-1); \
-	if(!Box2dValue<argType>::isValid(arg##num)){ \
-		os->triggerError(OS_E_ERROR, OS::String(os, getClassName< PlainType<argType>::type >())+" expected"); \
-		return 0; \
-	}
-
-// =====================================================================
-
-template <class T, class resType, class T2, resType(T2::*method)()const> 
-int getFieldByMethod(OS * os, int params, int, int, void*)
-{
-	GET_SELF(T);
-	Box2dValue<typename RemoveConst<resType>::type>::push(os, Box2dValue<typename RemoveConst<resType>::type>::to((self->*method)()));
-	return 1;
-}
-
-template <class T, class resType, class T2, resType(T2::*method)()> 
-int getFieldByMethodNotConst(OS * os, int params, int, int, void*)
-{
-	GET_SELF(T);
-	typedef typename RemoveConst<resType>::type type;
-	Box2dValue<type>::push(os, Box2dValue<type>::to((self->*method)()));
-	return 1;
-}
-
-// =====================================================================
-
-template <class T, class resType, class argType1, class T2, resType(T2::*method)(argType1)const> 
-int getFieldByMethodArg1(OS * os, int params, int, int, void*)
-{
-	GET_SELF(T);
-	GET_TEMPLATE_ARG(1, argType1);
-	typedef typename RemoveConst<resType>::type type;
-	Box2dValue<type>::push(os, Box2dValue<type>::to((self->*method)(arg1)));
-	return 1;
-}
-
-template <class T, class resType, class argType1, class T2, resType(T2::*method)(argType1)> 
-int getFieldByMethodArg1NotConst(OS * os, int params, int, int, void*)
-{
-	GET_SELF(T);
-	GET_TEMPLATE_ARG(1, argType1);
-	typedef typename RemoveConst<resType>::type type;
-	Box2dValue<resType>::push(os, Box2dValue<resType>::to((self->*method)(arg1)));
-	return 1;
-}
-
-// =====================================================================
-
-template <class T, class resType, class argType1, class argType2, class T2, resType(T2::*method)(argType1, argType2)> 
-int getFieldByMethodArgs2NotConst(OS * os, int params, int, int, void*)
-{
-	GET_SELF(T);
-	GET_TEMPLATE_ARG(1, argType1);
-	GET_TEMPLATE_ARG(2, argType2);
-	typedef typename RemoveConst<resType>::type type;
-	Box2dValue<type>::push(os, Box2dValue<type>::to((self->*method)(arg1, arg2)));
-	return 1;
-}
-
-// =====================================================================
-
-template <class T, class T2, void(T2::*method)()> 
-int voidMethod(OS * os, int params, int, int, void*)
-{
-	GET_SELF(T);
-	(self->*method)();
-	return 0;
-}
-
-template <class T, class argType1, class T2, void(T2::*method)(argType1)> 
-int voidMethodArg1(OS * os, int params, int, int, void*)
-{
-	GET_SELF(T);
-	GET_TEMPLATE_ARG(1, argType1);
-	(self->*method)(arg1);
-	return 0;
-}
-
-template <class T, class argType1, class argType2, class T2, void(T2::*method)(argType1, argType2)> 
-int voidMethodArgs2(OS * os, int params, int, int, void*)
-{
-	GET_SELF(T);
-	GET_TEMPLATE_ARG(1, argType1);
-	GET_TEMPLATE_ARG(2, argType2);
-	(self->*method)(arg1, arg2);
-	return 0;
-}
-
-template <class T, class argType1, class argType2, class argType3, class T2, void(T2::*method)(argType1, argType2, argType3)> 
-int voidMethodArgs3(OS * os, int params, int, int, void*)
-{
-	GET_SELF(T);
-	GET_TEMPLATE_ARG(1, argType1);
-	GET_TEMPLATE_ARG(2, argType2);
-	GET_TEMPLATE_ARG(3, argType3);
-	(self->*method)(arg1, arg2, arg3);
-	return 0;
-}
-
-template <class T, class argType1, class argType2, class argType3, class argType4, class argType5, class argType6, class argType7,
-	class T2, void(T2::*method)(argType1, argType2, argType3, argType4, argType5, argType6, argType7)> 
-int voidMethodArgs7(OS * os, int params, int, int, void*)
-{
-	GET_SELF(T);
-	GET_TEMPLATE_ARG(1, argType1);
-	GET_TEMPLATE_ARG(2, argType2);
-	GET_TEMPLATE_ARG(3, argType3);
-	GET_TEMPLATE_ARG(4, argType4);
-	GET_TEMPLATE_ARG(5, argType5);
-	GET_TEMPLATE_ARG(6, argType6);
-	GET_TEMPLATE_ARG(7, argType7);
-	(self->*method)(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-	return 0;
-}
-
-// =====================================================================
-
-#define GET_METHOD(T, resType, name, method)  {"__get@"#name, getFieldByMethod<T, resType, T, & T::method>}
-#define GET_METHOD_NOT_CONST(T, resType, name, method)  {"__get@"#name, getFieldByMethodNotConst<T, resType, T, & T::method>}
-#define GET_METHOD_SPEC(T, resType, name, T2, method)  {"__get@"#name, getFieldByMethod<T, resType, T2, & T2::method>}
-
-#define GET_METHOD_1(T, resType, name, method, argType1)  {"__get@"#name, getFieldByMethodArg1<T, resType, argType1, T, & T::method>}
-#define GET_METHOD_1_NOT_CONST(T, resType, name, method, argType1)  {"__get@"#name, getFieldByMethodArg1NotConst<T, resType, argType1, T, & T::method>}
-#define GET_METHOD_2_NOT_CONST(T, resType, name, method, argType1, argType2)  {"__get@"#name, getFieldByMethodArgs2NotConst<T, resType, argType1, argType2, T, & T::method>}
-
-#define SET_METHOD(T, resType, name, method)  {"__set@"#name, voidMethodArg1<T, resType, T, & T::method>}
-#define SET_METHOD_SPEC(T, resType, name, T2, method)  {"__set@"#name, voidMethodArg1<T, resType, T2, & T2::method>}
-
-#define VOID_METHOD(T, name, method)  {#name, voidMethod<T, T, & T::method>}
-#define VOID_METHOD_1(T, name, method, argType1)  {#name, voidMethodArg1<T, argType1, T, & T::method>}
-#define VOID_METHOD_2(T, name, method, argType1, argType2)  {#name, voidMethodArgs2<T, argType1, argType2, T, & T::method>}
-#define VOID_METHOD_3(T, name, method, argType1, argType2, argType3)  {#name, voidMethodArgs3<T, argType1, argType2, argType3, T, & T::method>}
-#define VOID_METHOD_7(T, name, method, argType1, argType2, argType3, argType4, argType5, argType6, argType7)  {#name, voidMethodArgs7<T, argType1, argType2, argType3, argType4, argType5, argType6, argType7, T, & T::method>}
-
-#define VOID_METHOD_SPEC(T, name, T2, method)  {#name, voidMethod<T, T2, & T2::method>}
-#define VOID_METHOD_1_SPEC(T, name, T2, method, argType1)  {#name, voidMethodArg1<T, argType1, T2, & T2::method>}
-#define VOID_METHOD_2_SPEC(T, name, T2, method, argType1, argType2)  {#name, voidMethodArgs2<T, argType1, argType2, T2, & T2::method>}
-#define VOID_METHOD_3_SPEC(T, name, T2, method, argType1, argType2, argType3)  {#name, voidMethodArgs3<T, argType1, argType2, argType3, T2, & T2::method>}
-#define VOID_METHOD_7_SPEC(T, name, T2, method, argType1, argType2, argType3, argType4, argType5, argType6, argType7)  {#name, voidMethodArgs7<T, argType1, argType2, argType3, argType4, argType5, argType6, argType7, T2, & T2::method>}
-
-// =====================================================================
-
-template <class T>
-void initClass(OS * os, OS::FuncDef * list)
-{
-	os->pushGlobals();
-	os->pushString(getClassName<T>());
-	os->pushUserdata(getClassId<T>(), 0);
-	os->setFuncs(list);
-	os->setProperty();
-}
 
 template <class T> T * error(T * obj, OS * os, const char * message, int pop = 1)
 {
@@ -800,6 +534,24 @@ int error(OS * os, const char * message, int pop = 1)
 }
 
 // =====================================================================
+
+template <>
+struct CtypeValue<World*>
+{
+	typedef World * type;
+
+	static bool isValid(type obj){ return obj != NULL; }
+
+	static type to(World * val){ return (type)val; }
+	static type to(const World * val){ return (type)val; }
+
+	static type to(OS * os, int offs)
+	{
+		return (type)os->toUserdata(getInstanceId<World>(), offs);
+	}
+
+	static void push(OS * os, type val);
+};
 
 class World: public b2World, b2DestructionListener, b2ContactFilter, b2ContactListener, b2Draw, b2QueryCallback, b2RayCastCallback
 {
@@ -831,7 +583,7 @@ public:
 	void pushThis()
 	{
 		os->pushValueById(osId);
-		OS_ASSERT(os->isUserdata(getId<World>(), -1));
+		OS_ASSERT(os->isUserdata(getInstanceId<World>(), -1));
 	}
 
 	bool getFunction(const char * name)
@@ -866,8 +618,8 @@ public:
 	bool ShouldCollide(b2Fixture* fixtureA, b2Fixture* fixtureB)
 	{
 		if(getFunction("shouldCollide")){
-			pushBox2dValue(os, fixtureA);
-			pushBox2dValue(os, fixtureB);
+			pushCtypeValue(os, fixtureA);
+			pushCtypeValue(os, fixtureB);
 			os->call(2, 1);
 			return os->popBool();
 		}
@@ -878,7 +630,7 @@ public:
 	void BeginContact(b2Contact* contact)
 	{ 
 		if(getFunction("beginContact")){
-			pushBox2dValue(os, contact);
+			pushCtypeValue(os, contact);
 			os->call(1, 0);
 		}
 	}
@@ -887,7 +639,7 @@ public:
 	void EndContact(b2Contact* contact)
 	{ 
 		if(getFunction("endContact")){
-			pushBox2dValue(os, contact);
+			pushCtypeValue(os, contact);
 			os->call(1, 0);
 		}
 	}
@@ -905,8 +657,8 @@ public:
 	void PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
 	{
 		if(getFunction("preSolve")){
-			pushBox2dValue(os, contact);
-			pushBox2dValue(os, oldManifold);
+			pushCtypeValue(os, contact);
+			pushCtypeValue(os, oldManifold);
 			os->call(2, 0);
 		}
 	}
@@ -920,8 +672,8 @@ public:
 	void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse)
 	{
 		if(getFunction("postSolve")){
-			pushBox2dValue(os, contact);
-			pushBox2dValue(os, impulse);
+			pushCtypeValue(os, contact);
+			pushCtypeValue(os, impulse);
 			os->call(2, 0);
 		}
 	}
@@ -931,8 +683,8 @@ public:
 	{
 		if(getFunction("drawPolygon")){
 			pushVertices(os, vertices, vertexCount);
-			pushBox2dValue(os, color);
-			pushBox2dValue(os, false);
+			pushCtypeValue(os, color);
+			pushCtypeValue(os, false);
 			os->call(3, 0);
 		}
 	}
@@ -942,8 +694,8 @@ public:
 	{
 		if(getFunction("drawPolygon")){
 			pushVertices(os, vertices, vertexCount);
-			pushBox2dValue(os, color);
-			pushBox2dValue(os, true);
+			pushCtypeValue(os, color);
+			pushCtypeValue(os, true);
 			os->call(3, 0);
 		}
 	}
@@ -953,9 +705,9 @@ public:
 	{
 		if(getFunction("drawCircle")){
 			pushXY(os, center);
-			pushBox2dValue(os, radius);
-			pushBox2dValue(os, color);
-			pushBox2dValue(os, false);
+			pushCtypeValue(os, radius);
+			pushCtypeValue(os, color);
+			pushCtypeValue(os, false);
 			os->call(5, 0);
 		}
 	}
@@ -965,9 +717,9 @@ public:
 	{
 		if(getFunction("drawSolidCircle")){
 			pushXY(os, center);
-			pushBox2dValue(os, radius);
-			pushBox2dValue(os, color);
-			pushBox2dValue(os, true);
+			pushCtypeValue(os, radius);
+			pushCtypeValue(os, color);
+			pushCtypeValue(os, true);
 			os->call(5, 0);
 		}
 	}
@@ -978,7 +730,7 @@ public:
 		if(getFunction("drawSegment")){
 			pushXY(os, p1);
 			pushXY(os, p2);
-			pushBox2dValue(os, color);
+			pushCtypeValue(os, color);
 			os->call(5, 0);
 		}
 	}
@@ -988,7 +740,7 @@ public:
 	void DrawTransform(const b2Transform& xf)
 	{
 		if(getFunction("drawTransform")){
-			pushBox2dValue(os, xf);
+			pushCtypeValue(os, xf);
 			os->call(1, 0);
 		}
 	}
@@ -1000,7 +752,7 @@ public:
 		OS_ASSERT(os->isFunction());
 		os->pushStackValue();
 		os->pushNull();
-		pushBox2dValue(os, fixture);
+		pushCtypeValue(os, fixture);
 		os->call(1, 1);
 		return os->popBool();
 	}
@@ -1022,10 +774,10 @@ public:
 		OS_ASSERT(os->isFunction());
 		os->pushStackValue();
 		os->pushNull();
-		pushBox2dValue(os, fixture);
+		pushCtypeValue(os, fixture);
 		pushXY(os, point);
 		pushXY(os, normal);
-		pushBox2dValue(os, fraction);
+		pushCtypeValue(os, fraction);
 		os->call(6, 1);
 		return os->popFloat(1.0f);
 	}
@@ -1034,7 +786,7 @@ public:
 
 	static int createBody(OS * os, int params, int, int, void*)
 	{
-		GET_SELF(World);
+		OS_GET_SELF(World*);
 		if(!os->isObject(-params)) return error(os, "body def object expected");
 
 		b2BodyDef def;
@@ -1042,7 +794,7 @@ public:
 
 		os->getProperty(offs, "type", false); // optional because of we handle error next line of code
 		if(os->isNull()) return error(os, "type expected by body def");
-		def.type = Box2dValue<b2BodyType>::to(os, -1);
+		def.type = CtypeValue<b2BodyType>::to(os, -1);
 		os->pop();
 
 		os->getProperty(offs, "position", false); // optional
@@ -1055,7 +807,7 @@ public:
 			os->getProperty(offs, "y", false); // optional
 			def.position.y = toBox2dMetric(os->popFloat(fromBox2dMetric(def.position.y)));
 		}else{
-			def.position = Box2dValue<b2Vec2>::to(os, -1);
+			def.position = CtypeValue<b2Vec2>::to(os, -1);
 			os->pop();
 		}
 		// def.position.x *= self->metricScale;
@@ -1065,7 +817,7 @@ public:
 		def.angle = os->popFloat(def.angle);
 
 		os->getProperty(offs, "linearVelocity", false); // optional
-		def.linearVelocity = os->isNull() ? def.linearVelocity : Box2dValue<b2Vec2>::to(os, -1);
+		def.linearVelocity = os->isNull() ? def.linearVelocity : CtypeValue<b2Vec2>::to(os, -1);
 		os->pop();
 
 		os->getProperty(offs, "angularVelocity", false); // optional
@@ -1096,7 +848,7 @@ public:
 		def.gravityScale = os->popFloat(def.gravityScale);
 
 		b2Body * body = self->CreateBody(&def);
-		pushBox2dValue(os, body);
+		pushCtypeValue(os, body);
 
 		os->getProperty(offs, "fixture", false); // optional
 		if(os->isObject()){
@@ -1124,8 +876,8 @@ public:
 
 	static int destroyBody(OS * os, int params, int, int, void*)
 	{
-		GET_SELF(World);
-		GET_ARG(1, b2Body*);
+		OS_GET_SELF(World*);
+		OS_GET_ARG(1, b2Body*);
 		clearUserdata(os, arg1);
 		self->DestroyBody(arg1);
 		return 0;
@@ -1183,13 +935,13 @@ public:
 
 	static int createJoint(OS * os, int params, int, int, void*)
 	{
-		GET_SELF(World);
+		OS_GET_SELF(World*);
 		if(!os->isObject(-params)) return error(os, "joint def object expected");
 		int offs = os->getAbsoluteOffs(-params);
 
 		os->getProperty(offs, "type", false); // optional because of we handle error next line of code
 		if(os->isNull()) return error(os, "type expected by joint def");
-		b2JointType type = Box2dValue<b2JointType>::to(os, -1); os->pop();
+		b2JointType type = CtypeValue<b2JointType>::to(os, -1); os->pop();
 		switch(type){
 		case e_revoluteJoint:	return self->createRevoluteJoint(os, offs);
 		case e_prismaticJoint:	return self->createPrismaticJoint(os, offs);
@@ -1208,8 +960,8 @@ public:
 	static int destroyJoint(OS * os, int params, int, int, void*)
 	{
 #if 0
-		GET_SELF(World);
-		GET_ARG(1, b2Joint*);
+		OS_GET_SELF(World*);
+		OS_GET_ARG(1, b2Joint*);
 		clearUserdata(os, arg1);
 		self->DestroyJoint(arg1);
 #endif
@@ -1224,14 +976,14 @@ public:
 
 	static int create(OS * os, int params, int, int, void*)
 	{
-		b2Vec2 gravity = params > 0 ? Box2dValue<b2Vec2>::to(os, -params) : b2Vec2(0, 9.8f);
+		b2Vec2 gravity = params > 0 ? CtypeValue<b2Vec2>::to(os, -params) : b2Vec2(0, 9.8f);
 		bool sleep = os->toBool(-params+1, true);
-		new (os->pushUserdata(getId<World>(), sizeof(World), destructor)) World(os, gravity, sleep);
-		os->retainValueById(os->getValueId());
+		new (os->pushUserdata(getInstanceId<World>(), sizeof(World), destructor)) World(os, gravity, sleep);
+		// os->retainValueById(os->getValueId());
 		os->pushStackValue();
-		os->getGlobal(getClassName<World>());
-		OS_ASSERT(os->isUserdata(getClassId<World>(), -1));
-		os->setPrototype(getId<World>());
+		os->getGlobal(getCtypeName<World>());
+		OS_ASSERT(os->isUserdata(getCtypeId<World>(), -1));
+		os->setPrototype(getInstanceId<World>());
 		return 1;
 	}
 
@@ -1257,30 +1009,30 @@ public:
 			{"destroyBody", destroyBody},
 			{"createJoint", createJoint},
 			{"destroyJoint", destroyJoint},
-			VOID_METHOD_3_SPEC(World, step, b2World, Step, float32, int32, int32),
-			VOID_METHOD_SPEC(World, clearForces, b2World, ClearForces),
-			VOID_METHOD_SPEC(World, drawDebugData, b2World, DrawDebugData),
+			OS_VOID_METHOD_3_SPEC(World, step, b2World, Step, float32, int32, int32),
+			OS_VOID_METHOD_SPEC(World, clearForces, b2World, ClearForces),
+			OS_VOID_METHOD_SPEC(World, drawDebugData, b2World, DrawDebugData),
 			// void QueryAABB(b2QueryCallback* callback, const b2AABB& aabb) const;
 			// void RayCast(b2RayCastCallback* callback, const b2Vec2& point1, const b2Vec2& point2) const;
-			GET_METHOD_SPEC(World, const b2Body*, bodyList, b2World, GetBodyList),
-			// GET_METHOD_SPEC(World, const b2Joint*, jointList, b2World, GetJointList),
-			GET_METHOD_SPEC(World, const b2Contact*, contactList, b2World, GetContactList),
-			SET_METHOD_SPEC(World, bool, warmStarting, b2World, SetWarmStarting),
-			SET_METHOD_SPEC(World, bool, continuousPhysics, b2World, SetContinuousPhysics),
-			SET_METHOD_SPEC(World, bool, subStepping, b2World, SetSubStepping),
-			GET_METHOD_SPEC(World, int32, proxyCount, b2World, GetProxyCount),
-			GET_METHOD_SPEC(World, int32, bodyCount, b2World, GetBodyCount),
-			GET_METHOD_SPEC(World, int32, jointCount, b2World, GetJointCount),
-			GET_METHOD_SPEC(World, int32, contactCount, b2World, GetContactCount),
-			GET_METHOD_SPEC(World, int32, treeHeight, b2World, GetTreeHeight),
-			GET_METHOD_SPEC(World, int32, treeBalance, b2World, GetTreeBalance),
-			GET_METHOD_SPEC(World, float32, treeQuality, b2World, GetTreeQuality),
-			GET_METHOD_SPEC(World, b2Vec2, gravity, b2World, GetGravity),
-			SET_METHOD_SPEC(World, const b2Vec2&, gravity, b2World, SetGravity),
-			GET_METHOD_SPEC(World, bool, isLocked, b2World, IsLocked),
-			GET_METHOD_SPEC(World, bool, autoClearForces, b2World, GetAutoClearForces),
-			SET_METHOD_SPEC(World, bool, autoClearForces, b2World, SetAutoClearForces),
-			GET_METHOD_SPEC(World, const b2Profile&, profile, b2World, GetProfile),
+			OS_GET_METHOD_SPEC(World, const b2Body*, bodyList, b2World, GetBodyList),
+			// OS_GET_METHOD_SPEC(World, const b2Joint*, jointList, b2World, GetJointList),
+			OS_GET_METHOD_SPEC(World, const b2Contact*, contactList, b2World, GetContactList),
+			OS_SET_METHOD_SPEC(World, bool, warmStarting, b2World, SetWarmStarting),
+			OS_SET_METHOD_SPEC(World, bool, continuousPhysics, b2World, SetContinuousPhysics),
+			OS_SET_METHOD_SPEC(World, bool, subStepping, b2World, SetSubStepping),
+			OS_GET_METHOD_SPEC(World, int32, proxyCount, b2World, GetProxyCount),
+			OS_GET_METHOD_SPEC(World, int32, bodyCount, b2World, GetBodyCount),
+			OS_GET_METHOD_SPEC(World, int32, jointCount, b2World, GetJointCount),
+			OS_GET_METHOD_SPEC(World, int32, contactCount, b2World, GetContactCount),
+			OS_GET_METHOD_SPEC(World, int32, treeHeight, b2World, GetTreeHeight),
+			OS_GET_METHOD_SPEC(World, int32, treeBalance, b2World, GetTreeBalance),
+			OS_GET_METHOD_SPEC(World, float32, treeQuality, b2World, GetTreeQuality),
+			OS_GET_METHOD_SPEC(World, b2Vec2, gravity, b2World, GetGravity),
+			OS_SET_METHOD_SPEC(World, const b2Vec2&, gravity, b2World, SetGravity),
+			OS_GET_METHOD_SPEC(World, bool, isLocked, b2World, IsLocked),
+			OS_GET_METHOD_SPEC(World, bool, autoClearForces, b2World, GetAutoClearForces),
+			OS_SET_METHOD_SPEC(World, bool, autoClearForces, b2World, SetAutoClearForces),
+			OS_GET_METHOD_SPEC(World, const b2Profile&, profile, b2World, GetProfile),
 			{}
 		};
 
@@ -1300,41 +1052,25 @@ public:
 
 		// initClass<World>(os, funcs);
 		os->pushGlobals();
-		os->pushString(getClassName<World>());
-		os->pushUserdata(getClassId<World>(), 0);
+		os->pushString(getCtypeName<World>());
+		os->pushUserdata(getCtypeId<World>(), 0);
 		os->setFuncs(funcs);
 		os->setNulls(nulls);
 		os->setProperty();
 	}
 };
 
-template <>
-struct Box2dValue<World*>
+void CtypeValue<World*>::push(OS * os, type val)
 {
-	typedef World * type;
-
-	static bool isValid(type obj){ return obj != NULL; }
-
-	static type to(World * val){ return (type)val; }
-	static type to(const World * val){ return (type)val; }
-
-	static type to(OS * os, int offs)
-	{
-		return (type)os->toUserdata(getId<World>(), offs);
+	if(!val){
+		os->pushNull();
+		return;
 	}
-
-	static void push(OS * os, type val)
-	{
-		if(!val){
-			os->pushNull();
-			return;
-		}
-		os->pushValueById(val->osId);
-		if(!os->isNull()){
-			OS_ASSERT(os->isUserdata(getId<World>(), -1));
-		}
+	os->pushValueById(val->osId);
+	if(!os->isNull()){
+		OS_ASSERT(to(os, -1));
 	}
-};
+}
 
 // =====================================================================
 
@@ -1342,56 +1078,56 @@ struct Body
 {
 	static int getMassCenter(OS * os, int params, int, int, void*)
 	{
-		GET_SELF(b2Body);
+		OS_GET_SELF(b2Body*);
 		b2MassData massData;
 		self->GetMassData(&massData);
-		Box2dValue<b2Vec2>::push(os, massData.center);
+		CtypeValue<b2Vec2>::push(os, massData.center);
 		return 1;
 	}
 
 	static int setMassCenter(OS * os, int params, int, int, void*)
 	{
-		GET_SELF(b2Body);
-		GET_ARG(1, b2Vec2);
+		OS_GET_SELF(b2Body*);
+		OS_GET_ARG(1, b2Vec2);
 		b2MassData massData;
 		self->GetMassData(&massData);
-		massData.center = Box2dValue<b2Vec2>::to(os, -params);
+		massData.center = CtypeValue<b2Vec2>::to(os, -params);
 		self->SetMassData(&massData);
 		return 0;
 	}
 
 	static int setMass(OS * os, int params, int, int, void*)
 	{
-		GET_SELF(b2Body);
+		OS_GET_SELF(b2Body*);
 		b2MassData massData;
 		self->GetMassData(&massData);
-		massData.mass = Box2dValue<float32>::to(os, -params);
+		massData.mass = CtypeValue<float32>::to(os, -params);
 		self->SetMassData(&massData);
 		return 0;
 	}
 
 	static int setInertia(OS * os, int params, int, int, void*)
 	{
-		GET_SELF(b2Body);
+		OS_GET_SELF(b2Body*);
 		b2MassData massData;
 		self->GetMassData(&massData);
-		massData.I = Box2dValue<float32>::to(os, -params);
+		massData.I = CtypeValue<float32>::to(os, -params);
 		self->SetMassData(&massData);
 		return 0;
 	}
 
 	static int setPosition(OS * os, int params, int, int, void*)
 	{
-		GET_SELF(b2Body);
+		OS_GET_SELF(b2Body*);
 		b2Transform xf = self->GetTransform();
-		xf.p = Box2dValue<b2Vec2>::to(os, -params);
+		xf.p = CtypeValue<b2Vec2>::to(os, -params);
 		self->SetTransform(xf.p, xf.q.GetAngle());
 		return 0;
 	}
 
 	static int setAngle(OS * os, int params, int, int, void*)
 	{
-		GET_SELF(b2Body);
+		OS_GET_SELF(b2Body*);
 		b2Transform xf = self->GetTransform();
 		self->SetTransform(xf.p, os->toFloat(-params));
 		return 0;
@@ -1418,7 +1154,7 @@ struct Body
 			os->getProperty(offs, "y", false); // optional
 			shape->m_p.y = toBox2dMetric(os->popFloat(fromBox2dMetric(shape->m_p.y)));
 		}else{
-			shape->m_p = Box2dValue<b2Vec2>::to(os, -1);
+			shape->m_p = CtypeValue<b2Vec2>::to(os, -1);
 			os->pop();
 		}
 		return shape;
@@ -1438,24 +1174,24 @@ struct Body
 		
 		os->getProperty(offs, "vertex1", false); // optional
 		if(os->isNull()) return error(shape, os, "vertex1 expected by edge shape");
-		shape->m_vertex1 = Box2dValue<b2Vec2>::to(os, -1);
+		shape->m_vertex1 = CtypeValue<b2Vec2>::to(os, -1);
 		os->pop();
 
 		os->getProperty(offs, "vertex2", false); // optional
 		if(os->isNull()) return error(shape, os, "vertex2 expected by edge shape");
-		shape->m_vertex2 = Box2dValue<b2Vec2>::to(os, -1);
+		shape->m_vertex2 = CtypeValue<b2Vec2>::to(os, -1);
 		os->pop();
 
 		os->getProperty(offs, "vertex0", false); // optional
 		if(!os->isNull()){
-			shape->m_vertex0 = Box2dValue<b2Vec2>::to(os, -1);
+			shape->m_vertex0 = CtypeValue<b2Vec2>::to(os, -1);
 			shape->m_hasVertex0 = true;
 		}
 		os->pop();
 
 		os->getProperty(offs, "vertex3", false); // optional
 		if(!os->isNull()){
-			shape->m_vertex3 = Box2dValue<b2Vec2>::to(os, -1);
+			shape->m_vertex3 = CtypeValue<b2Vec2>::to(os, -1);
 			shape->m_hasVertex3 = true;
 		}
 		os->pop();
@@ -1485,7 +1221,7 @@ struct Body
 			os->pushStackValue();
 			os->pushNumber(i);
 			os->getProperty();
-			vertices[i] = Box2dValue<b2Vec2>::to(os, -1);
+			vertices[i] = CtypeValue<b2Vec2>::to(os, -1);
 			os->pop();
 		}
 		shape->Set(vertices, count);
@@ -1508,7 +1244,7 @@ struct Body
 			os->pushStackValue(offs);
 			os->pushNumber(i);
 			os->getProperty();
-			vertices[i] = Box2dValue<b2Vec2>::to(os, -1);
+			vertices[i] = CtypeValue<b2Vec2>::to(os, -1);
 			os->pop();
 		}
 		shape->Set(vertices, count);
@@ -1537,7 +1273,7 @@ struct Body
 			os->pushStackValue();
 			os->pushNumber(i);
 			os->getProperty();
-			vertices[i] = Box2dValue<b2Vec2>::to(os, -1);
+			vertices[i] = CtypeValue<b2Vec2>::to(os, -1);
 			os->pop();
 		}
 		shape->Create(vertices, count);
@@ -1670,7 +1406,7 @@ struct Body
 
 	static int createFixture(OS * os, int params, int, int, void*)
 	{
-		GET_SELF(b2Body);
+		OS_GET_SELF(b2Body*);
 		if(os->isObject(-params)){
 			createFixture(self, os, -params);
 			return 0;
@@ -1681,8 +1417,8 @@ struct Body
 
 	static int getWorld(OS * os, int params, int, int, void*)
 	{
-		GET_SELF(b2Body);
-		Box2dValue<World*>::push(os, World::toWorld(self->GetWorld()));
+		OS_GET_SELF(b2Body*);
+		CtypeValue<World*>::push(os, World::toWorld(self->GetWorld()));
 		return 1;
 	}
 
@@ -1690,81 +1426,81 @@ struct Body
 	{
 		OS::FuncDef funcs[] = {
 			{"createFixture", createFixture},
-			// GET_METHOD_1_NOT_CONST(b2Body, b2Fixture*, createFixture, CreateFixture, const b2FixtureDef*),
-			// GET_METHOD_2_NOT_CONST(b2Body, b2Fixture*, createFixtureByShape, CreateFixture, const b2Shape*, float32),
-			VOID_METHOD_1(b2Body, destroyFixture, DestroyFixture, b2Fixture*),
-			VOID_METHOD_2(b2Body, setTransform, SetTransform, const b2Vec2&, float32),
-			GET_METHOD(b2Body, const b2Transform&, transform, GetTransform),
-			GET_METHOD(b2Body, const b2Vec2&, position, GetPosition),
+			// OS_GET_METHOD_1_NOT_CONST(b2Body, b2Fixture*, createFixture, CreateFixture, const b2FixtureDef*),
+			// OS_GET_METHOD_2_NOT_CONST(b2Body, b2Fixture*, createFixtureByShape, CreateFixture, const b2Shape*, float32),
+			OS_VOID_METHOD_1(b2Body, destroyFixture, DestroyFixture, b2Fixture*),
+			OS_VOID_METHOD_2(b2Body, setTransform, SetTransform, const b2Vec2&, float32),
+			OS_GET_METHOD(b2Body, const b2Transform&, transform, GetTransform),
+			OS_GET_METHOD(b2Body, const b2Vec2&, position, GetPosition),
 			{"__set@position", setPosition},
-			GET_METHOD(b2Body, float32, angle, GetAngle),
+			OS_GET_METHOD(b2Body, float32, angle, GetAngle),
 			{"__set@angle", setAngle},
-			GET_METHOD(b2Body, const b2Vec2&, worldCenter, GetWorldCenter),
-			GET_METHOD(b2Body, const b2Vec2&, localCenter, GetLocalCenter),
-			SET_METHOD(b2Body, const b2Vec2&, linearVelocity, SetLinearVelocity),
-			GET_METHOD(b2Body, b2Vec2, linearVelocity, GetLinearVelocity),
-			SET_METHOD(b2Body, float32, angularVelocity, SetAngularVelocity),
-			GET_METHOD(b2Body, float32, angularVelocity, GetAngularVelocity),
-			VOID_METHOD_2(b2Body, applyForce, ApplyForce, const b2Vec2&, const b2Vec2&),
-			VOID_METHOD_1(b2Body, applyForceToCenter, ApplyForceToCenter, const b2Vec2&),
-			VOID_METHOD_1(b2Body, applyTorque, ApplyTorque, float32),
-			VOID_METHOD_2(b2Body, applyLinearImpulse, ApplyLinearImpulse, const b2Vec2&, const b2Vec2&),
-			VOID_METHOD_1(b2Body, applyAngularImpulse, ApplyAngularImpulse, float32),
-			GET_METHOD(b2Body, float32, mass, GetMass),
+			OS_GET_METHOD(b2Body, const b2Vec2&, worldCenter, GetWorldCenter),
+			OS_GET_METHOD(b2Body, const b2Vec2&, localCenter, GetLocalCenter),
+			OS_SET_METHOD(b2Body, const b2Vec2&, linearVelocity, SetLinearVelocity),
+			OS_GET_METHOD(b2Body, b2Vec2, linearVelocity, GetLinearVelocity),
+			OS_SET_METHOD(b2Body, float32, angularVelocity, SetAngularVelocity),
+			OS_GET_METHOD(b2Body, float32, angularVelocity, GetAngularVelocity),
+			OS_VOID_METHOD_2(b2Body, applyForce, ApplyForce, const b2Vec2&, const b2Vec2&),
+			OS_VOID_METHOD_1(b2Body, applyForceToCenter, ApplyForceToCenter, const b2Vec2&),
+			OS_VOID_METHOD_1(b2Body, applyTorque, ApplyTorque, float32),
+			OS_VOID_METHOD_2(b2Body, applyLinearImpulse, ApplyLinearImpulse, const b2Vec2&, const b2Vec2&),
+			OS_VOID_METHOD_1(b2Body, applyAngularImpulse, ApplyAngularImpulse, float32),
+			OS_GET_METHOD(b2Body, float32, mass, GetMass),
 			{"__set@mass", setMass},
-			GET_METHOD(b2Body, float32, inertia, GetInertia),
+			OS_GET_METHOD(b2Body, float32, inertia, GetInertia),
 			{"__set@inertia", setInertia},
 			{"__get@massCenter", getMassCenter},
 			{"__set@massCenter", setMassCenter},
 			// {"__get@massData", getMassData},
-			// SET_METHOD(b2Body, const b2MassData*, massData, SetMassData),
-			VOID_METHOD(b2Body, resetMassData, ResetMassData),
-			GET_METHOD_1(b2Body, b2Vec2, getWorldPoint, GetWorldPoint, const b2Vec2&),
-			GET_METHOD_1(b2Body, b2Vec2, getWorldVector, GetWorldVector, const b2Vec2&),
-			GET_METHOD_1(b2Body, b2Vec2, getLocalPoint, GetLocalPoint, const b2Vec2&),
-			GET_METHOD_1(b2Body, b2Vec2, getLocalVector, GetLocalVector, const b2Vec2&),
-			GET_METHOD_1(b2Body, b2Vec2, getLinearVelocityFromWorldPoint, GetLinearVelocityFromWorldPoint, const b2Vec2&),
-			GET_METHOD_1(b2Body, b2Vec2, getLinearVelocityFromLocalPoint, GetLinearVelocityFromLocalPoint, const b2Vec2&),
-			GET_METHOD_1(b2Body, b2Vec2, getLocalPoint, GetLocalPoint, const b2Vec2&),
-			GET_METHOD(b2Body, float32, linearDamping, GetLinearDamping),
-			SET_METHOD(b2Body, float32, linearDamping, SetLinearDamping),
-			GET_METHOD(b2Body, float32, angularDamping, GetAngularDamping),
-			SET_METHOD(b2Body, float32, angularDamping, SetAngularDamping),
-			GET_METHOD(b2Body, float32, gravityScale, GetGravityScale),
-			SET_METHOD(b2Body, float32, gravityScale, SetGravityScale),
-			GET_METHOD(b2Body, b2BodyType, type, GetType),
-			SET_METHOD(b2Body, b2BodyType, type, SetType),
-			SET_METHOD(b2Body, bool, isBullet, SetBullet),
-			GET_METHOD(b2Body, bool, isBullet, IsBullet),
-			SET_METHOD(b2Body, bool, isSleepingAllowed, SetSleepingAllowed),
-			GET_METHOD(b2Body, bool, isSleepingAllowed, IsSleepingAllowed),
-			SET_METHOD(b2Body, bool, isAwake, SetAwake),
-			GET_METHOD(b2Body, bool, isAwake, IsAwake),
-			SET_METHOD(b2Body, bool, isActive, SetActive),
-			GET_METHOD(b2Body, bool, isActive, IsActive),
-			SET_METHOD(b2Body, bool, isFixedRotation, SetFixedRotation),
-			GET_METHOD(b2Body, bool, isFixedRotation, IsFixedRotation),
-			GET_METHOD(b2Body, const b2Fixture*, fixtureList, GetFixtureList),
-			// GET_METHOD(b2Body, const b2JointEdge*, jointList, GetJointList),
-			// GET_METHOD(b2Body, const b2ContactEdge*, contactList, GetContactList),
-			GET_METHOD(b2Body, const b2Body*, next, GetNext),
-			// GET_METHOD(b2Body, const b2World*, world, GetWorld),
+			// OS_SET_METHOD(b2Body, const b2MassData*, massData, SetMassData),
+			OS_VOID_METHOD(b2Body, resetMassData, ResetMassData),
+			OS_GET_METHOD_1(b2Body, b2Vec2, getWorldPoint, GetWorldPoint, const b2Vec2&),
+			OS_GET_METHOD_1(b2Body, b2Vec2, getWorldVector, GetWorldVector, const b2Vec2&),
+			OS_GET_METHOD_1(b2Body, b2Vec2, getLocalPoint, GetLocalPoint, const b2Vec2&),
+			OS_GET_METHOD_1(b2Body, b2Vec2, getLocalVector, GetLocalVector, const b2Vec2&),
+			OS_GET_METHOD_1(b2Body, b2Vec2, getLinearVelocityFromWorldPoint, GetLinearVelocityFromWorldPoint, const b2Vec2&),
+			OS_GET_METHOD_1(b2Body, b2Vec2, getLinearVelocityFromLocalPoint, GetLinearVelocityFromLocalPoint, const b2Vec2&),
+			OS_GET_METHOD_1(b2Body, b2Vec2, getLocalPoint, GetLocalPoint, const b2Vec2&),
+			OS_GET_METHOD(b2Body, float32, linearDamping, GetLinearDamping),
+			OS_SET_METHOD(b2Body, float32, linearDamping, SetLinearDamping),
+			OS_GET_METHOD(b2Body, float32, angularDamping, GetAngularDamping),
+			OS_SET_METHOD(b2Body, float32, angularDamping, SetAngularDamping),
+			OS_GET_METHOD(b2Body, float32, gravityScale, GetGravityScale),
+			OS_SET_METHOD(b2Body, float32, gravityScale, SetGravityScale),
+			OS_GET_METHOD(b2Body, b2BodyType, type, GetType),
+			OS_SET_METHOD(b2Body, b2BodyType, type, SetType),
+			OS_SET_METHOD(b2Body, bool, isBullet, SetBullet),
+			OS_GET_METHOD(b2Body, bool, isBullet, IsBullet),
+			OS_SET_METHOD(b2Body, bool, isSleepingAllowed, SetSleepingAllowed),
+			OS_GET_METHOD(b2Body, bool, isSleepingAllowed, IsSleepingAllowed),
+			OS_SET_METHOD(b2Body, bool, isAwake, SetAwake),
+			OS_GET_METHOD(b2Body, bool, isAwake, IsAwake),
+			OS_SET_METHOD(b2Body, bool, isActive, SetActive),
+			OS_GET_METHOD(b2Body, bool, isActive, IsActive),
+			OS_SET_METHOD(b2Body, bool, isFixedRotation, SetFixedRotation),
+			OS_GET_METHOD(b2Body, bool, isFixedRotation, IsFixedRotation),
+			OS_GET_METHOD(b2Body, const b2Fixture*, fixtureList, GetFixtureList),
+			// OS_GET_METHOD(b2Body, const b2JointEdge*, jointList, GetJointList),
+			// OS_GET_METHOD(b2Body, const b2ContactEdge*, contactList, GetContactList),
+			OS_GET_METHOD(b2Body, const b2Body*, next, GetNext),
+			// OS_GET_METHOD(b2Body, const b2World*, world, GetWorld),
 			{"__get@world", getWorld},
 			{}
 		};
 
-		initClass<b2Body>(os, funcs);
+		createCtypePrototype<b2Body>(os, funcs);
 	}
 };
-
-}
-
-using namespace Box2dObjectScript;
 
 void World::createBodyFixture(b2Body * body, OS * os, int offs)
 {
 	Body::createFixture(body, os, offs);
 }
+
+}; // namespace ObjectScript
+
+using namespace ObjectScript;
 
 void initBox2d(OS * os)
 {
