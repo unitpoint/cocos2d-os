@@ -399,40 +399,76 @@ begin function
             end set property ret values 0
 
 
-[49] var cols, rows, start, count = params.cols, params.rows, params.start, params.frames
+[49] var cols, rows = params.cols, params.rows
 
             begin set local var
               begin set local var
-                begin set local var
-                  begin set local var
-                    begin params 4
-                      begin get property
-                        get local var params (0 0 param)
-                        push const string "cols"
-                      end get property ret values 1
-                      ,
-                      begin get property
-                        get local var params (0 0 param)
-                        push const string "rows"
-                      end get property ret values 1
-                      ,
-                      begin get property
-                        get local var params (0 0 param)
-                        push const string "start"
-                      end get property ret values 1
-                      ,
-                      begin get property
-                        get local var params (0 0 param)
-                        push const string "frames"
-                      end get property ret values 1
-                    end params ret values 4
-                  end set local var count (8 0)
-                end set local var start (7 0)
+                begin params 2
+                  begin get property
+                    get local var params (0 0 param)
+                    push const string "cols"
+                  end get property ret values 1
+                  ,
+                  begin get property
+                    get local var params (0 0 param)
+                    push const string "rows"
+                  end get property ret values 1
+                end params ret values 2
               end set local var rows (6 0)
             end set local var cols (5 0)
 
 
-[51] var frameWidth, frameHeight = target.texture.width / cols, target.texture.height / rows
+[50] var start, count = ("start" in params ? params.start : 0), ("frames" in params ? params.frames : cols * rows)
+
+            begin set local var
+              begin set local var
+                begin params 2
+                  begin question
+                    begin bool exp
+                      begin in
+                        push const string "start"
+                        get local var params (0 0 param)
+                      end in
+                    end bool exp
+                    begin then value
+                      begin get property
+                        get local var params (0 0 param)
+                        push const string "start"
+                      end get property ret values 1
+                    end then value
+                    begin else value
+                      push const number 0
+                    end else value
+                  end question ret values 1
+                  ,
+                  begin question
+                    begin bool exp
+                      begin in
+                        push const string "frames"
+                        get local var params (0 0 param)
+                      end in
+                    end bool exp
+                    begin then value
+                      begin get property
+                        get local var params (0 0 param)
+                        push const string "frames"
+                      end get property ret values 1
+                    end then value
+                    begin else value
+                      begin binary operator by locals
+                        begin operator *
+                          get local var cols (5 0)
+                          get local var rows (6 0)
+                        end operator *
+                      end binary operator by locals
+                    end else value
+                  end question ret values 1
+                end params ret values 2
+              end set local var count (8 0)
+            end set local var start (7 0)
+
+
+[52] var frameWidth, frameHeight = target.texture.width / cols, target.texture.height / rows
 
             begin set local var
               begin set local var
@@ -463,7 +499,7 @@ begin function
             end set local var frameWidth (9 0)
 
 
-[52] var end = start + (count || cols * rows) - 1
+[53] var end = start + (count || cols * rows) - 1
 
             begin set local var
               begin operator -
@@ -471,10 +507,12 @@ begin function
                   get local var start (7 0)
                   begin logic ||
                     get local var count (8 0)
-                    begin operator *
-                      get local var cols (5 0)
-                      get local var rows (6 0)
-                    end operator *
+                    begin binary operator by locals
+                      begin operator *
+                        get local var cols (5 0)
+                        get local var rows (6 0)
+                      end operator *
+                    end binary operator by locals
                   end logic ||
                 end operator +
                 push const number 1
@@ -482,7 +520,7 @@ begin function
             end set local var end (11 0)
 
 
-[53] var yStart = math.floor(start / cols)
+[54] var yStart = math.floor(start / cols)
 
             begin set local var
               begin call method
@@ -490,16 +528,18 @@ begin function
                 begin params 2
                   push const string "floor"
                   ,
-                  begin operator /
-                    get local var start (7 0)
-                    get local var cols (5 0)
-                  end operator /
+                  begin binary operator by locals
+                    begin operator /
+                      get local var start (7 0)
+                      get local var cols (5 0)
+                    end operator /
+                  end binary operator by locals
                 end params ret values 2
               end call method ret values 1
             end set local var yStart (12 0)
 
 
-[54] var yEnd = math.min(rows-1, math.floor(end / cols))
+[55] var yEnd = math.min(rows-1, math.floor(end / cols))
 
             begin set local var
               begin call method
@@ -507,20 +547,24 @@ begin function
                 begin params 3
                   push const string "min"
                   ,
-                  begin operator -
-                    get local var rows (6 0)
-                    push const number 1
-                  end operator -
+                  begin binary operator by local & number
+                    begin operator -
+                      get local var rows (6 0)
+                      push const number 1
+                    end operator -
+                  end binary operator by local & number
                   ,
                   begin call method
                     get env var math
                     begin params 2
                       push const string "floor"
                       ,
-                      begin operator /
-                        get local var end (11 0)
-                        get local var cols (5 0)
-                      end operator /
+                      begin binary operator by locals
+                        begin operator /
+                          get local var end (11 0)
+                          get local var cols (5 0)
+                        end operator /
+                      end binary operator by locals
                     end params ret values 2
                   end call method ret values 1
                 end params ret values 3
@@ -528,7 +572,7 @@ begin function
             end set local var yEnd (13 0)
 
 
-[55] for(var y = yStart; y <= yEnd; y++){
+[56] for(var y = yStart; y <= yEnd; y++){
 
             begin scope
               begin locals 1
@@ -542,10 +586,12 @@ begin function
                 begin if
                   begin bool exp
                     begin logic not
-                      begin logic <=
-                        get local var y (14 0)
-                        get local var yEnd (13 0)
-                      end logic <=
+                      begin binary operator by locals
+                        begin logic <=
+                          get local var y (14 0)
+                          get local var yEnd (13 0)
+                        end logic <=
+                      end binary operator by locals
                     end logic not
                   end bool exp
                   begin then
@@ -554,7 +600,7 @@ begin function
                 end if ret values 0
 
 
-[56] for(var x = 0; x < cols; x++){
+[57] for(var x = 0; x < cols; x++){
 
                 begin scope
                   begin scope
@@ -569,10 +615,12 @@ begin function
                       begin if
                         begin bool exp
                           begin logic not
-                            begin logic <
-                              get local var x (15 0)
-                              get local var cols (5 0)
-                            end logic <
+                            begin binary operator by locals
+                              begin logic <
+                                get local var x (15 0)
+                                get local var cols (5 0)
+                              end logic <
+                            end binary operator by locals
                           end logic not
                         end bool exp
                         begin then
@@ -581,7 +629,7 @@ begin function
                       end if ret values 0
 
 
-[57] var i = y*cols + x
+[58] var i = y*cols + x
 
                       begin scope
                         begin locals 1
@@ -589,33 +637,39 @@ begin function
                         end locals
                         begin set local var
                           begin operator +
-                            begin operator *
-                              get local var y (14 0)
-                              get local var cols (5 0)
-                            end operator *
+                            begin binary operator by locals
+                              begin operator *
+                                get local var y (14 0)
+                                get local var cols (5 0)
+                              end operator *
+                            end binary operator by locals
                             get local var x (15 0)
                           end operator +
                         end set local var i (16 0)
 
 
-[58] if(i >= start && i <= end){
+[59] if(i >= start && i <= end){
 
                         begin if
                           begin bool exp
                             begin logic &&
-                              begin logic >=
-                                get local var i (16 0)
-                                get local var start (7 0)
-                              end logic >=
-                              begin logic <=
-                                get local var i (16 0)
-                                get local var end (11 0)
-                              end logic <=
+                              begin binary operator by locals
+                                begin logic >=
+                                  get local var i (16 0)
+                                  get local var start (7 0)
+                                end logic >=
+                              end binary operator by locals
+                              begin binary operator by locals
+                                begin logic <=
+                                  get local var i (16 0)
+                                  get local var end (11 0)
+                                end logic <=
+                              end binary operator by locals
                             end logic &&
                           end bool exp
                           begin then
 
-[59] this.frames.push {
+[60] this.frames.push {
 
                             begin scope
                               begin call method
@@ -628,34 +682,38 @@ begin function
                                   ,
                                   begin object 4
 
-[60] left = frameWidth * x
+[61] left = frameWidth * x
 
                                     begin set by name
-                                      begin operator *
-                                        get local var frameWidth (9 0)
-                                        get local var x (15 0)
-                                      end operator *
+                                      begin binary operator by locals
+                                        begin operator *
+                                          get local var frameWidth (9 0)
+                                          get local var x (15 0)
+                                        end operator *
+                                      end binary operator by locals
                                     end set by name: [left]
                                     ,
 
-[61] top = frameHeight * y
+[62] top = frameHeight * y
 
                                     begin set by name
-                                      begin operator *
-                                        get local var frameHeight (10 0)
-                                        get local var y (14 0)
-                                      end operator *
+                                      begin binary operator by locals
+                                        begin operator *
+                                          get local var frameHeight (10 0)
+                                          get local var y (14 0)
+                                        end operator *
+                                      end binary operator by locals
                                     end set by name: [top]
                                     ,
 
-[62] width = frameWidth
+[63] width = frameWidth
 
                                     begin set by name
                                       get local var frameWidth (9 0)
                                     end set by name: [width]
                                     ,
 
-[63] height = frameHeight
+[64] height = frameHeight
 
                                     begin set by name
                                       get local var frameHeight (10 0)
@@ -669,36 +727,40 @@ begin function
                       end scope ret values 0
 
 
-[56] for(var x = 0; x < cols; x++){
+[57] for(var x = 0; x < cols; x++){
 
                       begin code list
-                        begin set local var
-                          begin operator +
-                            get local var x (15 0)
-                            push const number 1
-                          end operator +
-                        end set local var x (15 0)
+                        begin set local var by bin operator local & number
+                          begin binary operator by local & number
+                            begin operator +
+                              get local var x (15 0)
+                              push const number 1
+                            end operator +
+                          end binary operator by local & number
+                        end set local var by bin operator local & number x (15 0)
                       end code list ret values 0
                     end loop ret values 0
                   end scope ret values 0
                 end scope ret values 0
 
 
-[55] for(var y = yStart; y <= yEnd; y++){
+[56] for(var y = yStart; y <= yEnd; y++){
 
                 begin code list
-                  begin set local var
-                    begin operator +
-                      get local var y (14 0)
-                      push const number 1
-                    end operator +
-                  end set local var y (14 0)
+                  begin set local var by bin operator local & number
+                    begin binary operator by local & number
+                      begin operator +
+                        get local var y (14 0)
+                        push const number 1
+                      end operator +
+                    end binary operator by local & number
+                  end set local var by bin operator local & number y (14 0)
                 end code list ret values 0
               end loop ret values 0
             end scope ret values 0
 
 
-[68] this.update()
+[69] this.update()
 
             begin call method
               push this
@@ -708,7 +770,7 @@ begin function
             end call method ret values 0
 
 
-[69] this.setTimeout(this.update, params.delay, true)
+[70] this.setTimeout(this.update, params.delay, true)
 
             begin call method
               push this
@@ -732,7 +794,7 @@ begin function
         end set by name: [__construct]
         ,
 
-[72] update = function(){
+[73] update = function(){
 
         begin set by name
           begin function
@@ -743,7 +805,7 @@ begin function
               3 target
             end locals
 
-[73] var frame, target = this.frames[this.index], this.target
+[74] var frame, target = this.frames[this.index], this.target
 
             begin set local var
               begin set local var
@@ -768,7 +830,7 @@ begin function
             end set local var frame (2 0)
 
 
-[74] this.index = (this.index + 1) % #this.frames
+[75] this.index = (this.index + 1) % #this.frames
 
             begin set property
               begin operator %
@@ -791,7 +853,7 @@ begin function
             end set property ret values 0
 
 
-[75] if(this.index == 0 && this.onComplete){
+[76] if(this.index == 0 && this.onComplete){
 
             begin if
               begin bool exp
@@ -811,7 +873,7 @@ begin function
               end bool exp
               begin then
 
-[77] this.onComplete.call(target, this)
+[78] this.onComplete.call(target, this)
 
                 begin scope
                   begin call method
@@ -832,7 +894,7 @@ begin function
             end if ret values 0
 
 
-[80] target.frameLeft = frame.left
+[81] target.frameLeft = frame.left
 
             begin set property
               begin get property
@@ -844,7 +906,7 @@ begin function
             end set property ret values 0
 
 
-[81] target.frameTop = frame.top
+[82] target.frameTop = frame.top
 
             begin set property
               begin get property
@@ -856,7 +918,7 @@ begin function
             end set property ret values 0
 
 
-[82] target.frameWidth = frame.width
+[83] target.frameWidth = frame.width
 
             begin set property
               begin get property
@@ -868,7 +930,7 @@ begin function
             end set property ret values 0
 
 
-[83] target.frameHeight = frame.height
+[84] target.frameHeight = frame.height
 
             begin set property
               begin get property
@@ -880,7 +942,7 @@ begin function
             end set property ret values 0
 
 
-[84] target.width = frame.width
+[85] target.width = frame.width
 
             begin set property
               begin get property
@@ -892,7 +954,7 @@ begin function
             end set property ret values 0
 
 
-[85] target.height = frame.height
+[86] target.height = frame.height
 
             begin set property
               begin get property
@@ -909,14 +971,14 @@ begin function
   end set env var ImageAnimation
 
 
-[89] Sprite = extends Node {
+[90] Sprite = extends Node {
 
   begin set env var
     begin extends
       get env var Node
       begin object 11
 
-[90] __construct = function(filename){
+[91] __construct = function(filename){
 
         begin set by name
           begin function
@@ -926,7 +988,7 @@ begin function
               2 _G
             end locals
 
-[91] super()
+[92] super()
 
             begin call
               super
@@ -935,7 +997,7 @@ begin function
             end call ret values 0
 
 
-[92] this.image = Image(filename)
+[93] this.image = Image(filename)
 
             begin set property
               begin call method
@@ -951,7 +1013,7 @@ begin function
             end set property ret values 0
 
 
-[93] this.width = this.image.width
+[94] this.width = this.image.width
 
             begin set property
               begin get property
@@ -966,7 +1028,7 @@ begin function
             end set property ret values 0
 
 
-[94] this.height = this.image.height
+[95] this.height = this.image.height
 
             begin set property
               begin get property
@@ -981,7 +1043,7 @@ begin function
             end set property ret values 0
 
 
-[95] this.image.x = this.width * 0.5
+[96] this.image.x = this.width * 0.5
 
             begin set property
               begin operator *
@@ -999,7 +1061,7 @@ begin function
             end set property ret values 0
 
 
-[96] this.image.y = this.height * 0.5
+[97] this.image.y = this.height * 0.5
 
             begin set property
               begin operator *
@@ -1017,7 +1079,7 @@ begin function
             end set property ret values 0
 
 
-[97] this.insert(this.image, -1)
+[98] this.insert(this.image, -1)
 
             begin call method
               push this
@@ -1036,7 +1098,7 @@ begin function
             end call method ret values 0
 
 
-[98] delete this.color
+[99] delete this.color
 
             begin delete
               push this
@@ -1046,7 +1108,7 @@ begin function
         end set by name: [__construct]
         ,
 
-[101] __get@color = function(){ return this.image.color }
+[102] __get@color = function(){ return this.image.color }
 
         begin set by name
           begin function
@@ -1067,7 +1129,7 @@ begin function
         end set by name: [__get@color]
         ,
 
-[102] __set@color = function(a){ this.image.color = a }
+[103] __set@color = function(a){ this.image.color = a }
 
         begin set by name
           begin function
@@ -1088,7 +1150,7 @@ begin function
         end set by name: [__set@color]
         ,
 
-[104] __get@flipX = function(){ return this.image.flipX }
+[105] __get@flipX = function(){ return this.image.flipX }
 
         begin set by name
           begin function
@@ -1109,7 +1171,7 @@ begin function
         end set by name: [__get@flipX]
         ,
 
-[105] __set@flipX = function(a){ this.image.flipX = a }
+[106] __set@flipX = function(a){ this.image.flipX = a }
 
         begin set by name
           begin function
@@ -1130,7 +1192,7 @@ begin function
         end set by name: [__set@flipX]
         ,
 
-[107] __get@flipY = function(){ return this.image.flipY }
+[108] __get@flipY = function(){ return this.image.flipY }
 
         begin set by name
           begin function
@@ -1151,7 +1213,7 @@ begin function
         end set by name: [__get@flipY]
         ,
 
-[108] __set@flipY = function(a){ this.image.flipY = a }
+[109] __set@flipY = function(a){ this.image.flipY = a }
 
         begin set by name
           begin function
@@ -1172,7 +1234,7 @@ begin function
         end set by name: [__set@flipY]
         ,
 
-[110] animation = function(params, onComplete){
+[111] animation = function(params, onComplete){
 
         begin set by name
           begin function
@@ -1185,14 +1247,14 @@ begin function
               5 anim
             end locals
 
-[111] var self = this
+[112] var self = this
 
             begin set local var
               push this
             end set local var self (4 0)
 
 
-[112] var anim = this.image.animation(params, onComplete && function(anim){
+[113] var anim = this.image.animation(params, onComplete && function(anim){
 
             begin set local var
               begin call method
@@ -1214,7 +1276,7 @@ begin function
                         2 _G
                       end locals
 
-[113] onComplete.call(self, anim)
+[114] onComplete.call(self, anim)
 
                       begin call method
                         get local var onComplete (1 1 param)
@@ -1233,7 +1295,7 @@ begin function
             end set local var anim (5 0)
 
 
-[115] if("rect" in params){
+[116] if("rect" in params){
 
             begin if
               begin bool exp
@@ -1244,7 +1306,7 @@ begin function
               end bool exp
               begin then
 
-[116] var rect = params.rect
+[117] var rect = params.rect
 
                 begin scope
                   begin locals 3
@@ -1260,7 +1322,7 @@ begin function
                   end set local var rect (6 0)
 
 
-[117] this.width = this.image.width * rect.width
+[118] this.width = this.image.width * rect.width
 
                   begin set property
                     begin operator *
@@ -1281,7 +1343,7 @@ begin function
                   end set property ret values 0
 
 
-[118] this.height = this.image.height * rect.height
+[119] this.height = this.image.height * rect.height
 
                   begin set property
                     begin operator *
@@ -1302,7 +1364,7 @@ begin function
                   end set property ret values 0
 
 
-[119] var cx, cy = rect.center.x, rect.center.y
+[120] var cx, cy = rect.center.x, rect.center.y
 
                   begin set local var
                     begin set local var
@@ -1327,7 +1389,7 @@ begin function
                   end set local var cx (7 0)
 
 
-[120] if("anchor" in rect){
+[121] if("anchor" in rect){
 
                   begin if
                     begin bool exp
@@ -1338,7 +1400,7 @@ begin function
                     end bool exp
                     begin then
 
-[121] cx = cx + rect.width * (rect.anchor.x - 0.5)
+[122] cx = cx + rect.width * (rect.anchor.x - 0.5)
 
                       begin scope
                         begin set local var
@@ -1364,7 +1426,7 @@ begin function
                         end set local var cx (7 0)
 
 
-[122] cy = cy + rect.height * (rect.anchor.y - 0.5)
+[123] cy = cy + rect.height * (rect.anchor.y - 0.5)
 
                         begin set local var
                           begin operator +
@@ -1392,7 +1454,7 @@ begin function
                   end if ret values 0
 
 
-[124] this.image.anchorX = cx
+[125] this.image.anchorX = cx
 
                   begin set property
                     get local var cx (7 0)
@@ -1404,7 +1466,7 @@ begin function
                   end set property ret values 0
 
 
-[125] this.image.anchorY = cy
+[126] this.image.anchorY = cy
 
                   begin set property
                     get local var cy (8 0)
@@ -1418,7 +1480,7 @@ begin function
               end then
               begin else
 
-[127] this.width = this.image.width
+[128] this.width = this.image.width
 
                 begin scope
                   begin set property
@@ -1434,7 +1496,7 @@ begin function
                   end set property ret values 0
 
 
-[128] this.height = this.image.height
+[129] this.height = this.image.height
 
                   begin set property
                     begin get property
@@ -1452,7 +1514,7 @@ begin function
             end if ret values 0
 
 
-[130] this.image.x = this.width * 0.5
+[131] this.image.x = this.width * 0.5
 
             begin set property
               begin operator *
@@ -1470,7 +1532,7 @@ begin function
             end set property ret values 0
 
 
-[131] this.image.y = this.height * 0.5
+[132] this.image.y = this.height * 0.5
 
             begin set property
               begin operator *
@@ -1488,7 +1550,7 @@ begin function
             end set property ret values 0
 
 
-[132] return anim
+[133] return anim
 
             begin code list
               begin return
@@ -1499,7 +1561,7 @@ begin function
         end set by name: [animation]
         ,
 
-[135] stopAnimation = function(t){
+[136] stopAnimation = function(t){
 
         begin set by name
           begin function
@@ -1509,7 +1571,7 @@ begin function
               2 _G
             end locals
 
-[136] this.image.stopAnimation(t)
+[137] this.image.stopAnimation(t)
 
             begin call method
               begin get property
@@ -1526,7 +1588,7 @@ begin function
         end set by name: [stopAnimation]
         ,
 
-[139] stopAllAnimations = function(){
+[140] stopAllAnimations = function(){
 
         begin set by name
           begin function
@@ -1535,7 +1597,7 @@ begin function
               1 _G
             end locals
 
-[140] this.image.stopAllAnimations()
+[141] this.image.stopAllAnimations()
 
             begin call method
               begin get property
@@ -1550,7 +1612,7 @@ begin function
         end set by name: [stopAllAnimations]
         ,
 
-[143] paint = function(params){
+[144] paint = function(params){
 
         begin set by name
           begin function
@@ -1560,7 +1622,7 @@ begin function
               2 _G
             end locals
 
-[144] if(CC_SPRITE_DEBUG_DRAW){
+[145] if(CC_SPRITE_DEBUG_DRAW){
 
             begin if
               begin bool exp
@@ -1568,7 +1630,7 @@ begin function
               end bool exp
               begin then
 
-[145] this.drawBB([1 0 0 1])
+[146] this.drawBB([1 0 0 1])
 
                 begin scope
                   begin call method
@@ -1605,7 +1667,7 @@ begin function
   end set env var Sprite
 
 
-[147] }
+[149] }
 
   begin code list
     begin return
