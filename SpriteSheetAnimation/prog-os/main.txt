@@ -412,14 +412,18 @@ begin function
                       begin set local var
                         begin operator **
                           begin operator +
-                            begin operator *
-                              get local var dx (2 0)
-                              get local var dx (2 0)
-                            end operator *
-                            begin operator *
-                              get local var dy (3 0)
-                              get local var dy (3 0)
-                            end operator *
+                            begin binary operator by locals
+                              begin operator *
+                                get local var dx (2 0)
+                                get local var dx (2 0)
+                              end operator *
+                            end binary operator by locals
+                            begin binary operator by locals
+                              begin operator *
+                                get local var dy (3 0)
+                                get local var dy (3 0)
+                              end operator *
+                            end binary operator by locals
                           end operator +
                           push const number 0.5
                         end operator **
@@ -430,10 +434,12 @@ begin function
 
                       begin if
                         begin bool exp
-                          begin logic ==
-                            get local var len (4 0)
-                            push const number 0
-                          end logic ==
+                          begin binary operator by local & number
+                            begin logic ==
+                              get local var len (4 0)
+                              push const number 0
+                            end logic ==
+                          end binary operator by local & number
                         end bool exp
                         begin then
                           return
@@ -446,15 +452,19 @@ begin function
                       begin set local var
                         begin set local var
                           begin params 2
-                            begin operator /
-                              get local var dx (2 0)
-                              get local var len (4 0)
-                            end operator /
+                            begin binary operator by locals
+                              begin operator /
+                                get local var dx (2 0)
+                                get local var len (4 0)
+                              end operator /
+                            end binary operator by locals
                             ,
-                            begin operator /
-                              get local var dy (3 0)
-                              get local var len (4 0)
-                            end operator /
+                            begin binary operator by locals
+                              begin operator /
+                                get local var dy (3 0)
+                                get local var len (4 0)
+                              end operator /
+                            end binary operator by locals
                           end params ret values 2
                         end set local var dy (3 0)
                       end set local var dx (2 0)
@@ -501,10 +511,12 @@ begin function
 
                           begin if
                             begin bool exp
-                              begin logic >
-                                get local var dy (3 0)
-                                push const number 0.85
-                              end logic >
+                              begin binary operator by local & number
+                                begin logic >
+                                  get local var dy (3 0)
+                                  push const number 0.85
+                                end logic >
+                              end binary operator by local & number
                             end bool exp
                             begin then
 
@@ -548,10 +560,12 @@ begin function
 [52] this.flipX = dx < 0
 
                                 begin set property
-                                  begin logic <
-                                    get local var dx (2 0)
-                                    push const number 0
-                                  end logic <
+                                  begin binary operator by local & number
+                                    begin logic <
+                                      get local var dx (2 0)
+                                      push const number 0
+                                    end logic <
+                                  end binary operator by local & number
                                   push this
                                   push const string "flipX"
                                 end set property ret values 0
@@ -719,17 +733,19 @@ begin function
                               end set by name: [y]
                               ,
 
-[68] duration = len * 10.0 / director.width
+[68] duration = len * 10.0 / director.contentWidth
 
                               begin set by name
                                 begin operator /
-                                  begin operator *
-                                    get local var len (4 0)
-                                    push const number 10.0
-                                  end operator *
+                                  begin binary operator by local & number
+                                    begin operator *
+                                      get local var len (4 0)
+                                      push const number 10.0
+                                    end operator *
+                                  end binary operator by local & number
                                   begin get property
                                     get local var director (2 2)
-                                    push const string "width"
+                                    push const string "contentWidth"
                                   end get property ret values 1
                                 end operator /
                               end set by name: [duration]
