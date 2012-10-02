@@ -117,9 +117,9 @@ inline void operator delete(void *, void *){}
 #define OS_VPRINTF ::vprintf
 #define OS_PRINTF ::printf
 
-#define OS_IS_SPACE ::isspace
+#define OS_IS_SPACE(c) ((c) > OS_TEXT('\0') && (c) <= OS_TEXT(' '))
 #define OS_IS_ALPHA ::isalpha
-#define OS_IS_ALNUM ::isalnum // ((c) >= OS_TEXT('0') && (c) <= OS_TEXT('9'))
+#define OS_IS_ALNUM(c) ((c) >= OS_TEXT('0') && (c) <= OS_TEXT('9'))
 #define OS_IS_SLASH(c) ((c) == OS_TEXT('/') || (c) == OS_TEXT('\\'))
 
 #define OS_AUTO_PRECISION 20
@@ -133,7 +133,7 @@ inline void operator delete(void *, void *){}
 
 #define OS_CALL_STACK_MAX_SIZE 200
 
-#define OS_VERSION OS_TEXT("0.94-vm2")
+#define OS_VERSION OS_TEXT("0.95-vm2")
 #define OS_COMPILED_HEADER OS_TEXT("OBJECTSCRIPT")
 #define OS_DEBUGINFO_HEADER OS_TEXT("OBJECTSCRIPT.DEBUGINFO")
 #define OS_SOURCECODE_EXT OS_TEXT(".os")
@@ -179,6 +179,11 @@ inline void operator delete(void *, void *){}
 // #define DEBUG_BREAK __builtin_trap()
 #else
 #define DEBUG_BREAK 
+#endif
+
+#ifndef OS_PROFILE_BEGIN_OPCODE
+#define OS_PROFILE_BEGIN_OPCODE
+#define OS_PROFILE_END_OPCODE
 #endif
 
 namespace ObjectScript
@@ -770,7 +775,8 @@ namespace ObjectScript
 
 				OS_BYTE * buffer;
 				int size;
-				int pos;
+				// int pos;
+				OS_BYTE * cur;
 
 				// if allocator is NULL then buffer will not be freed
 				MemStreamReader(OS*, int buf_size);
@@ -790,6 +796,8 @@ namespace ObjectScript
 
 				OS_BYTE readByte();
 				OS_BYTE readByteAtPos(int pos);
+
+				OS_INT32 readInt32();
 			};
 
 			class FileStreamReader: public StreamReader
@@ -1362,6 +1370,11 @@ namespace ObjectScript
 				Value(int, const WeakRef&);
 
 				Value& operator=(GCValue*);
+				Value& operator=(bool);
+				Value& operator=(OS_INT32);
+				Value& operator=(OS_INT64);
+				Value& operator=(float);
+				Value& operator=(double);
 				
 				void clear();
 
@@ -1513,6 +1526,9 @@ namespace ObjectScript
 					EXP_TYPE_GET_LOCAL_VAR,
 					EXP_TYPE_GET_LOCAL_VAR_AUTO_CREATE,
 					EXP_TYPE_SET_LOCAL_VAR,
+					
+					EXP_TYPE_SET_LOCAL_VAR_BY_BIN_OPERATOR_LOCALS,
+					EXP_TYPE_SET_LOCAL_VAR_BY_BIN_OPERATOR_LOCAL_AND_NUMBER,
 
 					EXP_TYPE_GET_ENV_VAR,
 					EXP_TYPE_GET_ENV_VAR_AUTO_CREATE,
@@ -1524,6 +1540,12 @@ namespace ObjectScript
 					EXP_TYPE_GET_PROPERTY_AUTO_CREATE,
 					EXP_TYPE_SET_PROPERTY,
 
+					EXP_TYPE_GET_PROPERTY_BY_LOCALS,
+					EXP_TYPE_GET_PROPERTY_BY_LOCAL_AND_NUMBER,
+					EXP_TYPE_SET_PROPERTY_BY_LOCALS_AUTO_CREATE,
+
+					EXP_TYPE_GET_SET_PROPERTY_BY_LOCALS_AUTO_CREATE,
+					
 					// EXP_TYPE_GET_PROPERTY_DIM,
 					// EXP_TYPE_SET_PROPERTY_DIM,
 
@@ -1564,6 +1586,9 @@ namespace ObjectScript
 
 					// EXP_TYPE_PARAM_SEPARTOR, // ,
 
+					EXP_TYPE_BIN_OPERATOR_BY_LOCALS,
+					EXP_TYPE_BIN_OPERATOR_BY_LOCAL_AND_NUMBER,
+
 					EXP_TYPE_CONCAT, // ..
 
 					EXP_TYPE_LOGIC_AND, // &&
@@ -1588,7 +1613,6 @@ namespace ObjectScript
 					EXP_TYPE_POST_DEC,    // --
 
 					// EXP_TYPE_QUESTION,
-
 					EXP_TYPE_BIT_AND, // &
 					EXP_TYPE_BIT_OR,  // |
 					EXP_TYPE_BIT_XOR, // ^
@@ -1831,7 +1855,7 @@ namespace ObjectScript
 				int prog_num_debug_infos;
 				int prog_max_up_count;
 
-				int prog_stack_size;
+				// int prog_stack_size;
 
 				bool isError();
 				void resetError();
@@ -2027,8 +2051,11 @@ namespace ObjectScript
 					OP_PUSH_REST_ARGUMENTS,
 
 					OP_PUSH_LOCAL_VAR,
+					OP_PUSH_LOCAL_VAR_BY_AUTO_INDEX,
 					OP_PUSH_LOCAL_VAR_AUTO_CREATE,
 					OP_SET_LOCAL_VAR,
+					OP_SET_LOCAL_VAR_BY_BIN_OPERATOR_LOCALS,
+					OP_SET_LOCAL_VAR_BY_BIN_OPERATOR_LOCAL_AND_NUMBER,
 
 					OP_PUSH_UP_LOCAL_VAR,
 					OP_PUSH_UP_LOCAL_VAR_AUTO_CREATE,
@@ -2050,12 +2077,19 @@ namespace ObjectScript
 					OP_TAIL_CALL_METHOD,
 
 					OP_GET_PROPERTY,
+					OP_GET_PROPERTY_BY_LOCALS,
+					OP_GET_PROPERTY_BY_LOCAL_AND_NUMBER,
 					OP_GET_PROPERTY_AUTO_CREATE,
+					
 					OP_SET_PROPERTY,
+					OP_SET_PROPERTY_BY_LOCALS_AUTO_CREATE,
+
+					OP_GET_SET_PROPERTY_BY_LOCALS_AUTO_CREATE,
 
 					OP_SET_DIM,
 
 					OP_IF_NOT_JUMP,
+					OP_IF_JUMP,
 					OP_JUMP,
 					OP_DEBUGGER,
 
@@ -2064,6 +2098,9 @@ namespace ObjectScript
 					OP_RETURN,
 					OP_RETURN_AUTO,
 					OP_POP,
+
+					OP_BIN_OPERATOR_BY_LOCALS,
+					OP_BIN_OPERATOR_BY_LOCAL_AND_NUMBER,
 
 					OP_LOGIC_AND,
 					OP_LOGIC_OR,
@@ -2198,7 +2235,7 @@ namespace ObjectScript
 			struct StackFunction
 			{
 				GCFunctionValue * func;
-				GCValue * self;
+				Value self; // allow primitive type for self 
 				GCValue * self_for_proto;
 
 				Upvalues * locals;
@@ -2261,8 +2298,6 @@ namespace ObjectScript
 
 			struct Strings
 			{
-				String special_prefix; // __
-				
 				String __construct;
 				// String __destruct;
 				String __object;
@@ -2282,6 +2317,7 @@ namespace ObjectScript
 				String __iter;
 				// String __tostring;
 				String __valueof;
+				/*
 				String __booleanof;
 				String __numberof;
 				String __stringof;
@@ -2289,6 +2325,7 @@ namespace ObjectScript
 				String __objectof;
 				String __userdataof;
 				String __functionof;
+				*/
 				String __clone;
 				// String __tobool;
 				String __concat;
@@ -2420,6 +2457,11 @@ namespace ObjectScript
 
 			Vector<StackFunction> call_stack_funcs;
 			StackFunction * stack_func;
+			Value * stack_func_locals;
+			int num_stack_func_locals;
+			int stack_func_env_index;
+			OS_NUMBER * stack_func_prog_numbers;
+			GCStringValue ** stack_func_prog_strings;
 
 			GCValue * gc_grey_list_first;
 			bool gc_grey_root_initialized;
@@ -2538,13 +2580,13 @@ namespace ObjectScript
 
 			template<class T> T * pushValue(T * val){ pushValue(Value(val)); return val; }
 
-			void pushValue(Value val);
+			void pushValue(const Value& val);
 			void pushStackValue(int offs);
 			void copyValue(int raw_from, int raw_to);
 			void insertValue(Value val, int offs);
 			void pushNull();
-			void pushTrue();
-			void pushFalse();
+			// void pushTrue();
+			// void pushFalse();
 			void pushBool(bool);
 			void pushNumber(OS_INT32);
 			void pushNumber(OS_INT64);
@@ -2651,7 +2693,7 @@ namespace ObjectScript
 
 			static int compareUserReverse(OS*, const void*, const void*, void*);
 
-			bool hasSpecialPrefix(GCStringValue*);
+			bool hasSpecialPrefix(const Value&);
 
 			Property * setTableValue(Table * table, const PropertyIndex& index, Value val);
 			void setPropertyValue(GCValue * table_value, const PropertyIndex& index, Value val, bool anonymous_setter_enabled, bool named_setter_enabled);
@@ -2663,6 +2705,7 @@ namespace ObjectScript
 
 			bool hasProperty(GCValue * table_value, const PropertyIndex& index, bool anonymous_getter_enabled, bool named_getter_enabled, bool prototype_enabled);
 			void pushPropertyValue(GCValue * table_value, const PropertyIndex& index, bool anonymous_getter_enabled, bool named_getter_enabled, bool prototype_enabled, bool auto_create);
+			void pushPropertyValueForPrimitive(Value self, const PropertyIndex& index, bool anonymous_getter_enabled, bool named_getter_enabled, bool prototype_enabled, bool auto_create);
 			void pushPropertyValue(Value table_value, const PropertyIndex& index, bool anonymous_getter_enabled, bool named_getter_enabled, bool prototype_enabled, bool auto_create);
 
 			void setPrototype(Value val, Value proto, int userdata_crc);
@@ -2673,7 +2716,7 @@ namespace ObjectScript
 			void pushArgumentsWithNames(StackFunction*);
 			void pushRestArguments(StackFunction*);
 
-			void enterFunction(GCFunctionValue * func_value, GCValue * self, GCValue * self_for_proto, int params, int extra_remove_from_stack, int need_ret_values);
+			void enterFunction(GCFunctionValue * func_value, Value self, GCValue * self_for_proto, int params, int extra_remove_from_stack, int need_ret_values);
 			int execute();
 			void reloadStackFunctionCache();
 
@@ -2699,7 +2742,7 @@ namespace ObjectScript
 			void opPushUpvalue();
 			void opPushUpvalueAutoCreate();
 			void opSetUpvalue();
-			void opIfNotJump();
+			void opIfJump(bool boolean);
 			void opJump();
 			void opCall();
 			void opSuperCall(int& ret_values);
@@ -2709,7 +2752,11 @@ namespace ObjectScript
 			int opReturn();
 			int opReturnAuto();
 			void opGetProperty(bool auto_create);
+			void opGetPropertyByLocals(bool auto_create);
+			void opGetPropertyByLocalAndNumber(bool auto_create);
 			void opSetProperty();
+			void opSetPropertyByLocals(bool auto_create);
+			void opGetSetPropertyByLocals(bool auto_create);
 			void opSetDim();
 			void opExtends();
 			void opClone();
@@ -2732,6 +2779,8 @@ namespace ObjectScript
 			void opLength();
 			void opUnaryOperator(int opcode);
 			void opBinaryOperator(int opcode);
+			void opBinaryOperatorByLocals();
+			void opBinaryOperatorByLocalAndNumber();
 
 			int call(int params, int ret_values, GCValue * self_for_proto = NULL, bool allow_only_enter_func = false);
 

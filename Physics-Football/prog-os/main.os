@@ -18,10 +18,10 @@ MyScene = extends Scene {
 			type = "static"
 			fixture = {
 				shapes = [ 
-					physics.getBoxShapeVertices([0, director.height], [director.width, director.height*0.1]),
-					physics.getBoxShapeVertices([0, director.height*-0.1], [director.width, director.height*0.1]),
-					physics.getBoxShapeVertices([director.width*-0.1, 0], [director.width*0.1, director.height]),
-					physics.getBoxShapeVertices([director.width, 0], [director.width*0.1, director.height]),
+					physics.getBoxShapeVertices([0, director.contentHeight], [director.contentWidth, director.contentHeight*0.1]),
+					physics.getBoxShapeVertices([0, director.contentHeight*-0.1], [director.contentWidth, director.contentHeight*0.1]),
+					physics.getBoxShapeVertices([director.contentWidth*-0.1, 0], [director.contentWidth*0.1, director.contentHeight]),
+					physics.getBoxShapeVertices([director.contentWidth, 0], [director.contentWidth*0.1, director.contentHeight]),
 				],
 				bounce = bounce
 			}
@@ -42,7 +42,7 @@ MyScene = extends Scene {
 				// set initial angular velocity
 				body.angularVelocity = math.rad(math.random(-720, 720))
 				// set initial linear velocity
-				body.linearVelocity = [director.width * math.random(-1, 1), director.width * math.random(-1, 1)]
+				body.linearVelocity = [director.contentWidth * math.random(-1, 1), director.contentWidth * math.random(-1, 1)]
 						
 				// set start speed of the ball
 				var speedX, speedY, prevX, prevY = 0, 0, 0, 0
@@ -96,7 +96,7 @@ MyScene = extends Scene {
 			// set initial angular velocity
 			body.angularVelocity = math.rad(math.random(-720, 720))
 			// set initial linear velocity
-			body.linearVelocity = [director.width * math.random(-1, 1), director.width * math.random(-1, 1)]
+			body.linearVelocity = [director.contentWidth * math.random(-1, 1), director.contentWidth * math.random(-1, 1)]
 		}
 		
 		var message = Text("Physics Football")	// create message

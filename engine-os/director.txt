@@ -3,28 +3,37 @@
 [1] var core = require("core")
 
 begin function
-  begin locals, total 21
+  begin locals, total 30
     0 _E
     1 _G
     2 core
     3 app
-    4 alphaBlending
-    5 depthTest
-    6 projection
-    7 updateProjection
-    8 applyOrientation
-    9 setAppOrientation
-    10 runningScene
-    11 totalFrames
-    12 setNextScene
-    13 paint
-    14 deltaTime
-    15 timeSpeed
-    16 time
-    17 prevAppTime
-    18 prevDeltaTime
-    19 clamp
-    20 coreTriggerEvent
+    4 director
+    5 alphaBlending
+    6 depthTest
+    7 projection
+    8 updateProjection
+    9 applyOrientation
+    10 setAppOrientation
+    11 DISPLAY_CONTENT_ZORDER
+    12 DISPLAY_BORDER_ZORDER
+    13 contentWidth
+    14 contentHeight
+    15 scale
+    16 display
+    17 displayBorder
+    18 displayContent
+    19 runningScene
+    20 totalFrames
+    21 setNextScene
+    22 paint
+    23 deltaTime
+    24 timeSpeed
+    25 time
+    26 prevAppTime
+    27 prevDeltaTime
+    28 clamp
+    29 coreTriggerEvent
   end locals
   begin set local var
     begin call method
@@ -132,7 +141,14 @@ begin function
   end set property ret values 0
 
 
-[12] print "screen size "..app.screenSize
+[11] var director = _E
+
+  begin set local var
+    get local var _E (0 0)
+  end set local var director (4 0)
+
+
+[13] print "screen size "..app.screenSize
 
   begin call method
     get local var _E (0 0)
@@ -150,7 +166,7 @@ begin function
   end call method ret values 0
 
 
-[14] if(CC_OPTIMIZE_BLEND_FUNC_FOR_PREMULTIPLIED_ALPHA){
+[15] if(CC_OPTIMIZE_BLEND_FUNC_FOR_PREMULTIPLIED_ALPHA){
 
   begin if
     begin bool exp
@@ -158,7 +174,7 @@ begin function
     end bool exp
     begin then
 
-[15] CC_BLEND_SRC = GL_ONE
+[16] CC_BLEND_SRC = GL_ONE
 
       begin scope
         begin set env var
@@ -166,7 +182,7 @@ begin function
         end set env var CC_BLEND_SRC
 
 
-[16] CC_BLEND_DST = GL_ONE_MINUS_SRC_ALPHA
+[17] CC_BLEND_DST = GL_ONE_MINUS_SRC_ALPHA
 
         begin set env var
           get env var GL_ONE_MINUS_SRC_ALPHA
@@ -175,7 +191,7 @@ begin function
     end then
     begin else
 
-[18] CC_BLEND_SRC = GL_SRC_ALPHA
+[19] CC_BLEND_SRC = GL_SRC_ALPHA
 
       begin scope
         begin set env var
@@ -183,7 +199,7 @@ begin function
         end set env var CC_BLEND_SRC
 
 
-[19] CC_BLEND_DST = GL_ONE_MINUS_SRC_ALPHA
+[20] CC_BLEND_DST = GL_ONE_MINUS_SRC_ALPHA
 
         begin set env var
           get env var GL_ONE_MINUS_SRC_ALPHA
@@ -193,78 +209,14 @@ begin function
   end if ret values 0
 
 
-[22] function get width(){ return app.screenWidth }
-
-  begin set env var
-    begin function
-      begin locals, total 2
-        0 _E
-        1 _G
-      end locals
-      begin return
-        begin get property
-          get local var app (3 1)
-          push const string "screenWidth"
-        end get property ret values 1
-      end return values 1
-    end function
-  end set env var __get@width
-
-
-[23] function get height(){ return app.screenHeight }
-
-  begin set env var
-    begin function
-      begin locals, total 2
-        0 _E
-        1 _G
-      end locals
-      begin return
-        begin get property
-          get local var app (3 1)
-          push const string "screenHeight"
-        end get property ret values 1
-      end return values 1
-    end function
-  end set env var __get@height
-
-
-[24] function get size(){ return Size(this.width this.height) }
-
-  begin set env var
-    begin function
-      begin locals, total 2
-        0 _E
-        1 _G
-      end locals
-      begin tail call method
-        get local var _E (0 0)
-        begin params 3
-          push const string "Size"
-          ,
-          begin get property
-            push this
-            push const string "width"
-          end get property ret values 1
-          ,
-          begin get property
-            push this
-            push const string "height"
-          end get property ret values 1
-        end params ret values 3
-      end tail call method
-    end function
-  end set env var __get@size
-
-
-[26] var alphaBlending
+[23] var alphaBlending
 
   begin params 1
-    new local var alphaBlending (4 0)
+    new local var alphaBlending (5 0)
   end params ret values 0
 
 
-[27] function get alphaBlending(){ return alphaBlending }
+[24] function get alphaBlending(){ return alphaBlending }
 
   begin set env var
     begin function
@@ -273,13 +225,13 @@ begin function
         1 _G
       end locals
       begin return
-        get local var alphaBlending (4 1)
+        get local var alphaBlending (5 1)
       end return values 1
     end function
   end set env var __get@alphaBlending
 
 
-[28] function set alphaBlending(a){
+[25] function set alphaBlending(a){
 
   begin set env var
     begin function
@@ -289,14 +241,14 @@ begin function
         2 _G
       end locals
 
-[29] alphaBlending = a
+[26] alphaBlending = a
 
       begin set local var
         get local var a (0 0 param)
-      end set local var alphaBlending (4 1)
+      end set local var alphaBlending (5 1)
 
 
-[30] if(a){
+[27] if(a){
 
       begin if
         begin bool exp
@@ -304,7 +256,7 @@ begin function
         end bool exp
         begin then
 
-[31] glEnable(GL_BLEND)
+[28] glEnable(GL_BLEND)
 
           begin scope
             begin call method
@@ -317,7 +269,7 @@ begin function
             end call method ret values 0
 
 
-[32] glBlendFunc(CC_BLEND_SRC, CC_BLEND_DST)
+[29] glBlendFunc(CC_BLEND_SRC, CC_BLEND_DST)
 
             begin call method
               get local var _E (1 0)
@@ -333,7 +285,7 @@ begin function
         end then
         begin else
 
-[34] glDisable(GL_BLEND)
+[31] glDisable(GL_BLEND)
 
           begin scope
             begin call method
@@ -351,14 +303,14 @@ begin function
   end set env var __set@alphaBlending
 
 
-[38] var depthTest
+[35] var depthTest
 
   begin params 1
-    new local var depthTest (5 0)
+    new local var depthTest (6 0)
   end params ret values 0
 
 
-[39] function get depthTest(){ return depthTest }
+[36] function get depthTest(){ return depthTest }
 
   begin set env var
     begin function
@@ -367,13 +319,13 @@ begin function
         1 _G
       end locals
       begin return
-        get local var depthTest (5 1)
+        get local var depthTest (6 1)
       end return values 1
     end function
   end set env var __get@depthTest
 
 
-[40] function set depthTest(a){
+[37] function set depthTest(a){
 
   begin set env var
     begin function
@@ -383,14 +335,14 @@ begin function
         2 _G
       end locals
 
-[41] depthTest = a
+[38] depthTest = a
 
       begin set local var
         get local var a (0 0 param)
-      end set local var depthTest (5 1)
+      end set local var depthTest (6 1)
 
 
-[42] if(a){
+[39] if(a){
 
       begin if
         begin bool exp
@@ -398,7 +350,7 @@ begin function
         end bool exp
         begin then
 
-[43] glClearDepth(1.0)
+[40] glClearDepth(1.0)
 
           begin scope
             begin call method
@@ -411,7 +363,7 @@ begin function
             end call method ret values 0
 
 
-[44] glEnable(GL_DEPTH_TEST)
+[41] glEnable(GL_DEPTH_TEST)
 
             begin call method
               get local var _E (1 0)
@@ -423,7 +375,7 @@ begin function
             end call method ret values 0
 
 
-[45] glDepthFunc(GL_LEQUAL)
+[42] glDepthFunc(GL_LEQUAL)
 
             begin call method
               get local var _E (1 0)
@@ -437,7 +389,7 @@ begin function
         end then
         begin else
 
-[48] glDisable(GL_DEPTH_TEST)
+[45] glDisable(GL_DEPTH_TEST)
 
           begin scope
             begin call method
@@ -455,14 +407,14 @@ begin function
   end set env var __set@depthTest
 
 
-[52] var projection
+[49] var projection
 
   begin params 1
-    new local var projection (6 0)
+    new local var projection (7 0)
   end params ret values 0
 
 
-[53] function get projection(){ return projection }
+[50] function get projection(){ return projection }
 
   begin set env var
     begin function
@@ -471,13 +423,13 @@ begin function
         1 _G
       end locals
       begin return
-        get local var projection (6 1)
+        get local var projection (7 1)
       end return values 1
     end function
   end set env var __get@projection
 
 
-[54] function set projection(a){
+[51] function set projection(a){
 
   begin set env var
     begin function
@@ -487,17 +439,17 @@ begin function
         2 _G
       end locals
 
-[55] projection = a
+[52] projection = a
 
       begin set local var
         get local var a (0 0 param)
-      end set local var projection (6 1)
+      end set local var projection (7 1)
 
 
-[56] updateProjection()
+[53] updateProjection()
 
       begin call
-        get local var updateProjection (7 1)
+        get local var updateProjection (8 1)
         begin params 0
         end params ret values 0
       end call ret values 0
@@ -505,7 +457,7 @@ begin function
   end set env var __set@projection
 
 
-[59] var function updateProjection(){
+[56] var function updateProjection(){
 
   begin set local var
     begin function
@@ -516,7 +468,7 @@ begin function
         3 zeye
       end locals
 
-[60] var size = app.screenSize
+[57] var size = app.screenSize
 
       begin set local var
         begin get property
@@ -526,7 +478,7 @@ begin function
       end set local var size (2 0)
 
 
-[61] var zeye = size.height / 1.1566
+[58] var zeye = size.height / 1.1566
 
       begin set local var
         begin operator /
@@ -539,18 +491,18 @@ begin function
       end set local var zeye (3 0)
 
 
-[62] if(projection == PROJECTION_2D){
+[59] if(projection == PROJECTION_2D){
 
       begin if
         begin bool exp
           begin logic ==
-            get local var projection (6 1)
+            get local var projection (7 1)
             get env var PROJECTION_2D
           end logic ==
         end bool exp
         begin then
 
-[63] glViewport(0, 0, size.width, size.height)
+[60] glViewport(0, 0, size.width, size.height)
 
           begin scope
             begin call method
@@ -575,7 +527,7 @@ begin function
             end call method ret values 0
 
 
-[64] glMatrixMode(GL_PROJECTION)
+[61] glMatrixMode(GL_PROJECTION)
 
             begin call method
               get local var _E (0 0)
@@ -587,7 +539,7 @@ begin function
             end call method ret values 0
 
 
-[65] glLoadIdentity()
+[62] glLoadIdentity()
 
             begin call method
               get local var _E (0 0)
@@ -597,7 +549,7 @@ begin function
             end call method ret values 0
 
 
-[66] ccglOrtho(0, size.width, 0, size.height, -1024 * CC_CONTENT_SCALE_FACTOR(),
+[63] ccglOrtho(0, size.width, 0, size.height, -1024 * CC_CONTENT_SCALE_FACTOR(),
 
             begin call method
               get local var _E (0 0)
@@ -631,7 +583,7 @@ begin function
                 end operator *
                 ,
 
-[67] 1024 * CC_CONTENT_SCALE_FACTOR())
+[64] 1024 * CC_CONTENT_SCALE_FACTOR())
 
                 begin operator *
                   push const number 1024
@@ -646,7 +598,7 @@ begin function
             end call method ret values 0
 
 
-[68] glMatrixMode(GL_MODELVIEW)
+[65] glMatrixMode(GL_MODELVIEW)
 
             begin call method
               get local var _E (0 0)
@@ -658,7 +610,7 @@ begin function
             end call method ret values 0
 
 
-[69] glLoadIdentity()
+[66] glLoadIdentity()
 
             begin call method
               get local var _E (0 0)
@@ -670,18 +622,18 @@ begin function
         end then
         begin else
 
-[70] }else if(projection == PROJECTION_3D){
+[67] }else if(projection == PROJECTION_3D){
 
           begin if
             begin bool exp
               begin logic ==
-                get local var projection (6 1)
+                get local var projection (7 1)
                 get env var PROJECTION_3D
               end logic ==
             end bool exp
             begin then
 
-[71] glViewport(0, 0, size.width, size.height)
+[68] glViewport(0, 0, size.width, size.height)
 
               begin scope
                 begin call method
@@ -706,7 +658,7 @@ begin function
                 end call method ret values 0
 
 
-[72] glMatrixMode(GL_PROJECTION)
+[69] glMatrixMode(GL_PROJECTION)
 
                 begin call method
                   get local var _E (0 0)
@@ -718,7 +670,7 @@ begin function
                 end call method ret values 0
 
 
-[73] glLoadIdentity()
+[70] glLoadIdentity()
 
                 begin call method
                   get local var _E (0 0)
@@ -728,7 +680,7 @@ begin function
                 end call method ret values 0
 
 
-[74] gluPerspective(60, size.width/size.height, 0.5, 1500.0)
+[71] gluPerspective(60, size.width/size.height, 0.5, 1500.0)
 
                 begin call method
                   get local var _E (0 0)
@@ -755,7 +707,7 @@ begin function
                 end call method ret values 0
 
 
-[76] glMatrixMode(GL_MODELVIEW)
+[73] glMatrixMode(GL_MODELVIEW)
 
                 begin call method
                   get local var _E (0 0)
@@ -767,7 +719,7 @@ begin function
                 end call method ret values 0
 
 
-[77] glLoadIdentity()
+[74] glLoadIdentity()
 
                 begin call method
                   get local var _E (0 0)
@@ -777,7 +729,7 @@ begin function
                 end call method ret values 0
 
 
-[78] gluLookAt(size.width/2, size.height/2, -zeye,
+[75] gluLookAt(size.width/2, size.height/2, -zeye,
 
                 begin call method
                   get local var _E (0 0)
@@ -805,7 +757,7 @@ begin function
                     end neg
                     ,
 
-[79] size.width/2, size.height/2, 0,
+[76] size.width/2, size.height/2, 0,
 
                     begin operator /
                       begin get property
@@ -826,7 +778,7 @@ begin function
                     push const number 0
                     ,
 
-[80] 0.0, -1.0, 0.0)
+[77] 0.0, -1.0, 0.0)
 
                     push const number 0.0
                     ,
@@ -843,10 +795,10 @@ begin function
         end else
       end if ret values 0
     end function
-  end set local var updateProjection (7 0)
+  end set local var updateProjection (8 0)
 
 
-[84] var function applyOrientation()
+[81] var function applyOrientation()
 
   begin set local var
     begin function
@@ -858,7 +810,7 @@ begin function
         4 orientation
       end locals
 
-[86] var w = app.screenWidth / 2
+[83] var w = app.screenWidth / 2
 
       begin set local var
         begin operator /
@@ -871,7 +823,7 @@ begin function
       end set local var w (2 0)
 
 
-[87] var h = app.screenHeight / 2
+[84] var h = app.screenHeight / 2
 
       begin set local var
         begin operator /
@@ -884,7 +836,7 @@ begin function
       end set local var h (3 0)
 
 
-[89] var orientation = app.orientation
+[86] var orientation = app.orientation
 
       begin set local var
         begin get property
@@ -894,7 +846,7 @@ begin function
       end set local var orientation (4 0)
 
 
-[90] if(orientation == ORIENTATION_PORTRAIT){
+[87] if(orientation == ORIENTATION_PORTRAIT){
 
       begin if
         begin bool exp
@@ -905,7 +857,7 @@ begin function
         end bool exp
         begin then
 
-[94] }else if(orientation == ORIENTATION_PORTRAIT_UPSIDE_DOWN){
+[91] }else if(orientation == ORIENTATION_PORTRAIT_UPSIDE_DOWN){
 
           begin scope
           end scope ret values 0
@@ -920,7 +872,7 @@ begin function
             end bool exp
             begin then
 
-[96] glTranslatef(w,h,0)
+[93] glTranslatef(w,h,0)
 
               begin scope
                 begin call method
@@ -937,7 +889,7 @@ begin function
                 end call method ret values 0
 
 
-[97] glRotatef(180,0,0,1)
+[94] glRotatef(180,0,0,1)
 
                 begin call method
                   get local var _E (0 0)
@@ -955,7 +907,7 @@ begin function
                 end call method ret values 0
 
 
-[98] glTranslatef(-w,-h,0)
+[95] glTranslatef(-w,-h,0)
 
                 begin call method
                   get local var _E (0 0)
@@ -977,7 +929,7 @@ begin function
             end then
             begin else
 
-[99] }else if(orientation == ORIENTATION_LANDSCAPE_RIGHT){
+[96] }else if(orientation == ORIENTATION_LANDSCAPE_RIGHT){
 
               begin if
                 begin bool exp
@@ -988,7 +940,7 @@ begin function
                 end bool exp
                 begin then
 
-[100] glTranslatef(w,h,0)
+[97] glTranslatef(w,h,0)
 
                   begin scope
                     begin call method
@@ -1005,7 +957,7 @@ begin function
                     end call method ret values 0
 
 
-[101] glRotatef(90,0,0,1)
+[98] glRotatef(90,0,0,1)
 
                     begin call method
                       get local var _E (0 0)
@@ -1023,7 +975,7 @@ begin function
                     end call method ret values 0
 
 
-[102] glTranslatef(-h,-w,0)
+[99] glTranslatef(-h,-w,0)
 
                     begin call method
                       get local var _E (0 0)
@@ -1045,7 +997,7 @@ begin function
                 end then
                 begin else
 
-[103] }else if(orientation == ORIENTATION_LANDSCAPE_LEFT){
+[100] }else if(orientation == ORIENTATION_LANDSCAPE_LEFT){
 
                   begin if
                     begin bool exp
@@ -1056,7 +1008,7 @@ begin function
                     end bool exp
                     begin then
 
-[104] glTranslatef(w,h,0)
+[101] glTranslatef(w,h,0)
 
                       begin scope
                         begin call method
@@ -1073,7 +1025,7 @@ begin function
                         end call method ret values 0
 
 
-[105] glRotatef(-90,0,0,1)
+[102] glRotatef(-90,0,0,1)
 
                         begin call method
                           get local var _E (0 0)
@@ -1093,7 +1045,7 @@ begin function
                         end call method ret values 0
 
 
-[106] glTranslatef(-h,-w,0)
+[103] glTranslatef(-h,-w,0)
 
                         begin call method
                           get local var _E (0 0)
@@ -1121,37 +1073,37 @@ begin function
         end else
       end if ret values 0
     end function
-  end set local var applyOrientation (8 0)
+  end set local var applyOrientation (9 0)
 
 
-[110] _E.alphaBlending = true
+[107] director.alphaBlending = true
 
   begin set property
     const true
-    get local var auto create _E (0 0)
+    get local var auto create director (4 0)
     push const string "alphaBlending"
   end set property ret values 0
 
 
-[111] _E.depthTest = true
+[108] director.depthTest = true
 
   begin set property
     const true
-    get local var auto create _E (0 0)
+    get local var auto create director (4 0)
     push const string "depthTest"
   end set property ret values 0
 
 
-[112] _E.projection = PROJECTION_3D
+[109] director.projection = PROJECTION_3D
 
   begin set property
     get env var PROJECTION_3D
-    get local var auto create _E (0 0)
+    get local var auto create director (4 0)
     push const string "projection"
   end set property ret values 0
 
 
-[114] glClearColor(0 0 0 1)
+[111] glClearColor(0 0 0 1)
 
   begin call method
     get local var _E (0 0)
@@ -1169,24 +1121,24 @@ begin function
   end call method ret values 0
 
 
-[116] animationInterval = 1 / 60
+[113] animationInterval = 1 / 60
 
   begin set env var
     push const number 0.0166667
   end set env var animationInterval
 
 
-[118] var setAppOrientation = app.__set@orientation
+[115] var setAppOrientation = app.__set@orientation
 
   begin set local var
     begin get property
       get local var app (3 0)
       push const string "__set@orientation"
     end get property ret values 1
-  end set local var setAppOrientation (9 0)
+  end set local var setAppOrientation (10 0)
 
 
-[119] app.__set@orientation = function(a){
+[116] app.__set@orientation = function(a){
 
   begin set property
     begin function
@@ -1196,10 +1148,10 @@ begin function
         2 _G
       end locals
 
-[120] setAppOrientation.call(app, a)
+[117] setAppOrientation.call(app, a)
 
       begin call method
-        get local var setAppOrientation (9 1)
+        get local var setAppOrientation (10 1)
         begin params 3
           push const string "call"
           ,
@@ -1210,23 +1162,23 @@ begin function
       end call method ret values 0
 
 
-[122] updateProjection()
+[119] updateProjection()
 
       begin call
-        get local var updateProjection (7 1)
+        get local var updateProjection (8 1)
         begin params 0
         end params ret values 0
       end call ret values 0
     end function
 
-[119] app.__set@orientation = function(a){
+[116] app.__set@orientation = function(a){
 
     get local var auto create app (3 0)
     push const string "__set@orientation"
   end set property ret values 0
 
 
-[127] app.orientation = ORIENTATION_PORTRAIT
+[124] app.orientation = ORIENTATION_PORTRAIT
 
   begin set property
     get env var ORIENTATION_PORTRAIT
@@ -1235,14 +1187,31 @@ begin function
   end set property ret values 0
 
 
-[130] var runningScene
+[127] var DISPLAY_CONTENT_ZORDER = 0
 
-  begin params 1
-    new local var runningScene (10 0)
-  end params ret values 0
+  begin set local var
+    push const number 0
+  end set local var DISPLAY_CONTENT_ZORDER (11 0)
 
 
-[131] function get scene(){ return runningScene }
+[128] var DISPLAY_BORDER_ZORDER = 10
+
+  begin set local var
+    push const number 10
+  end set local var DISPLAY_BORDER_ZORDER (12 0)
+
+
+[130] var contentWidth = app.screenWidth
+
+  begin set local var
+    begin get property
+      get local var app (3 0)
+      push const string "screenWidth"
+    end get property ret values 1
+  end set local var contentWidth (13 0)
+
+
+[131] function get contentWidth(){ return contentWidth }
 
   begin set env var
     begin function
@@ -1251,13 +1220,1166 @@ begin function
         1 _G
       end locals
       begin return
-        get local var runningScene (10 1)
+        get local var contentWidth (13 1)
+      end return values 1
+    end function
+  end set env var __get@contentWidth
+
+
+[133] var contentHeight = app.screenHeight
+
+  begin set local var
+    begin get property
+      get local var app (3 0)
+      push const string "screenHeight"
+    end get property ret values 1
+  end set local var contentHeight (14 0)
+
+
+[134] function get contentHeight(){ return contentHeight }
+
+  begin set env var
+    begin function
+      begin locals, total 2
+        0 _E
+        1 _G
+      end locals
+      begin return
+        get local var contentHeight (14 1)
+      end return values 1
+    end function
+  end set env var __get@contentHeight
+
+
+[136] var scale = "expand" // "letterbox"
+
+  begin set local var
+    push const string "expand"
+  end set local var scale (15 0)
+
+
+[138] var display = Scene()
+
+  begin set local var
+    begin call method
+      get local var _E (0 0)
+      begin params 1
+        push const string "Scene"
+      end params ret values 1
+    end call method ret values 1
+  end set local var display (16 0)
+
+
+[141] var displayBorder = Group().insertTo(display).attrs { zOrder = DISPLAY_BORDER_ZORDER }
+
+  begin set local var
+    begin call method
+      begin call method
+        begin call method
+          get local var _E (0 0)
+          begin params 1
+            push const string "Group"
+          end params ret values 1
+        end call method ret values 1
+        begin params 2
+          push const string "insertTo"
+          ,
+          get local var display (16 0)
+        end params ret values 2
+      end call method ret values 1
+      begin params 2
+        push const string "attrs"
+        ,
+        begin object 1
+          begin set by name
+            get local var DISPLAY_BORDER_ZORDER (12 0)
+          end set by name: [zOrder]
+        end object
+      end params ret values 2
+    end call method ret values 1
+  end set local var displayBorder (17 0)
+
+
+[142] var displayContent = Group().insertTo(display).attrs { zOrder = DISPLAY_CONTENT_ZORDER }
+
+  begin set local var
+    begin call method
+      begin call method
+        begin call method
+          get local var _E (0 0)
+          begin params 1
+            push const string "Group"
+          end params ret values 1
+        end call method ret values 1
+        begin params 2
+          push const string "insertTo"
+          ,
+          get local var display (16 0)
+        end params ret values 2
+      end call method ret values 1
+      begin params 2
+        push const string "attrs"
+        ,
+        begin object 1
+          begin set by name
+            get local var DISPLAY_CONTENT_ZORDER (11 0)
+          end set by name: [zOrder]
+        end object
+      end params ret values 2
+    end call method ret values 1
+  end set local var displayContent (18 0)
+
+
+[144] function get contentSize(){
+
+  begin set env var
+    begin function
+      begin locals, total 2
+        0 _E
+        1 _G
+      end locals
+
+[145] return {
+
+      begin return
+        begin object 3
+
+[146] width = contentWidth
+
+          begin set by name
+            get local var contentWidth (13 1)
+          end set by name: [width]
+          ,
+
+[147] height = contentHeight
+
+          begin set by name
+            get local var contentHeight (14 1)
+          end set by name: [height]
+          ,
+
+[148] scale = scale
+
+          begin set by name
+            get local var scale (15 1)
+          end set by name: [scale]
+        end object
+      end return values 1
+    end function
+  end set env var __get@contentSize
+
+
+[151] function set contentSize(params){
+
+  begin set env var
+    begin function
+      begin locals, total 7
+        0 params (param)
+        1 _E
+        2 _G
+      end locals
+
+[152] if(objectof params){
+
+      begin if
+        begin bool exp
+          begin objectof
+            get local var params (0 0 param)
+          end objectof
+        end bool exp
+        begin then
+
+[153] var screenWidth, screenHeight = app.screenWidth, app.screenHeight
+
+          begin scope
+            begin locals 2
+              3 screenWidth
+              4 screenHeight
+            end locals
+            begin set local var
+              begin set local var
+                begin params 2
+                  begin get property
+                    get local var app (3 1)
+                    push const string "screenWidth"
+                  end get property ret values 1
+                  ,
+                  begin get property
+                    get local var app (3 1)
+                    push const string "screenHeight"
+                  end get property ret values 1
+                end params ret values 2
+              end set local var screenHeight (4 0)
+            end set local var screenWidth (3 0)
+
+
+[154] contentWidth = "width" in params ? params.width : screenWidth
+
+            begin set local var
+              begin question
+                begin bool exp
+                  begin in
+                    push const string "width"
+                    get local var params (0 0 param)
+                  end in
+                end bool exp
+                begin then value
+                  begin get property
+                    get local var params (0 0 param)
+                    push const string "width"
+                  end get property ret values 1
+                end then value
+                begin else value
+                  get local var screenWidth (3 0)
+                end else value
+              end question ret values 1
+            end set local var contentWidth (13 1)
+
+
+[155] contentHeight = "height" in params ? params.height : screenHeight
+
+            begin set local var
+              begin question
+                begin bool exp
+                  begin in
+                    push const string "height"
+                    get local var params (0 0 param)
+                  end in
+                end bool exp
+                begin then value
+                  begin get property
+                    get local var params (0 0 param)
+                    push const string "height"
+                  end get property ret values 1
+                end then value
+                begin else value
+                  get local var screenHeight (4 0)
+                end else value
+              end question ret values 1
+            end set local var contentHeight (14 1)
+
+
+[156] scale = "scale" in params ? params.scale : "letterbox"
+
+            begin set local var
+              begin question
+                begin bool exp
+                  begin in
+                    push const string "scale"
+                    get local var params (0 0 param)
+                  end in
+                end bool exp
+                begin then value
+                  begin get property
+                    get local var params (0 0 param)
+                    push const string "scale"
+                  end get property ret values 1
+                end then value
+                begin else value
+                  push const string "letterbox"
+                end else value
+              end question ret values 1
+            end set local var scale (15 1)
+
+
+[157] if(scale == "none"){
+
+            begin if
+              begin bool exp
+                begin logic ==
+                  get local var scale (15 1)
+                  push const string "none"
+                end logic ==
+              end bool exp
+              begin then
+
+[158] displayContent.attrs {
+
+                begin scope
+                  begin call method
+                    get local var displayContent (18 1)
+                    begin params 2
+                      push const string "attrs"
+                      ,
+                      begin object 5
+
+[159] width = contentWidth
+
+                        begin set by name
+                          get local var contentWidth (13 1)
+                        end set by name: [width]
+                        ,
+
+[160] height = contentHeight
+
+                        begin set by name
+                          get local var contentHeight (14 1)
+                        end set by name: [height]
+                        ,
+
+[161] scale = 1
+
+                        begin set by name
+                          push const number 1
+                        end set by name: [scale]
+                        ,
+
+[162] x = (screenWidth - contentWidth)/2
+
+                        begin set by name
+                          begin operator /
+                            begin operator -
+                              get local var screenWidth (3 0)
+                              get local var contentWidth (13 1)
+                            end operator -
+                            push const number 2
+                          end operator /
+                        end set by name: [x]
+                        ,
+
+[163] y = (screenHeight - contentHeight)/2
+
+                        begin set by name
+                          begin operator /
+                            begin operator -
+                              get local var screenHeight (4 0)
+                              get local var contentHeight (14 1)
+                            end operator -
+                            push const number 2
+                          end operator /
+                        end set by name: [y]
+                      end object
+                    end params ret values 2
+                  end call method ret values 0
+                end scope ret values 0
+              end then
+              begin else
+
+[165] }else if(scale == "zoomStretch"){
+
+                begin if
+                  begin bool exp
+                    begin logic ==
+                      get local var scale (15 1)
+                      push const string "zoomStretch"
+                    end logic ==
+                  end bool exp
+                  begin then
+
+[166] displayContent.attrs {
+
+                    begin scope
+                      begin call method
+                        get local var displayContent (18 1)
+                        begin params 2
+                          push const string "attrs"
+                          ,
+                          begin object 6
+
+[167] width = contentWidth
+
+                            begin set by name
+                              get local var contentWidth (13 1)
+                            end set by name: [width]
+                            ,
+
+[168] height = contentHeight
+
+                            begin set by name
+                              get local var contentHeight (14 1)
+                            end set by name: [height]
+                            ,
+
+[169] scaleX = screenWidth / contentWidth
+
+                            begin set by name
+                              begin operator /
+                                get local var screenWidth (3 0)
+                                get local var contentWidth (13 1)
+                              end operator /
+                            end set by name: [scaleX]
+                            ,
+
+[170] scaleY = screenHeight / contentHeight
+
+                            begin set by name
+                              begin operator /
+                                get local var screenHeight (4 0)
+                                get local var contentHeight (14 1)
+                              end operator /
+                            end set by name: [scaleY]
+                            ,
+
+[171] x = 0
+
+                            begin set by name
+                              push const number 0
+                            end set by name: [x]
+                            ,
+
+[172] y = 0
+
+                            begin set by name
+                              push const number 0
+                            end set by name: [y]
+                          end object
+                        end params ret values 2
+                      end call method ret values 0
+                    end scope ret values 0
+                  end then
+                  begin else
+
+[174] }else if(scale == "expand"){
+
+                    begin if
+                      begin bool exp
+                        begin logic ==
+                          get local var scale (15 1)
+                          push const string "expand"
+                        end logic ==
+                      end bool exp
+                      begin then
+
+[175] var scale = math.min(screenWidth / contentWidth, screenHeight / contentHeight)
+
+                        begin scope
+                          begin locals 1
+                            5 scale
+                          end locals
+                          begin set local var
+                            begin call method
+                              get env var math
+                              begin params 3
+                                push const string "min"
+                                ,
+                                begin operator /
+                                  get local var screenWidth (3 0)
+                                  get local var contentWidth (13 1)
+                                end operator /
+                                ,
+                                begin operator /
+                                  get local var screenHeight (4 0)
+                                  get local var contentHeight (14 1)
+                                end operator /
+                              end params ret values 3
+                            end call method ret values 1
+                          end set local var scale (5 0)
+
+
+[176] contentWidth = contentWidth * screenWidth / contentWidth / scale
+
+                          begin set local var
+                            begin operator /
+                              begin operator /
+                                begin operator *
+                                  get local var contentWidth (13 1)
+                                  get local var screenWidth (3 0)
+                                end operator *
+                                get local var contentWidth (13 1)
+                              end operator /
+                              get local var scale (5 0)
+                            end operator /
+                          end set local var contentWidth (13 1)
+
+
+[177] contentHeight = contentHeight * screenHeight / contentHeight / scale
+
+                          begin set local var
+                            begin operator /
+                              begin operator /
+                                begin operator *
+                                  get local var contentHeight (14 1)
+                                  get local var screenHeight (4 0)
+                                end operator *
+                                get local var contentHeight (14 1)
+                              end operator /
+                              get local var scale (5 0)
+                            end operator /
+                          end set local var contentHeight (14 1)
+
+
+[178] displayContent.attrs {
+
+                          begin call method
+                            get local var displayContent (18 1)
+                            begin params 2
+                              push const string "attrs"
+                              ,
+                              begin object 5
+
+[179] width = contentWidth
+
+                                begin set by name
+                                  get local var contentWidth (13 1)
+                                end set by name: [width]
+                                ,
+
+[180] height = contentHeight
+
+                                begin set by name
+                                  get local var contentHeight (14 1)
+                                end set by name: [height]
+                                ,
+
+[181] scale = scale
+
+                                begin set by name
+                                  get local var scale (5 0)
+                                end set by name: [scale]
+                                ,
+
+[182] x = 0
+
+                                begin set by name
+                                  push const number 0
+                                end set by name: [x]
+                                ,
+
+[183] y = 0
+
+                                begin set by name
+                                  push const number 0
+                                end set by name: [y]
+                              end object
+                            end params ret values 2
+                          end call method ret values 0
+                        end scope ret values 0
+                      end then
+                      begin else
+
+[186] var scale = math[scale == "zoomEven" ? "max" : "min"].call(math, screenWidth / contentWidth, screenHeight / contentHeight)
+
+                        begin scope
+                          begin locals 1
+                            6 scale
+                          end locals
+                          begin set local var
+                            begin call method
+                              begin get property
+                                get env var math
+                                begin question
+                                  begin bool exp
+                                    begin logic ==
+                                      get local var scale (15 1)
+                                      push const string "zoomEven"
+                                    end logic ==
+                                  end bool exp
+                                  begin then value
+                                    push const string "max"
+                                  end then value
+                                  begin else value
+                                    push const string "min"
+                                  end else value
+                                end question ret values 1
+                              end get property ret values 1
+                              begin params 4
+                                push const string "call"
+                                ,
+                                get env var math
+                                ,
+                                begin operator /
+                                  get local var screenWidth (3 0)
+                                  get local var contentWidth (13 1)
+                                end operator /
+                                ,
+                                begin operator /
+                                  get local var screenHeight (4 0)
+                                  get local var contentHeight (14 1)
+                                end operator /
+                              end params ret values 4
+                            end call method ret values 1
+                          end set local var scale (6 0)
+
+
+[187] displayContent.attrs {
+
+                          begin call method
+                            get local var displayContent (18 1)
+                            begin params 2
+                              push const string "attrs"
+                              ,
+                              begin object 5
+
+[188] width = contentWidth
+
+                                begin set by name
+                                  get local var contentWidth (13 1)
+                                end set by name: [width]
+                                ,
+
+[189] height = contentHeight
+
+                                begin set by name
+                                  get local var contentHeight (14 1)
+                                end set by name: [height]
+                                ,
+
+[190] scale = scale
+
+                                begin set by name
+                                  get local var scale (6 0)
+                                end set by name: [scale]
+                                ,
+
+[191] x = (screenWidth - contentWidth * scale)/2
+
+                                begin set by name
+                                  begin operator /
+                                    begin operator -
+                                      get local var screenWidth (3 0)
+                                      begin operator *
+                                        get local var contentWidth (13 1)
+                                        get local var scale (6 0)
+                                      end operator *
+                                    end operator -
+                                    push const number 2
+                                  end operator /
+                                end set by name: [x]
+                                ,
+
+[192] y = (screenHeight - contentHeight * scale)/2
+
+                                begin set by name
+                                  begin operator /
+                                    begin operator -
+                                      get local var screenHeight (4 0)
+                                      begin operator *
+                                        get local var contentHeight (14 1)
+                                        get local var scale (6 0)
+                                      end operator *
+                                    end operator -
+                                    push const number 2
+                                  end operator /
+                                end set by name: [y]
+                              end object
+                            end params ret values 2
+                          end call method ret values 0
+                        end scope ret values 0
+                      end else
+                    end if ret values 0
+                  end else
+                end if ret values 0
+              end else
+            end if ret values 0
+
+
+[195] displayBorder.removeAll()
+
+            begin call method
+              get local var displayBorder (17 1)
+              begin params 1
+                push const string "removeAll"
+              end params ret values 1
+            end call method ret values 0
+
+
+[196] if(displayContent.x > 0){
+
+            begin if
+              begin bool exp
+                begin logic >
+                  begin get property
+                    get local var displayContent (18 1)
+                    push const string "x"
+                  end get property ret values 1
+                  push const number 0
+                end logic >
+              end bool exp
+              begin then
+
+[197] ColorNode().insertTo(displayBorder).attrs{
+
+                begin scope
+                  begin call method
+                    begin call method
+                      begin call method
+                        get local var _E (1 0)
+                        begin params 1
+                          push const string "ColorNode"
+                        end params ret values 1
+                      end call method ret values 1
+                      begin params 2
+                        push const string "insertTo"
+                        ,
+                        get local var displayBorder (17 1)
+                      end params ret values 2
+                    end call method ret values 1
+                    begin params 2
+                      push const string "attrs"
+                      ,
+                      begin object 6
+
+[198] color = [0 0 0]
+
+                        begin set by name
+                          begin array 3
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                          end array
+                        end set by name: [color]
+                        ,
+
+[199] anchor = [0 0]
+
+                        begin set by name
+                          begin array 2
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                          end array
+                        end set by name: [anchor]
+                        ,
+
+[200] x = 0, y = 0
+
+                        begin set by name
+                          push const number 0
+                        end set by name: [x]
+                        ,
+                        begin set by name
+                          push const number 0
+                        end set by name: [y]
+                        ,
+
+[201] width = displayContent.x
+
+                        begin set by name
+                          begin get property
+                            get local var displayContent (18 1)
+                            push const string "x"
+                          end get property ret values 1
+                        end set by name: [width]
+                        ,
+
+[202] height = screenHeight
+
+                        begin set by name
+                          get local var screenHeight (4 0)
+                        end set by name: [height]
+                      end object
+                    end params ret values 2
+                  end call method ret values 0
+
+
+[204] ColorNode().insertTo(displayBorder).attrs{
+
+                  begin call method
+                    begin call method
+                      begin call method
+                        get local var _E (1 0)
+                        begin params 1
+                          push const string "ColorNode"
+                        end params ret values 1
+                      end call method ret values 1
+                      begin params 2
+                        push const string "insertTo"
+                        ,
+                        get local var displayBorder (17 1)
+                      end params ret values 2
+                    end call method ret values 1
+                    begin params 2
+                      push const string "attrs"
+                      ,
+                      begin object 6
+
+[205] color = [0 0 0]
+
+                        begin set by name
+                          begin array 3
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                          end array
+                        end set by name: [color]
+                        ,
+
+[206] anchor = [0 0]
+
+                        begin set by name
+                          begin array 2
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                          end array
+                        end set by name: [anchor]
+                        ,
+
+[207] x = screenWidth - displayContent.x, y = 0
+
+                        begin set by name
+                          begin operator -
+                            get local var screenWidth (3 0)
+                            begin get property
+                              get local var displayContent (18 1)
+                              push const string "x"
+                            end get property ret values 1
+                          end operator -
+                        end set by name: [x]
+                        ,
+                        begin set by name
+                          push const number 0
+                        end set by name: [y]
+                        ,
+
+[208] width = displayContent.x
+
+                        begin set by name
+                          begin get property
+                            get local var displayContent (18 1)
+                            push const string "x"
+                          end get property ret values 1
+                        end set by name: [width]
+                        ,
+
+[209] height = screenHeight
+
+                        begin set by name
+                          get local var screenHeight (4 0)
+                        end set by name: [height]
+                      end object
+                    end params ret values 2
+                  end call method ret values 0
+                end scope ret values 0
+              end then
+            end if ret values 0
+
+
+[212] if(displayContent.y > 0){
+
+            begin if
+              begin bool exp
+                begin logic >
+                  begin get property
+                    get local var displayContent (18 1)
+                    push const string "y"
+                  end get property ret values 1
+                  push const number 0
+                end logic >
+              end bool exp
+              begin then
+
+[213] ColorNode().insertTo(displayBorder).attrs{
+
+                begin scope
+                  begin call method
+                    begin call method
+                      begin call method
+                        get local var _E (1 0)
+                        begin params 1
+                          push const string "ColorNode"
+                        end params ret values 1
+                      end call method ret values 1
+                      begin params 2
+                        push const string "insertTo"
+                        ,
+                        get local var displayBorder (17 1)
+                      end params ret values 2
+                    end call method ret values 1
+                    begin params 2
+                      push const string "attrs"
+                      ,
+                      begin object 6
+
+[214] color = [0 0 0]
+
+                        begin set by name
+                          begin array 3
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                          end array
+                        end set by name: [color]
+                        ,
+
+[215] anchor = [0 0]
+
+                        begin set by name
+                          begin array 2
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                          end array
+                        end set by name: [anchor]
+                        ,
+
+[216] x = 0, y = 0
+
+                        begin set by name
+                          push const number 0
+                        end set by name: [x]
+                        ,
+                        begin set by name
+                          push const number 0
+                        end set by name: [y]
+                        ,
+
+[217] width = screenWidth
+
+                        begin set by name
+                          get local var screenWidth (3 0)
+                        end set by name: [width]
+                        ,
+
+[218] height = displayContent.y
+
+                        begin set by name
+                          begin get property
+                            get local var displayContent (18 1)
+                            push const string "y"
+                          end get property ret values 1
+                        end set by name: [height]
+                      end object
+                    end params ret values 2
+                  end call method ret values 0
+
+
+[220] ColorNode().insertTo(displayBorder).attrs{
+
+                  begin call method
+                    begin call method
+                      begin call method
+                        get local var _E (1 0)
+                        begin params 1
+                          push const string "ColorNode"
+                        end params ret values 1
+                      end call method ret values 1
+                      begin params 2
+                        push const string "insertTo"
+                        ,
+                        get local var displayBorder (17 1)
+                      end params ret values 2
+                    end call method ret values 1
+                    begin params 2
+                      push const string "attrs"
+                      ,
+                      begin object 6
+
+[221] color = [0 0 0]
+
+                        begin set by name
+                          begin array 3
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                          end array
+                        end set by name: [color]
+                        ,
+
+[222] anchor = [0 0]
+
+                        begin set by name
+                          begin array 2
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                            ,
+                            begin set auto index
+                              push const number 0
+                            end set auto index
+                          end array
+                        end set by name: [anchor]
+                        ,
+
+[223] x = 0, y = screenHeight - displayContent.y
+
+                        begin set by name
+                          push const number 0
+                        end set by name: [x]
+                        ,
+                        begin set by name
+                          begin operator -
+                            get local var screenHeight (4 0)
+                            begin get property
+                              get local var displayContent (18 1)
+                              push const string "y"
+                            end get property ret values 1
+                          end operator -
+                        end set by name: [y]
+                        ,
+
+[224] width = screenWidth
+
+                        begin set by name
+                          get local var screenWidth (3 0)
+                        end set by name: [width]
+                        ,
+
+[225] height = displayContent.y
+
+                        begin set by name
+                          begin get property
+                            get local var displayContent (18 1)
+                            push const string "y"
+                          end get property ret values 1
+                        end set by name: [height]
+                      end object
+                    end params ret values 2
+                  end call method ret values 0
+                end scope ret values 0
+              end then
+            end if ret values 0
+          end scope ret values 0
+        end then
+      end if ret values 0
+
+
+[229] print"content size: "..params
+
+      begin call method
+        get local var _E (1 0)
+        begin params 2
+          push const string "print"
+          ,
+          begin operator ..
+            push const string "content size: "
+            get local var params (0 0 param)
+          end operator ..
+        end params ret values 2
+      end call method ret values 0
+
+
+[230] print {
+
+      begin call method
+        get local var _E (1 0)
+        begin params 2
+          push const string "print"
+          ,
+          begin object 6
+
+[231] x = displayContent.x
+
+            begin set by name
+              begin get property
+                get local var displayContent (18 1)
+                push const string "x"
+              end get property ret values 1
+            end set by name: [x]
+            ,
+
+[232] y = displayContent.y
+
+            begin set by name
+              begin get property
+                get local var displayContent (18 1)
+                push const string "y"
+              end get property ret values 1
+            end set by name: [y]
+            ,
+
+[233] width = displayContent.width
+
+            begin set by name
+              begin get property
+                get local var displayContent (18 1)
+                push const string "width"
+              end get property ret values 1
+            end set by name: [width]
+            ,
+
+[234] height = displayContent.height
+
+            begin set by name
+              begin get property
+                get local var displayContent (18 1)
+                push const string "height"
+              end get property ret values 1
+            end set by name: [height]
+            ,
+
+[235] scaleX = displayContent.scaleX
+
+            begin set by name
+              begin get property
+                get local var displayContent (18 1)
+                push const string "scaleX"
+              end get property ret values 1
+            end set by name: [scaleX]
+            ,
+
+[236] scaleY = displayContent.scaleY
+
+            begin set by name
+              begin get property
+                get local var displayContent (18 1)
+                push const string "scaleY"
+              end get property ret values 1
+            end set by name: [scaleY]
+          end object
+        end params ret values 2
+      end call method ret values 0
+    end function
+  end set env var __set@contentSize
+
+
+[240] var runningScene
+
+  begin params 1
+    new local var runningScene (19 0)
+  end params ret values 0
+
+
+[241] function get scene(){ return runningScene }
+
+  begin set env var
+    begin function
+      begin locals, total 2
+        0 _E
+        1 _G
+      end locals
+      begin return
+        get local var runningScene (19 1)
       end return values 1
     end function
   end set env var __get@scene
 
 
-[132] function set scene(a){
+[242] function set scene(a){
 
   begin set env var
     begin function
@@ -1267,17 +2389,17 @@ begin function
         2 _G
       end locals
 
-[134] nextScene = a
+[244] nextScene = a
 
       begin set env var
         get local var a (0 0 param)
       end set env var nextScene
 
 
-[135] setNextScene()
+[245] setNextScene()
 
       begin call
-        get local var setNextScene (12 1)
+        get local var setNextScene (21 1)
         begin params 0
         end params ret values 0
       end call ret values 0
@@ -1285,7 +2407,7 @@ begin function
   end set env var __set@scene
 
 
-[138] function insert(node){
+[248] function insert(node){
 
   begin set env var
     begin function
@@ -1295,18 +2417,18 @@ begin function
         2 _G
       end locals
 
-[139] if(runningScene && node) runningScene.insert(node)
+[249] if(runningScene && node) runningScene.insert(node)
 
       begin if
         begin bool exp
           begin logic &&
-            get local var runningScene (10 1)
+            get local var runningScene (19 1)
             get local var node (0 0 param)
           end logic &&
         end bool exp
         begin then
           begin call method
-            get local var runningScene (10 1)
+            get local var runningScene (19 1)
             begin params 2
               push const string "insert"
               ,
@@ -1319,7 +2441,7 @@ begin function
   end set env var insert
 
 
-[142] function remove(node){
+[252] function remove(node){
 
   begin set env var
     begin function
@@ -1329,18 +2451,18 @@ begin function
         2 _G
       end locals
 
-[143] if(runningScene && node) runningScene.remove(node)
+[253] if(runningScene && node) runningScene.remove(node)
 
       begin if
         begin bool exp
           begin logic &&
-            get local var runningScene (10 1)
+            get local var runningScene (19 1)
             get local var node (0 0 param)
           end logic &&
         end bool exp
         begin then
           begin call method
-            get local var runningScene (10 1)
+            get local var runningScene (19 1)
             begin params 2
               push const string "remove"
               ,
@@ -1353,14 +2475,14 @@ begin function
   end set env var remove
 
 
-[146] nextScene = null
+[256] nextScene = null
 
   begin set env var
     const null
   end set env var nextScene
 
 
-[148] _E.scene = Scene()
+[258] director.scene = Scene()
 
   begin set property
     begin call method
@@ -1369,19 +2491,19 @@ begin function
         push const string "Scene"
       end params ret values 1
     end call method ret values 1
-    get local var auto create _E (0 0)
+    get local var auto create director (4 0)
     push const string "scene"
   end set property ret values 0
 
 
-[150] var totalFrames = 0
+[260] var totalFrames = 0
 
   begin set local var
     push const number 0
-  end set local var totalFrames (11 0)
+  end set local var totalFrames (20 0)
 
 
-[151] function get totalFrames(){ return totalFrames }
+[261] function get totalFrames(){ return totalFrames }
 
   begin set env var
     begin function
@@ -1390,13 +2512,13 @@ begin function
         1 _G
       end locals
       begin return
-        get local var totalFrames (11 1)
+        get local var totalFrames (20 1)
       end return values 1
     end function
   end set env var __get@totalFrames
 
 
-[153] function enableDefaultGlStates(){
+[263] function enableDefaultGlStates(){
 
   begin set env var
     begin function
@@ -1405,7 +2527,7 @@ begin function
         1 _G
       end locals
 
-[154] glEnableClientState(GL_VERTEX_ARRAY)
+[264] glEnableClientState(GL_VERTEX_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1417,7 +2539,7 @@ begin function
       end call method ret values 0
 
 
-[155] glEnableClientState(GL_COLOR_ARRAY)
+[265] glEnableClientState(GL_COLOR_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1429,7 +2551,7 @@ begin function
       end call method ret values 0
 
 
-[156] glEnableClientState(GL_TEXTURE_COORD_ARRAY)
+[266] glEnableClientState(GL_TEXTURE_COORD_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1441,7 +2563,7 @@ begin function
       end call method ret values 0
 
 
-[157] glEnable(GL_TEXTURE_2D)
+[267] glEnable(GL_TEXTURE_2D)
 
       begin call method
         get local var _E (0 0)
@@ -1455,7 +2577,7 @@ begin function
   end set env var enableDefaultGlStates
 
 
-[160] function disableDefaultGlStates(){
+[270] function disableDefaultGlStates(){
 
   begin set env var
     begin function
@@ -1464,7 +2586,7 @@ begin function
         1 _G
       end locals
 
-[161] glDisable(GL_TEXTURE_2D)
+[271] glDisable(GL_TEXTURE_2D)
 
       begin call method
         get local var _E (0 0)
@@ -1476,7 +2598,7 @@ begin function
       end call method ret values 0
 
 
-[162] glDisableClientState(GL_TEXTURE_COORD_ARRAY)
+[272] glDisableClientState(GL_TEXTURE_COORD_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1488,7 +2610,7 @@ begin function
       end call method ret values 0
 
 
-[163] glDisableClientState(GL_COLOR_ARRAY)
+[273] glDisableClientState(GL_COLOR_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1500,7 +2622,7 @@ begin function
       end call method ret values 0
 
 
-[164] glDisableClientState(GL_VERTEX_ARRAY)
+[274] glDisableClientState(GL_VERTEX_ARRAY)
 
       begin call method
         get local var _E (0 0)
@@ -1514,7 +2636,7 @@ begin function
   end set env var disableDefaultGlStates
 
 
-[167] var function setNextScene(){
+[277] var function setNextScene(){
 
   begin set local var
     begin function
@@ -1523,33 +2645,66 @@ begin function
         1 _G
       end locals
 
-[168] runningScene = nextScene
+[278] assert(nextScene)
+
+      begin call method
+        get local var _E (0 0)
+        begin params 2
+          push const string "assert"
+          ,
+          get env var nextScene
+        end params ret values 2
+      end call method ret values 0
+
+
+[279] displayContent.removeAll() // runningScene)
+
+      begin call method
+        get local var displayContent (18 1)
+        begin params 1
+          push const string "removeAll"
+        end params ret values 1
+      end call method ret values 0
+
+
+[280] displayContent.insert(nextScene) // .attrs { zOrder = DISPLAY_SCENE_ZORDER }
+
+      begin call method
+        get local var displayContent (18 1)
+        begin params 2
+          push const string "insert"
+          ,
+          get env var nextScene
+        end params ret values 2
+      end call method ret values 0
+
+
+[281] runningScene = nextScene
 
       begin set local var
         get env var nextScene
-      end set local var runningScene (10 1)
+      end set local var runningScene (19 1)
 
 
-[169] nextScene = null
+[282] nextScene = null
 
       begin set env var
         const null
       end set env var nextScene
     end function
-  end set local var setNextScene (12 0)
+  end set local var setNextScene (21 0)
 
 
-[172] var function paint(){
+[285] var function paint(){
 
   begin set local var
     begin function
-      begin locals, total 3
+      begin locals, total 2
         0 _E
         1 _G
-        2 paintParams
       end locals
 
-[174] glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+[287] glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
       begin pop
         begin code list
@@ -1566,7 +2721,7 @@ begin function
           end call method ret values 0
 
 
-[176] if(nextScene) setNextScene()
+[289] if(nextScene) setNextScene()
 
           begin if
             begin bool exp
@@ -1574,7 +2729,7 @@ begin function
             end bool exp
             begin then
               begin call
-                get local var setNextScene (12 1)
+                get local var setNextScene (21 1)
                 begin params 0
                 end params ret values 0
               end call ret values 0
@@ -1582,7 +2737,7 @@ begin function
           end if ret values 0
 
 
-[178] glPushMatrix()
+[291] glPushMatrix()
 
           begin call method
             get local var _E (0 0)
@@ -1592,16 +2747,16 @@ begin function
           end call method ret values 0
 
 
-[179] applyOrientation()
+[292] applyOrientation()
 
           begin call
-            get local var applyOrientation (8 1)
+            get local var applyOrientation (9 1)
             begin params 0
             end params ret values 0
           end call ret values 0
 
 
-[182] enableDefaultGlStates()
+[295] enableDefaultGlStates()
 
           begin call method
             get local var _E (0 0)
@@ -1611,37 +2766,23 @@ begin function
           end call method ret values 0
 
 
-[185] var paintParams = {opacity = 1}
+[298] display.handlePaint {opacity = 1}
 
-          begin set local var
-            begin object 1
-              begin set by name
-                push const number 1
-              end set by name: [opacity]
-            end object
-          end set local var paintParams (2 0)
-
-
-[186] if(runningScene) runningScene.handlePaint(paintParams)
-
-          begin if
-            begin bool exp
-              get local var runningScene (10 1)
-            end bool exp
-            begin then
-              begin call method
-                get local var runningScene (10 1)
-                begin params 2
-                  push const string "handlePaint"
-                  ,
-                  get local var paintParams (2 0)
-                end params ret values 2
-              end call method ret values 0
-            end then
-          end if ret values 0
+          begin call method
+            get local var display (16 1)
+            begin params 2
+              push const string "handlePaint"
+              ,
+              begin object 1
+                begin set by name
+                  push const number 1
+                end set by name: [opacity]
+              end object
+            end params ret values 2
+          end call method ret values 0
 
 
-[188] disableDefaultGlStates()
+[300] disableDefaultGlStates()
 
           begin call method
             get local var _E (0 0)
@@ -1651,7 +2792,7 @@ begin function
           end call method ret values 0
 
 
-[190] glPopMatrix()
+[302] glPopMatrix()
 
           begin call method
             get local var _E (0 0)
@@ -1661,7 +2802,7 @@ begin function
           end call method ret values 0
 
 
-[191] glSwapBuffers()
+[303] glSwapBuffers()
 
           begin call method
             get local var _E (0 0)
@@ -1671,131 +2812,115 @@ begin function
           end call method ret values 0
 
 
-[193] ++totalFrames
+[305] ++totalFrames
 
           begin code list
             begin set local var
               begin operator +
-                get local var totalFrames (11 1)
+                get local var totalFrames (20 1)
                 push const number 1
               end operator +
-            end set local var totalFrames (11 1)
+            end set local var totalFrames (20 1)
 
-            get local var totalFrames (11 1)
+            get local var totalFrames (20 1)
           end code list ret values 1
         end code list ret values 1
       end pop ret values 0
     end function
-  end set local var paint (13 0)
+  end set local var paint (22 0)
 
 
-[196] touches = {}
+[308] touchEvents = {}
 
   begin set env var
     begin object 0
     end object
-  end set env var touches
+  end set env var touchEvents
 
 
-[198] function handleTouches(){
+[309] keyEvents = {}
+
+  begin set env var
+    begin object 0
+    end object
+  end set env var keyEvents
+
+
+[311] function handleKeys(){
 
   begin set env var
     begin function
-      begin locals, total 17
+      begin locals, total 14
         0 _E
         1 _G
         2 time
-        3 orientation
-        4 width
-        5 height
-        6 touches
+        3 keyEvents
       end locals
 
-[199] var time, orientation, width, height, touches = app.timeSec, app.orientation, _E.width, _E.height, {}
+[312] var time, keyEvents = app.timeSec, {}
 
       begin set local var
         begin set local var
-          begin set local var
-            begin set local var
-              begin set local var
-                begin params 5
-                  begin get property
-                    get local var app (3 1)
-                    push const string "timeSec"
-                  end get property ret values 1
-                  ,
-                  begin get property
-                    get local var app (3 1)
-                    push const string "orientation"
-                  end get property ret values 1
-                  ,
-                  begin get property
-                    get local var _E (0 0)
-                    push const string "width"
-                  end get property ret values 1
-                  ,
-                  begin get property
-                    get local var _E (0 0)
-                    push const string "height"
-                  end get property ret values 1
-                  ,
-                  begin object 0
-                  end object
-                end params ret values 5
-              end set local var touches (6 0)
-            end set local var height (5 0)
-          end set local var width (4 0)
-        end set local var orientation (3 0)
+          begin params 2
+            begin get property
+              get local var app (3 1)
+              push const string "timeSec"
+            end get property ret values 1
+            ,
+            begin object 0
+            end object
+          end params ret values 2
+        end set local var keyEvents (3 0)
       end set local var time (2 0)
 
 
-[200] for(var id, touch in app.touches){
+[313] for(var id, event in app.keyEvents){
 
       begin scope
         begin locals 4
-          7 id
-          8 touch
-          9 #func
-          10 #valid
+          4 id
+          5 event
+          6 #func
+          7 #valid
         end locals
-        new local var id (7 0)
+        new local var id (4 0)
 
-        new local var touch (8 0)
+        new local var event (5 0)
 
-        new local var #func (9 0 temp)
+        new local var #func (6 0 temp)
 
-        new local var #valid (10 0 temp)
+        new local var #valid (7 0 temp)
 
         begin code list
           begin set local var
             begin call method
               begin get property
                 get local var app (3 1)
-                push const string "touches"
+                push const string "keyEvents"
               end get property ret values 1
               begin params 1
                 push const string "__iter"
               end params ret values 1
             end call method ret values 1
-          end set local var #func (9 0 temp)
+          end set local var #func (6 0 temp)
 
           begin loop
             begin set local var
               begin set local var
                 begin set local var
                   begin call
-                    get local var #func (9 0 temp)
+                    get local var #func (6 0 temp)
                     begin params 0
                     end params ret values 0
                   end call ret values 3
-                end set local var touch (8 0)
-              end set local var id (7 0)
-            end set local var #valid (10 0 temp)
+                end set local var event (5 0)
+              end set local var id (4 0)
+            end set local var #valid (7 0 temp)
 
             begin if
               begin bool exp
                 begin logic not
-                  get local var #valid (10 0 temp)
+                  get local var #valid (7 0 temp)
                 end logic not
               end bool exp
               begin then
@@ -1804,21 +2929,477 @@ begin function
             end if ret values 0
 
 
-[201] if(!touch.processed){
+[314] if(!event.processed){
 
             begin scope
               begin if
                 begin bool exp
                   begin logic not
                     begin get property
-                      get local var touch (8 0)
+                      get local var event (5 0)
                       push const string "processed"
                     end get property ret values 1
                   end logic not
                 end bool exp
                 begin then
 
-[202] if(orientation == ORIENTATION_PORTRAIT){
+[315] keyEvents.push event
+
+                  begin scope
+                    begin call method
+                      get local var keyEvents (3 0)
+                      begin params 2
+                        push const string "push"
+                        ,
+                        get local var event (5 0)
+                      end params ret values 2
+                    end call method ret values 0
+                  end scope ret values 0
+                end then
+                begin else
+
+[316] }else if(!event.pressed || time - event.processed > 30){
+
+                  begin if
+                    begin bool exp
+                      begin logic ||
+                        begin logic not
+                          begin get property
+                            get local var event (5 0)
+                            push const string "pressed"
+                          end get property ret values 1
+                        end logic not
+                        begin logic >
+                          begin operator -
+                            get local var time (2 0)
+                            begin get property
+                              get local var event (5 0)
+                              push const string "processed"
+                            end get property ret values 1
+                          end operator -
+                          push const number 30
+                        end logic >
+                      end logic ||
+                    end bool exp
+                    begin then
+
+[318] delete app.keyEvents[id]
+
+                      begin scope
+                        begin delete
+                          begin get property
+                            get local var app (3 1)
+                            push const string "keyEvents"
+                          end get property ret values 1
+                          get local var id (4 0)
+                        end delete
+                      end scope ret values 0
+                    end then
+                  end if ret values 0
+                end else
+              end if ret values 0
+            end scope ret values 0
+          end loop ret values 0
+        end code list ret values 0
+      end scope ret values 0
+
+
+[321] for(var id, event in keyEvents){
+
+      begin scope
+        begin locals 4
+          8 id
+          9 event
+          12 #func
+          13 #valid
+        end locals
+        new local var id (8 0)
+
+        new local var event (9 0)
+
+        new local var #func (12 0 temp)
+
+        new local var #valid (13 0 temp)
+
+        begin code list
+          begin set local var
+            begin call method
+              get local var keyEvents (3 0)
+              begin params 1
+                push const string "__iter"
+              end params ret values 1
+            end call method ret values 1
+          end set local var #func (12 0 temp)
+
+          begin loop
+            begin set local var
+              begin set local var
+                begin set local var
+                  begin call
+                    get local var #func (12 0 temp)
+                    begin params 0
+                    end params ret values 0
+                  end call ret values 3
+                end set local var event (9 0)
+              end set local var id (8 0)
+            end set local var #valid (13 0 temp)
+
+            begin if
+              begin bool exp
+                begin logic not
+                  get local var #valid (13 0 temp)
+                end logic not
+              end bool exp
+              begin then
+                break
+              end then
+            end if ret values 0
+
+
+[322] if(event.processed){
+
+            begin scope
+              begin if
+                begin bool exp
+                  begin get property
+                    get local var event (9 0)
+                    push const string "processed"
+                  end get property ret values 1
+                end bool exp
+                begin then
+
+[323] continue;
+
+                  begin scope
+                    continue
+                  end scope ret values 0
+                end then
+              end if ret values 0
+
+
+[325] event.processed = time
+
+              begin set property
+                get local var time (2 0)
+                get local var auto create event (9 0)
+                push const string "processed"
+              end set property ret values 0
+
+
+[326] if(event.captured && !event.modal){ // && touch.phase != "start"){
+
+              begin if
+                begin bool exp
+                  begin logic &&
+                    begin get property
+                      get local var event (9 0)
+                      push const string "captured"
+                    end get property ret values 1
+                    begin logic not
+                      begin get property
+                        get local var event (9 0)
+                        push const string "modal"
+                      end get property ret values 1
+                    end logic not
+                  end logic &&
+                end bool exp
+                begin then
+
+[327] var cur = event.captured
+
+                  begin scope
+                    begin locals 2
+                      10 cur
+                      11 recursion
+                    end locals
+                    begin set local var
+                      begin get property
+                        get local var event (9 0)
+                        push const string "captured"
+                      end get property ret values 1
+                    end set local var cur (10 0)
+
+
+[328] var recursion = {[cur] = true}
+
+                    begin set local var
+                      begin object 1
+                        begin set by exp
+                          get local var cur (10 0)
+                          const true
+                        end set by exp
+                      end object
+                    end set local var recursion (11 0)
+
+
+[329] for(;cur !== runningScene && cur.__parent;){
+
+                    begin scope
+                      nop
+
+                      begin loop
+                        begin if
+                          begin bool exp
+                            begin logic not
+                              begin logic &&
+                                begin logic !==
+                                  get local var cur (10 0)
+                                  get local var runningScene (19 1)
+                                end logic !==
+                                begin get property
+                                  get local var cur (10 0)
+                                  push const string "__parent"
+                                end get property ret values 1
+                              end logic &&
+                            end logic not
+                          end bool exp
+                          begin then
+                            break
+                          end then
+                        end if ret values 0
+
+
+[330] cur = cur.__parent
+
+                        begin scope
+                          begin set local var
+                            begin get property
+                              get local var cur (10 0)
+                              push const string "__parent"
+                            end get property ret values 1
+                          end set local var cur (10 0)
+
+
+[331] if(cur in recursion) break
+
+                          begin if
+                            begin bool exp
+                              begin in
+                                get local var cur (10 0)
+                                get local var recursion (11 0)
+                              end in
+                            end bool exp
+                            begin then
+                              break
+                            end then
+                          end if ret values 0
+
+
+[332] recursion[cur] = true
+
+                          begin set property by locals auto create
+                            const true
+                            get local var auto create recursion (11 0)
+                            get local var cur (10 0)
+                          end set property by locals auto create ret values 0
+                        end scope ret values 0
+
+
+[329] for(;cur !== runningScene && cur.__parent;){
+
+                        nop
+                      end loop ret values 0
+                    end scope ret values 0
+
+
+[334] if(cur === runningScene){
+
+                    begin if
+                      begin bool exp
+                        begin logic ===
+                          get local var cur (10 0)
+                          get local var runningScene (19 1)
+                        end logic ===
+                      end bool exp
+                      begin then
+
+[336] event.captured.handleKeyEvent(event)
+
+                        begin scope
+                          begin call method
+                            begin get property
+                              get local var event (9 0)
+                              push const string "captured"
+                            end get property ret values 1
+                            begin params 2
+                              push const string "handleKeyEvent"
+                              ,
+                              get local var event (9 0)
+                            end params ret values 2
+                          end call method ret values 0
+
+
+[337] if(event.captured){
+
+                          begin if
+                            begin bool exp
+                              begin get property
+                                get local var event (9 0)
+                                push const string "captured"
+                              end get property ret values 1
+                            end bool exp
+                            begin then
+
+[339] continue
+
+                              begin scope
+                                continue
+                              end scope ret values 0
+                            end then
+                          end if ret values 0
+                        end scope ret values 0
+                      end then
+                      begin else
+
+[343] event.captured = null
+
+                        begin scope
+                          begin set property
+                            const null
+                            get local var auto create event (9 0)
+                            push const string "captured"
+                          end set property ret values 0
+                        end scope ret values 0
+                      end else
+                    end if ret values 0
+                  end scope ret values 0
+                end then
+              end if ret values 0
+
+
+[347] event.modal = false
+
+              begin set property
+                const false
+                get local var auto create event (9 0)
+                push const string "modal"
+              end set property ret values 0
+
+
+[349] runningScene.handleKeyEvent(event)
+
+              begin call method
+                get local var runningScene (19 1)
+                begin params 2
+                  push const string "handleKeyEvent"
+                  ,
+                  get local var event (9 0)
+                end params ret values 2
+              end call method ret values 0
+            end scope ret values 0
+          end loop ret values 0
+        end code list ret values 0
+      end scope ret values 0
+    end function
+  end set env var handleKeys
+
+
+[354] function handleTouches(){
+
+  begin set env var
+    begin function
+      begin locals, total 15
+        0 _E
+        1 _G
+        2 time
+        3 orientation
+        4 touchEvents
+      end locals
+
+[355] var time, orientation, touchEvents = app.timeSec, app.orientation, {}
+
+      begin set local var
+        begin set local var
+          begin set local var
+            begin params 3
+              begin get property
+                get local var app (3 1)
+                push const string "timeSec"
+              end get property ret values 1
+              ,
+              begin get property
+                get local var app (3 1)
+                push const string "orientation"
+              end get property ret values 1
+              ,
+              begin object 0
+              end object
+            end params ret values 3
+          end set local var touchEvents (4 0)
+        end set local var orientation (3 0)
+      end set local var time (2 0)
+
+
+[356] for(var id, touch in app.touchEvents){
+
+      begin scope
+        begin locals 4
+          5 id
+          6 touch
+          7 #func
+          8 #valid
+        end locals
+        new local var id (5 0)
+
+        new local var touch (6 0)
+
+        new local var #func (7 0 temp)
+
+        new local var #valid (8 0 temp)
+
+        begin code list
+          begin set local var
+            begin call method
+              begin get property
+                get local var app (3 1)
+                push const string "touchEvents"
+              end get property ret values 1
+              begin params 1
+                push const string "__iter"
+              end params ret values 1
+            end call method ret values 1
+          end set local var #func (7 0 temp)
+
+          begin loop
+            begin set local var
+              begin set local var
+                begin set local var
+                  begin call
+                    get local var #func (7 0 temp)
+                    begin params 0
+                    end params ret values 0
+                  end call ret values 3
+                end set local var touch (6 0)
+              end set local var id (5 0)
+            end set local var #valid (8 0 temp)
+
+            begin if
+              begin bool exp
+                begin logic not
+                  get local var #valid (8 0 temp)
+                end logic not
+              end bool exp
+              begin then
+                break
+              end then
+            end if ret values 0
+
+
+[357] if(!touch.processed){
+
+            begin scope
+              begin if
+                begin bool exp
+                  begin logic not
+                    begin get property
+                      get local var touch (6 0)
+                      push const string "processed"
+                    end get property ret values 1
+                  end logic not
+                end bool exp
+                begin then
+
+[358] if(orientation == ORIENTATION_PORTRAIT){
 
                   begin scope
                     begin if
@@ -1830,7 +3411,7 @@ begin function
                       end bool exp
                       begin then
 
-[204] }else if(orientation == ORIENTATION_PORTRAIT_UPSIDE_DOWN){
+[360] }else if(orientation == ORIENTATION_PORTRAIT_UPSIDE_DOWN){
 
                         begin scope
                         end scope ret values 0
@@ -1845,25 +3426,25 @@ begin function
                           end bool exp
                           begin then
 
-[205] touch.x = width - touch.x
+[361] touch.x = contentWidth - touch.x
 
                             begin scope
                               begin set property
                                 begin operator -
-                                  get local var width (4 0)
+                                  get local var contentWidth (13 1)
                                   begin get property
-                                    get local var touch (8 0)
+                                    get local var touch (6 0)
                                     push const string "x"
                                   end get property ret values 1
                                 end operator -
-                                get local var auto create touch (8 0)
+                                get local var auto create touch (6 0)
                                 push const string "x"
                               end set property ret values 0
                             end scope ret values 0
                           end then
                           begin else
 
-[206] }else if(orientation == ORIENTATION_LANDSCAPE_LEFT){
+[362] }else if(orientation == ORIENTATION_LANDSCAPE_LEFT){
 
                             begin if
                               begin bool exp
@@ -1874,36 +3455,36 @@ begin function
                               end bool exp
                               begin then
 
-[208] touch.x, touch.y = height - touch.y, touch.x
+[364] touch.x, touch.y = contentHeight - touch.y, touch.x
 
                                 begin scope
                                   begin set property
                                     begin set property
                                       begin params 2
                                         begin operator -
-                                          get local var height (5 0)
+                                          get local var contentHeight (14 1)
                                           begin get property
-                                            get local var touch (8 0)
+                                            get local var touch (6 0)
                                             push const string "y"
                                           end get property ret values 1
                                         end operator -
                                         ,
                                         begin get property
-                                          get local var touch (8 0)
+                                          get local var touch (6 0)
                                           push const string "x"
                                         end get property ret values 1
                                       end params ret values 2
-                                      get local var auto create touch (8 0)
+                                      get local var auto create touch (6 0)
                                       push const string "y"
                                     end set property ret values 1
-                                    get local var auto create touch (8 0)
+                                    get local var auto create touch (6 0)
                                     push const string "x"
                                   end set property ret values 0
                                 end scope ret values 0
                               end then
                               begin else
 
-[209] }else if(orientation == ORIENTATION_LANDSCAPE_RIGHT){
+[365] }else if(orientation == ORIENTATION_LANDSCAPE_RIGHT){
 
                                 begin if
                                   begin bool exp
@@ -1914,29 +3495,29 @@ begin function
                                   end bool exp
                                   begin then
 
-[211] touch.x, touch.y = touch.y, width - touch.x
+[367] touch.x, touch.y = touch.y, contentWidth - touch.x
 
                                     begin scope
                                       begin set property
                                         begin set property
                                           begin params 2
                                             begin get property
-                                              get local var touch (8 0)
+                                              get local var touch (6 0)
                                               push const string "y"
                                             end get property ret values 1
                                             ,
                                             begin operator -
-                                              get local var width (4 0)
+                                              get local var contentWidth (13 1)
                                               begin get property
-                                                get local var touch (8 0)
+                                                get local var touch (6 0)
                                                 push const string "x"
                                               end get property ret values 1
                                             end operator -
                                           end params ret values 2
-                                          get local var auto create touch (8 0)
+                                          get local var auto create touch (6 0)
                                           push const string "y"
                                         end set property ret values 1
-                                        get local var auto create touch (8 0)
+                                        get local var auto create touch (6 0)
                                         push const string "x"
                                       end set property ret values 0
                                     end scope ret values 0
@@ -1950,44 +3531,44 @@ begin function
                     end if ret values 0
 
 
-[213] touch.nativeX, touch.nativeY = touch.x, touch.y
+[369] touch.nativeX, touch.nativeY = touch.x, touch.y
 
                     begin set property
                       begin set property
                         begin params 2
                           begin get property
-                            get local var touch (8 0)
+                            get local var touch (6 0)
                             push const string "x"
                           end get property ret values 1
                           ,
                           begin get property
-                            get local var touch (8 0)
+                            get local var touch (6 0)
                             push const string "y"
                           end get property ret values 1
                         end params ret values 2
-                        get local var auto create touch (8 0)
+                        get local var auto create touch (6 0)
                         push const string "nativeY"
                       end set property ret values 1
-                      get local var auto create touch (8 0)
+                      get local var auto create touch (6 0)
                       push const string "nativeX"
                     end set property ret values 0
 
 
-[214] touches.push touch
+[370] touchEvents.push touch
 
                     begin call method
-                      get local var touches (6 0)
+                      get local var touchEvents (4 0)
                       begin params 2
                         push const string "push"
                         ,
-                        get local var touch (8 0)
+                        get local var touch (6 0)
                       end params ret values 2
                     end call method ret values 0
                   end scope ret values 0
                 end then
                 begin else
 
-[215] }else if(touch.phase == "end" || touch.phase == "cancel" || time - touch.processed > 30){
+[371] }else if(touch.phase == "end" || touch.phase == "cancel" || time - touch.processed > 30){
 
                   begin if
                     begin bool exp
@@ -1995,14 +3576,14 @@ begin function
                         begin logic ||
                           begin logic ==
                             begin get property
-                              get local var touch (8 0)
+                              get local var touch (6 0)
                               push const string "phase"
                             end get property ret values 1
                             push const string "end"
                           end logic ==
                           begin logic ==
                             begin get property
-                              get local var touch (8 0)
+                              get local var touch (6 0)
                               push const string "phase"
                             end get property ret values 1
                             push const string "cancel"
@@ -2012,7 +3593,7 @@ begin function
                           begin operator -
                             get local var time (2 0)
                             begin get property
-                              get local var touch (8 0)
+                              get local var touch (6 0)
                               push const string "processed"
                             end get property ret values 1
                           end operator -
@@ -2022,15 +3603,15 @@ begin function
                     end bool exp
                     begin then
 
-[217] delete app.touches[id]
+[373] delete app.touchEvents[id]
 
                       begin scope
                         begin delete
                           begin get property
                             get local var app (3 1)
-                            push const string "touches"
+                            push const string "touchEvents"
                           end get property ret values 1
-                          get local var id (7 0)
+                          get local var id (5 0)
                         end delete
                       end scope ret values 0
                     end then
@@ -2043,50 +3624,50 @@ begin function
       end scope ret values 0
 
 
-[220] for(var id, touch in touches){
+[376] for(var id, touch in touchEvents){
 
       begin scope
         begin locals 4
-          11 id
-          12 touch
-          15 #func
-          16 #valid
+          9 id
+          10 touch
+          13 #func
+          14 #valid
         end locals
-        new local var id (11 0)
+        new local var id (9 0)
 
-        new local var touch (12 0)
+        new local var touch (10 0)
 
-        new local var #func (15 0 temp)
+        new local var #func (13 0 temp)
 
-        new local var #valid (16 0 temp)
+        new local var #valid (14 0 temp)
 
         begin code list
           begin set local var
             begin call method
-              get local var touches (6 0)
+              get local var touchEvents (4 0)
               begin params 1
                 push const string "__iter"
               end params ret values 1
             end call method ret values 1
-          end set local var #func (15 0 temp)
+          end set local var #func (13 0 temp)
 
           begin loop
             begin set local var
               begin set local var
                 begin set local var
                   begin call
-                    get local var #func (15 0 temp)
+                    get local var #func (13 0 temp)
                     begin params 0
                     end params ret values 0
                   end call ret values 3
-                end set local var touch (12 0)
-              end set local var id (11 0)
-            end set local var #valid (16 0 temp)
+                end set local var touch (10 0)
+              end set local var id (9 0)
+            end set local var #valid (14 0 temp)
 
             begin if
               begin bool exp
                 begin logic not
-                  get local var #valid (16 0 temp)
+                  get local var #valid (14 0 temp)
                 end logic not
               end bool exp
               begin then
@@ -2095,19 +3676,19 @@ begin function
             end if ret values 0
 
 
-[221] if(touch.processed){
+[377] if(touch.processed){
 
             begin scope
               begin if
                 begin bool exp
                   begin get property
-                    get local var touch (12 0)
+                    get local var touch (10 0)
                     push const string "processed"
                   end get property ret values 1
                 end bool exp
                 begin then
 
-[222] continue;
+[378] continue;
 
                   begin scope
                     continue
@@ -2116,27 +3697,27 @@ begin function
               end if ret values 0
 
 
-[224] touch.processed = time
+[380] touch.processed = time
 
               begin set property
                 get local var time (2 0)
-                get local var auto create touch (12 0)
+                get local var auto create touch (10 0)
                 push const string "processed"
               end set property ret values 0
 
 
-[225] if(touch.captured && !touch.modal){ // && touch.phase != "start"){
+[381] if(touch.captured && !touch.modal){ // && touch.phase != "start"){
 
               begin if
                 begin bool exp
                   begin logic &&
                     begin get property
-                      get local var touch (12 0)
+                      get local var touch (10 0)
                       push const string "captured"
                     end get property ret values 1
                     begin logic not
                       begin get property
-                        get local var touch (12 0)
+                        get local var touch (10 0)
                         push const string "modal"
                       end get property ret values 1
                     end logic not
@@ -2144,34 +3725,34 @@ begin function
                 end bool exp
                 begin then
 
-[226] var cur = touch.captured
+[382] var cur = touch.captured
 
                   begin scope
                     begin locals 2
-                      13 cur
-                      14 recursion
+                      11 cur
+                      12 recursion
                     end locals
                     begin set local var
                       begin get property
-                        get local var touch (12 0)
+                        get local var touch (10 0)
                         push const string "captured"
                       end get property ret values 1
-                    end set local var cur (13 0)
+                    end set local var cur (11 0)
 
 
-[227] var recursion = {[cur] = true}
+[383] var recursion = {[cur] = true}
 
                     begin set local var
                       begin object 1
                         begin set by exp
-                          get local var cur (13 0)
+                          get local var cur (11 0)
                           const true
                         end set by exp
                       end object
-                    end set local var recursion (14 0)
+                    end set local var recursion (12 0)
 
 
-[228] for(;cur !== runningScene && cur.__parent;){
+[384] for(;cur !== runningScene && cur.__parent;){
 
                     begin scope
                       nop
@@ -2182,11 +3763,11 @@ begin function
                             begin logic not
                               begin logic &&
                                 begin logic !==
-                                  get local var cur (13 0)
-                                  get local var runningScene (10 1)
+                                  get local var cur (11 0)
+                                  get local var runningScene (19 1)
                                 end logic !==
                                 begin get property
-                                  get local var cur (13 0)
+                                  get local var cur (11 0)
                                   push const string "__parent"
                                 end get property ret values 1
                               end logic &&
@@ -2198,24 +3779,24 @@ begin function
                         end if ret values 0
 
 
-[229] cur = cur.__parent
+[385] cur = cur.__parent
 
                         begin scope
                           begin set local var
                             begin get property
-                              get local var cur (13 0)
+                              get local var cur (11 0)
                               push const string "__parent"
                             end get property ret values 1
-                          end set local var cur (13 0)
+                          end set local var cur (11 0)
 
 
-[230] if(cur in recursion) break
+[386] if(cur in recursion) break
 
                           begin if
                             begin bool exp
                               begin in
-                                get local var cur (13 0)
-                                get local var recursion (14 0)
+                                get local var cur (11 0)
+                                get local var recursion (12 0)
                               end in
                             end bool exp
                             begin then
@@ -2224,62 +3805,62 @@ begin function
                           end if ret values 0
 
 
-[231] recursion[cur] = true
+[387] recursion[cur] = true
 
-                          begin set property
+                          begin set property by locals auto create
                             const true
-                            get local var auto create recursion (14 0)
-                            get local var cur (13 0)
-                          end set property ret values 0
+                            get local var auto create recursion (12 0)
+                            get local var cur (11 0)
+                          end set property by locals auto create ret values 0
                         end scope ret values 0
 
 
-[228] for(;cur !== runningScene && cur.__parent;){
+[384] for(;cur !== runningScene && cur.__parent;){
 
                         nop
                       end loop ret values 0
                     end scope ret values 0
 
 
-[233] if(cur === runningScene){
+[389] if(cur === runningScene){
 
                     begin if
                       begin bool exp
                         begin logic ===
-                          get local var cur (13 0)
-                          get local var runningScene (10 1)
+                          get local var cur (11 0)
+                          get local var runningScene (19 1)
                         end logic ===
                       end bool exp
                       begin then
 
-[235] touch.captured.handleTouch(touch)
+[391] touch.captured.handleTouch(touch)
 
                         begin scope
                           begin call method
                             begin get property
-                              get local var touch (12 0)
+                              get local var touch (10 0)
                               push const string "captured"
                             end get property ret values 1
                             begin params 2
                               push const string "handleTouch"
                               ,
-                              get local var touch (12 0)
+                              get local var touch (10 0)
                             end params ret values 2
                           end call method ret values 0
 
 
-[236] if(touch.captured){
+[392] if(touch.captured){
 
                           begin if
                             begin bool exp
                               begin get property
-                                get local var touch (12 0)
+                                get local var touch (10 0)
                                 push const string "captured"
                               end get property ret values 1
                             end bool exp
                             begin then
 
-[238] continue
+[394] continue
 
                               begin scope
                                 continue
@@ -2290,12 +3871,12 @@ begin function
                       end then
                       begin else
 
-[242] touch.captured = null
+[398] touch.captured = null
 
                         begin scope
                           begin set property
                             const null
-                            get local var auto create touch (12 0)
+                            get local var auto create touch (10 0)
                             push const string "captured"
                           end set property ret values 0
                         end scope ret values 0
@@ -2306,23 +3887,23 @@ begin function
               end if ret values 0
 
 
-[246] touch.modal = false
+[402] touch.modal = false
 
               begin set property
                 const false
-                get local var auto create touch (12 0)
+                get local var auto create touch (10 0)
                 push const string "modal"
               end set property ret values 0
 
 
-[248] runningScene.handleTouch(touch)
+[404] runningScene.handleTouch(touch)
 
               begin call method
-                get local var runningScene (10 1)
+                get local var runningScene (19 1)
                 begin params 2
                   push const string "handleTouch"
                   ,
-                  get local var touch (12 0)
+                  get local var touch (10 0)
                 end params ret values 2
               end call method ret values 0
             end scope ret values 0
@@ -2333,14 +3914,14 @@ begin function
   end set env var handleTouches
 
 
-[253] var deltaTime = 0.01
+[409] var deltaTime = 0.01
 
   begin set local var
     push const number 0.01
-  end set local var deltaTime (14 0)
+  end set local var deltaTime (23 0)
 
 
-[254] function get deltaTime(){return deltaTime}
+[410] function get deltaTime(){return deltaTime}
 
   begin set env var
     begin function
@@ -2349,20 +3930,20 @@ begin function
         1 _G
       end locals
       begin return
-        get local var deltaTime (14 1)
+        get local var deltaTime (23 1)
       end return values 1
     end function
   end set env var __get@deltaTime
 
 
-[256] var timeSpeed = 1
+[412] var timeSpeed = 1
 
   begin set local var
     push const number 1
-  end set local var timeSpeed (15 0)
+  end set local var timeSpeed (24 0)
 
 
-[257] function get timeSpeed(){return timeSpeed}
+[413] function get timeSpeed(){return timeSpeed}
 
   begin set env var
     begin function
@@ -2371,13 +3952,13 @@ begin function
         1 _G
       end locals
       begin return
-        get local var timeSpeed (15 1)
+        get local var timeSpeed (24 1)
       end return values 1
     end function
   end set env var __get@timeSpeed
 
 
-[258] function set timeSpeed(a){ timeSpeed = a }
+[414] function set timeSpeed(a){ timeSpeed = a }
 
   begin set env var
     begin function
@@ -2388,19 +3969,19 @@ begin function
       end locals
       begin set local var
         get local var a (0 0 param)
-      end set local var timeSpeed (15 1)
+      end set local var timeSpeed (24 1)
     end function
   end set env var __set@timeSpeed
 
 
-[260] var time = 0
+[416] var time = 0
 
   begin set local var
     push const number 0
-  end set local var time (16 0)
+  end set local var time (25 0)
 
 
-[261] function get time(){return time}
+[417] function get time(){return time}
 
   begin set env var
     begin function
@@ -2409,13 +3990,13 @@ begin function
         1 _G
       end locals
       begin return
-        get local var time (16 1)
+        get local var time (25 1)
       end return values 1
     end function
   end set env var __get@time
 
 
-[262] function set time(a){ time = a }
+[418] function set time(a){ time = a }
 
   begin set env var
     begin function
@@ -2426,26 +4007,26 @@ begin function
       end locals
       begin set local var
         get local var a (0 0 param)
-      end set local var time (16 1)
+      end set local var time (25 1)
     end function
   end set env var __set@time
 
 
-[264] var prevAppTime = 0
+[420] var prevAppTime = 0
 
   begin set local var
     push const number 0
-  end set local var prevAppTime (17 0)
+  end set local var prevAppTime (26 0)
 
 
-[265] var prevDeltaTime = 0
+[421] var prevDeltaTime = 0
 
   begin set local var
     push const number 0
-  end set local var prevDeltaTime (18 0)
+  end set local var prevDeltaTime (27 0)
 
 
-[267] var function clamp(a, min, max){
+[423] var function clamp(a, min, max){
 
   begin set local var
     begin function
@@ -2457,14 +4038,16 @@ begin function
         4 _G
       end locals
 
-[268] if(a < min) return min
+[424] if(a < min) return min
 
       begin if
         begin bool exp
-          begin logic <
-            get local var a (0 0 param)
-            get local var min (1 0 param)
-          end logic <
+          begin binary operator by locals
+            begin logic <
+              get local var a (0 0 param)
+              get local var min (1 0 param)
+            end logic <
+          end binary operator by locals
         end bool exp
         begin then
           begin code list
@@ -2476,14 +4059,16 @@ begin function
       end if ret values 0
 
 
-[269] if(a > max) return max
+[425] if(a > max) return max
 
       begin if
         begin bool exp
-          begin logic >
-            get local var a (0 0 param)
-            get local var max (2 0 param)
-          end logic >
+          begin binary operator by locals
+            begin logic >
+              get local var a (0 0 param)
+              get local var max (2 0 param)
+            end logic >
+          end binary operator by locals
         end bool exp
         begin then
           begin code list
@@ -2495,7 +4080,7 @@ begin function
       end if ret values 0
 
 
-[270] return a
+[426] return a
 
       begin code list
         begin return
@@ -2503,20 +4088,20 @@ begin function
         end return values 1
       end code list ret values 0
     end function
-  end set local var clamp (19 0)
+  end set local var clamp (28 0)
 
 
-[273] var coreTriggerEvent = core.triggerEvent
+[429] var coreTriggerEvent = core.triggerEvent
 
   begin set local var
     begin get property
       get local var core (2 0)
       push const string "triggerEvent"
     end get property ret values 1
-  end set local var coreTriggerEvent (20 0)
+  end set local var coreTriggerEvent (29 0)
 
 
-[274] function core.triggerEvent(eventName, params){
+[430] function core.triggerEvent(eventName, params){
 
   begin set property
     begin function
@@ -2527,7 +4112,7 @@ begin function
         3 _G
       end locals
 
-[275] if(eventName == "enterFrame"){
+[431] if(eventName == "enterFrame"){
 
       begin if
         begin bool exp
@@ -2538,7 +4123,7 @@ begin function
         end bool exp
         begin then
 
-[277] var appTime = app.timeSec
+[433] var appTime = app.timeSec
 
           begin scope
             begin locals 2
@@ -2553,96 +4138,96 @@ begin function
             end set local var appTime (4 0)
 
 
-[278] deltaTime = (appTime - prevAppTime) * timeSpeed
+[434] deltaTime = (appTime - prevAppTime) * timeSpeed
 
             begin set local var
               begin operator *
                 begin operator -
                   get local var appTime (4 0)
-                  get local var prevAppTime (17 1)
+                  get local var prevAppTime (26 1)
                 end operator -
-                get local var timeSpeed (15 1)
+                get local var timeSpeed (24 1)
               end operator *
-            end set local var deltaTime (14 1)
+            end set local var deltaTime (23 1)
 
 
-[279] prevAppTime = appTime
+[435] prevAppTime = appTime
 
             begin set local var
               get local var appTime (4 0)
-            end set local var prevAppTime (17 1)
+            end set local var prevAppTime (26 1)
 
 
-[280] deltaTime = clamp(deltaTime, prevDeltaTime*0.9, prevDeltaTime*1.1)
+[436] deltaTime = clamp(deltaTime, prevDeltaTime*0.9, prevDeltaTime*1.1)
 
             begin set local var
               begin call
-                get local var clamp (19 1)
+                get local var clamp (28 1)
                 begin params 3
-                  get local var deltaTime (14 1)
+                  get local var deltaTime (23 1)
                   ,
                   begin operator *
-                    get local var prevDeltaTime (18 1)
+                    get local var prevDeltaTime (27 1)
                     push const number 0.9
                   end operator *
                   ,
                   begin operator *
-                    get local var prevDeltaTime (18 1)
+                    get local var prevDeltaTime (27 1)
                     push const number 1.1
                   end operator *
                 end params ret values 3
               end call ret values 1
-            end set local var deltaTime (14 1)
+            end set local var deltaTime (23 1)
 
 
-[281] deltaTime = clamp(deltaTime, 0.01, 0.1)
+[437] deltaTime = clamp(deltaTime, 0.01, 0.1)
 
             begin set local var
               begin call
-                get local var clamp (19 1)
+                get local var clamp (28 1)
                 begin params 3
-                  get local var deltaTime (14 1)
+                  get local var deltaTime (23 1)
                   ,
                   push const number 0.01
                   ,
                   push const number 0.1
                 end params ret values 3
               end call ret values 1
-            end set local var deltaTime (14 1)
+            end set local var deltaTime (23 1)
 
 
-[282] prevDeltaTime = deltaTime
+[438] prevDeltaTime = deltaTime
 
             begin set local var
-              get local var deltaTime (14 1)
-            end set local var prevDeltaTime (18 1)
+              get local var deltaTime (23 1)
+            end set local var prevDeltaTime (27 1)
 
 
-[283] time = time + deltaTime
+[439] time = time + deltaTime
 
             begin set local var
               begin operator +
-                get local var time (16 1)
-                get local var deltaTime (14 1)
+                get local var time (25 1)
+                get local var deltaTime (23 1)
               end operator +
-            end set local var time (16 1)
+            end set local var time (25 1)
 
 
-[285] var updateParams = {deltaTime = deltaTime}
+[441] var updateParams = {deltaTime = deltaTime}
 
             begin set local var
               begin object 1
                 begin set by name
-                  get local var deltaTime (14 1)
+                  get local var deltaTime (23 1)
                 end set by name: [deltaTime]
               end object
             end set local var updateParams (5 0)
 
 
-[286] coreTriggerEvent.call(core, eventName, updateParams)
+[442] coreTriggerEvent.call(core, eventName, updateParams)
 
             begin call method
-              get local var coreTriggerEvent (20 1)
+              get local var coreTriggerEvent (29 1)
               begin params 4
                 push const string "call"
                 ,
@@ -2655,7 +4240,7 @@ begin function
             end call method ret values 0
 
 
-[287] handleTouches()
+[443] handleTouches()
 
             begin call method
               get local var _E (2 0)
@@ -2665,15 +4250,25 @@ begin function
             end call method ret values 0
 
 
-[289] if(runningScene) runningScene.handleUpdate(updateParams)
+[444] handleKeys()
+
+            begin call method
+              get local var _E (2 0)
+              begin params 1
+                push const string "handleKeys"
+              end params ret values 1
+            end call method ret values 0
+
+
+[446] if(runningScene) runningScene.handleUpdate(updateParams)
 
             begin if
               begin bool exp
-                get local var runningScene (10 1)
+                get local var runningScene (19 1)
               end bool exp
               begin then
                 begin call method
-                  get local var runningScene (10 1)
+                  get local var runningScene (19 1)
                   begin params 2
                     push const string "handleUpdate"
                     ,
@@ -2684,10 +4279,10 @@ begin function
             end if ret values 0
 
 
-[291] paint()
+[448] paint()
 
             begin call
-              get local var paint (13 1)
+              get local var paint (22 1)
               begin params 0
               end params ret values 0
             end call ret values 0
@@ -2695,11 +4290,11 @@ begin function
         end then
         begin else
 
-[293] coreTriggerEvent.call(core, eventName, params)
+[450] coreTriggerEvent.call(core, eventName, params)
 
           begin scope
             begin call method
-              get local var coreTriggerEvent (20 1)
+              get local var coreTriggerEvent (29 1)
               begin params 4
                 push const string "call"
                 ,
@@ -2712,15 +4307,15 @@ begin function
             end call method ret values 0
 
 
-[294] if(runningScene) runningScene.triggerEvent(eventName, params)
+[451] if(runningScene) runningScene.triggerEvent(eventName, params)
 
             begin if
               begin bool exp
-                get local var runningScene (10 1)
+                get local var runningScene (19 1)
               end bool exp
               begin then
                 begin call method
-                  get local var runningScene (10 1)
+                  get local var runningScene (19 1)
                   begin params 3
                     push const string "triggerEvent"
                     ,
@@ -2736,14 +4331,14 @@ begin function
       end if ret values 0
     end function
 
-[274] function core.triggerEvent(eventName, params){
+[430] function core.triggerEvent(eventName, params){
 
     get local var auto create core (2 0)
     push const string "triggerEvent"
   end set property ret values 0
 
 
-[295] }
+[453] }
 
   begin code list
     begin return

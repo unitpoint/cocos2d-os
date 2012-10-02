@@ -462,10 +462,12 @@ target "
                 begin params 2
                   push const string "debugBackTrace"
                   ,
-                  begin operator +
-                    get local var skipNumFuncs (0 0 param)
-                    push const number 1
-                  end operator +
+                  begin binary operator by local & number
+                    begin operator +
+                      get local var skipNumFuncs (0 0 param)
+                      push const number 1
+                    end operator +
+                  end binary operator by local & number
                 end params ret values 2
               end call method ret values 1
               begin params 1
@@ -731,15 +733,15 @@ target "
             begin set local var
               begin set local var
                 begin params 2
-                  begin get property
+                  begin get property by local & number
                     get local var eventName (0 0 param)
                     push const number 0
-                  end get property ret values 1
+                  end get property by local & number ret values 1
                   ,
-                  begin get property
+                  begin get property by local & number
                     get local var eventName (0 0 param)
                     push const number 1
-                  end get property ret values 1
+                  end get property by local & number ret values 1
                 end params ret values 2
               end set local var func (1 0 param)
             end set local var eventName (0 0 param)
@@ -933,10 +935,12 @@ target "
       begin pop
         begin logic ||
           begin logic &&
-            begin logic >
-              get local var count (2 0 param)
-              push const number 0
-            end logic >
+            begin binary operator by local & number
+              begin logic >
+                get local var count (2 0 param)
+                push const number 0
+              end logic >
+            end binary operator by local & number
             begin functionof
               get local var func (0 0 param)
             end functionof
@@ -1799,7 +1803,7 @@ target "
 [171] p[k] = deepClone(v)
 
             begin scope
-              begin set property
+              begin set property by locals auto create
                 begin call method
                   get local var _E (1 0)
                   begin params 2
@@ -1810,7 +1814,7 @@ target "
                 end call method ret values 1
                 get local var auto create p (0 0 param)
                 get local var k (3 0)
-              end set property ret values 0
+              end set property by locals auto create ret values 0
             end scope ret values 0
           end loop ret values 0
         end code list ret values 0
@@ -1826,6 +1830,165 @@ target "
       end code list ret values 0
     end function
   end set env var deepClone
+
+
+[176] function math.clamp(a min max){
+
+  begin set property
+    begin function
+      begin locals, total 5
+        0 a (param)
+        1 min (param)
+        2 max (param)
+        3 _E
+        4 _G
+      end locals
+
+[177] return a < min ? min : a > max ? max : a
+
+      begin return
+        begin question
+          begin bool exp
+            begin binary operator by locals
+              begin logic <
+                get local var a (0 0 param)
+                get local var min (1 0 param)
+              end logic <
+            end binary operator by locals
+          end bool exp
+          begin then value
+            get local var min (1 0 param)
+          end then value
+          begin else value
+            begin question
+              begin bool exp
+                begin binary operator by locals
+                  begin logic >
+                    get local var a (0 0 param)
+                    get local var max (2 0 param)
+                  end logic >
+                end binary operator by locals
+              end bool exp
+              begin then value
+                get local var max (2 0 param)
+              end then value
+              begin else value
+                get local var a (0 0 param)
+              end else value
+            end question ret values 1
+          end else value
+        end question ret values 1
+      end return values 1
+    end function
+
+[176] function math.clamp(a min max){
+
+    get env var auto create math
+    push const string "clamp"
+  end set property ret values 0
+
+
+[180] function Object.flip(){
+
+  begin set property
+    begin function
+      begin locals, total 7
+        0 _E
+        1 _G
+        2 r
+      end locals
+
+[181] var r = {}
+
+      begin set local var
+        begin object 0
+        end object
+      end set local var r (2 0)
+
+
+[182] for(var i, v in this){
+
+      begin scope
+        begin locals 4
+          3 i
+          4 v
+          5 #func
+          6 #valid
+        end locals
+        new local var i (3 0)
+
+        new local var v (4 0)
+
+        new local var #func (5 0 temp)
+
+        new local var #valid (6 0 temp)
+
+        begin code list
+          begin set local var
+            begin call method
+              push this
+              begin params 1
+                push const string "__iter"
+              end params ret values 1
+            end call method ret values 1
+          end set local var #func (5 0 temp)
+
+          begin loop
+            begin set local var
+              begin set local var
+                begin set local var
+                  begin call
+                    get local var #func (5 0 temp)
+                    begin params 0
+                    end params ret values 0
+                  end call ret values 3
+                end set local var v (4 0)
+              end set local var i (3 0)
+            end set local var #valid (6 0 temp)
+
+            begin if
+              begin bool exp
+                begin logic not
+                  get local var #valid (6 0 temp)
+                end logic not
+              end bool exp
+              begin then
+                break
+              end then
+            end if ret values 0
+
+
+[183] r[v] = i
+
+            begin scope
+              begin set property by locals auto create
+                get local var i (3 0)
+                get local var auto create r (2 0)
+                get local var v (4 0)
+              end set property by locals auto create ret values 0
+            end scope ret values 0
+          end loop ret values 0
+        end code list ret values 0
+      end scope ret values 0
+
+
+[185] return r
+
+      begin code list
+        begin return
+          get local var r (2 0)
+        end return values 1
+      end code list ret values 0
+    end function
+
+[180] function Object.flip(){
+
+    get env var auto create Object
+    push const string "flip"
+  end set property ret values 0
+
+
+[186] }
 
   begin code list
     begin return

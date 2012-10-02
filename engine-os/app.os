@@ -10,7 +10,22 @@ function get screenSize(){
 
 orientation = ORIENTATION_PORTRAIT
 
-touches = {}
+touchEvents = {}
+keyEvents = {}
+
+function registerKeyEvent(key pressed){
+	if(key in keyEvents){
+		keyEvents[key].pressed = pressed
+		return
+	}
+	keyEvents[key] = {
+		key = key
+		pressed = pressed
+		processed = false
+		captured = null
+		capturedFunc = null
+	}
+}
 
 var autoTouchId = 0
 function registerTouchEvent(x y phase id){
@@ -18,7 +33,7 @@ function registerTouchEvent(x y phase id){
 		id = phase == "start" ? --autoTouchId : autoTouchId
 	}
 	if(phase == "start"){
-		touches[id] = {
+		touchEvents[id] = {
 			x = x
 			y = y
 			phase = phase
@@ -29,10 +44,10 @@ function registerTouchEvent(x y phase id){
 		}
 		return
 	}
-	if(!(id in touches)){
+	if(!(id in touchEvents)){
 		return
 	}
-	var touch = touches[id]
+	var touch = touchEvents[id]
 	if(phase == "move"){
 		if(touch.phase == "start"){
 			if(!touch.processed){

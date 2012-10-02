@@ -50,6 +50,13 @@ FunctionNode = {
 		}
 	}
 	
+	attrs: function(parsms){
+		for(var field, value in objectof parsms){
+			this[field] = value
+		}
+		return this
+	}
+	
 	sortChildren = function(children){
 		children.rsort(function(a b){
 			var z = a[0] - b[0]
@@ -89,6 +96,10 @@ FunctionNode = {
 		}
 	}
 	
+	removeAll = function(){
+		this.__childrenNeg, this.__childrenPos = {}, {}
+	}
+	
 	contains = function(node){
 		return node in this.__childrenNeg || node in this.__childrenPos
 	}
@@ -115,6 +126,7 @@ FunctionNode = {
 	
 	handlePaint = function(){}
 	handleTouch = function(){}
+	handleKeyEvent = function(){}
 	
 	addEventListener = function(eventName, func, zOrder){
 		functionof func || return;
@@ -300,8 +312,9 @@ Node = extends FunctionNode {
 	
 	__construct = function(){
 		super()
-		this.width = director.width
-		this.height = director.height
+		this.width = director.contentWidth
+		this.height = director.contentHeight
+		// print "node "..this.width..", "..this.height
 	}
 	
 	paint = function(){}
@@ -403,6 +416,31 @@ Node = extends FunctionNode {
 		glPopMatrix()
 		
 		params.opacity = saveOpacity
+	}
+	
+	handleKeyEvent = function(event){
+		// this.triggerEvent("key", event)
+		if(event.captured !== this){
+			for(var child in this.__childrenPos){
+				child.handleKeyEvent(event) && return true;
+			}
+		}
+		if("key" in this.__events){
+			for(var func in this.__events["key"]){
+				func.call(this, event)
+			}
+		}
+		if(event.captured !== this){
+			for(var child in this.__childrenNeg){
+				child.handleKeyEvent(event) && return true;
+			}
+		}
+		if(!event.captured && this.modal){
+			event.captured = this
+			event.modal = true
+			return true
+		}
+		return false
 	}
 	
 	handleTouch = function(touch){
@@ -717,10 +755,14 @@ ColorNode = extends Node {
 	}
 }
 
-Scene = extends Node {
+Group = extends Node {
 	__object = {
 		__isRelativeAnchor = false
-		// __anchorX = 0
-		// __anchorY = 0
+		__anchorX = 0
+		__anchorY = 0
 	}
+}
+
+Scene = extends Group {
+
 }

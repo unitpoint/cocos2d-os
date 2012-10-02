@@ -113,7 +113,7 @@ MyScene = extends Scene {
 				this.stopTransition(this.moveTransition)
 				this.moveTransition = this.transition { // lets use transition to move monster
 					x = x, y = y
-					duration = len * 10.0 / director.width
+					duration = len * 10.0 / director.contentWidth
 					onComplete = onComplete // call this function on complete
 				}
 			}

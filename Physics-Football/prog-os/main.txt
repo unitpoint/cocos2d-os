@@ -204,7 +204,7 @@ begin function
                         begin set by name
                           begin array 4
 
-[21] physics.getBoxShapeVertices([0, director.height], [director.width, director.height*0.1]),
+[21] physics.getBoxShapeVertices([0, director.contentHeight], [director.contentWidth, director.contentHeight*0.1]),
 
                             begin set auto index
                               begin call method
@@ -220,7 +220,7 @@ begin function
                                     begin set auto index
                                       begin get property
                                         get local var director (2 1)
-                                        push const string "height"
+                                        push const string "contentHeight"
                                       end get property ret values 1
                                     end set auto index
                                   end array
@@ -229,7 +229,7 @@ begin function
                                     begin set auto index
                                       begin get property
                                         get local var director (2 1)
-                                        push const string "width"
+                                        push const string "contentWidth"
                                       end get property ret values 1
                                     end set auto index
                                     ,
@@ -237,7 +237,7 @@ begin function
                                       begin operator *
                                         begin get property
                                           get local var director (2 1)
-                                          push const string "height"
+                                          push const string "contentHeight"
                                         end get property ret values 1
                                         push const number 0.1
                                       end operator *
@@ -248,7 +248,7 @@ begin function
                             end set auto index
                             ,
 
-[22] physics.getBoxShapeVertices([0, director.height*-0.1], [director.width, director.height*0.1]),
+[22] physics.getBoxShapeVertices([0, director.contentHeight*-0.1], [director.contentWidth, director.contentHeight*0.1]),
 
                             begin set auto index
                               begin call method
@@ -265,7 +265,7 @@ begin function
                                       begin operator *
                                         begin get property
                                           get local var director (2 1)
-                                          push const string "height"
+                                          push const string "contentHeight"
                                         end get property ret values 1
                                         begin neg
                                           push const number 0.1
@@ -278,7 +278,7 @@ begin function
                                     begin set auto index
                                       begin get property
                                         get local var director (2 1)
-                                        push const string "width"
+                                        push const string "contentWidth"
                                       end get property ret values 1
                                     end set auto index
                                     ,
@@ -286,7 +286,7 @@ begin function
                                       begin operator *
                                         begin get property
                                           get local var director (2 1)
-                                          push const string "height"
+                                          push const string "contentHeight"
                                         end get property ret values 1
                                         push const number 0.1
                                       end operator *
@@ -297,7 +297,7 @@ begin function
                             end set auto index
                             ,
 
-[23] physics.getBoxShapeVertices([director.width*-0.1, 0], [director.width*0.1, director.height]),
+[23] physics.getBoxShapeVertices([director.contentWidth*-0.1, 0], [director.contentWidth*0.1, director.contentHeight]),
 
                             begin set auto index
                               begin call method
@@ -310,7 +310,7 @@ begin function
                                       begin operator *
                                         begin get property
                                           get local var director (2 1)
-                                          push const string "width"
+                                          push const string "contentWidth"
                                         end get property ret values 1
                                         begin neg
                                           push const number 0.1
@@ -328,7 +328,7 @@ begin function
                                       begin operator *
                                         begin get property
                                           get local var director (2 1)
-                                          push const string "width"
+                                          push const string "contentWidth"
                                         end get property ret values 1
                                         push const number 0.1
                                       end operator *
@@ -337,7 +337,7 @@ begin function
                                     begin set auto index
                                       begin get property
                                         get local var director (2 1)
-                                        push const string "height"
+                                        push const string "contentHeight"
                                       end get property ret values 1
                                     end set auto index
                                   end array
@@ -346,7 +346,7 @@ begin function
                             end set auto index
                             ,
 
-[24] physics.getBoxShapeVertices([director.width, 0], [director.width*0.1, director.height]),
+[24] physics.getBoxShapeVertices([director.contentWidth, 0], [director.contentWidth*0.1, director.contentHeight]),
 
                             begin set auto index
                               begin call method
@@ -358,7 +358,7 @@ begin function
                                     begin set auto index
                                       begin get property
                                         get local var director (2 1)
-                                        push const string "width"
+                                        push const string "contentWidth"
                                       end get property ret values 1
                                     end set auto index
                                     ,
@@ -372,7 +372,7 @@ begin function
                                       begin operator *
                                         begin get property
                                           get local var director (2 1)
-                                          push const string "width"
+                                          push const string "contentWidth"
                                         end get property ret values 1
                                         push const number 0.1
                                       end operator *
@@ -381,7 +381,7 @@ begin function
                                     begin set auto index
                                       begin get property
                                         get local var director (2 1)
-                                        push const string "height"
+                                        push const string "contentHeight"
                                       end get property ret values 1
                                     end set auto index
                                   end array
@@ -516,7 +516,7 @@ begin function
                       end set property ret values 0
 
 
-[45] body.linearVelocity = [director.width * math.random(-1, 1), director.width * math.random(-1, 1)]
+[45] body.linearVelocity = [director.contentWidth * math.random(-1, 1), director.contentWidth * math.random(-1, 1)]
 
                       begin set property
                         begin array 2
@@ -524,7 +524,7 @@ begin function
                             begin operator *
                               begin get property
                                 get local var director (2 2)
-                                push const string "width"
+                                push const string "contentWidth"
                               end get property ret values 1
                               begin call method
                                 get env var math
@@ -545,7 +545,7 @@ begin function
                             begin operator *
                               begin get property
                                 get local var director (2 2)
-                                push const string "width"
+                                push const string "contentWidth"
                               end get property ret values 1
                               begin call method
                                 get env var math
@@ -974,10 +974,12 @@ begin function
                 begin if
                   begin bool exp
                     begin logic not
-                      begin logic <
-                        get local var i (7 0)
-                        push const number 3
-                      end logic <
+                      begin binary operator by local & number
+                        begin logic <
+                          get local var i (7 0)
+                          push const number 3
+                        end logic <
+                      end binary operator by local & number
                     end logic not
                   end bool exp
                   begin then
@@ -1082,12 +1084,14 @@ begin function
 [75] for(var i = 0; i < 3; i++){
 
                 begin code list
-                  begin set local var
-                    begin operator +
-                      get local var i (7 0)
-                      push const number 1
-                    end operator +
-                  end set local var i (7 0)
+                  begin set local var by bin operator local & number
+                    begin binary operator by local & number
+                      begin operator +
+                        get local var i (7 0)
+                        push const number 1
+                      end operator +
+                    end binary operator by local & number
+                  end set local var by bin operator local & number i (7 0)
                 end code list ret values 0
               end loop ret values 0
             end scope ret values 0
@@ -1107,10 +1111,12 @@ begin function
                 begin if
                   begin bool exp
                     begin logic not
-                      begin logic <
-                        get local var i (9 0)
-                        push const number 2
-                      end logic <
+                      begin binary operator by local & number
+                        begin logic <
+                          get local var i (9 0)
+                          push const number 2
+                        end logic <
+                      end binary operator by local & number
                     end logic not
                   end bool exp
                   begin then
@@ -1331,7 +1337,7 @@ begin function
                   end set property ret values 0
 
 
-[99] body.linearVelocity = [director.width * math.random(-1, 1), director.width * math.random(-1, 1)]
+[99] body.linearVelocity = [director.contentWidth * math.random(-1, 1), director.contentWidth * math.random(-1, 1)]
 
                   begin set property
                     begin array 2
@@ -1339,7 +1345,7 @@ begin function
                         begin operator *
                           begin get property
                             get local var director (2 1)
-                            push const string "width"
+                            push const string "contentWidth"
                           end get property ret values 1
                           begin call method
                             get env var math
@@ -1360,7 +1366,7 @@ begin function
                         begin operator *
                           begin get property
                             get local var director (2 1)
-                            push const string "width"
+                            push const string "contentWidth"
                           end get property ret values 1
                           begin call method
                             get env var math
@@ -1386,12 +1392,14 @@ begin function
 [83] for(var i = 0; i < 2; i++){
 
                 begin code list
-                  begin set local var
-                    begin operator +
-                      get local var i (9 0)
-                      push const number 1
-                    end operator +
-                  end set local var i (9 0)
+                  begin set local var by bin operator local & number
+                    begin binary operator by local & number
+                      begin operator +
+                        get local var i (9 0)
+                        push const number 1
+                      end operator +
+                    end binary operator by local & number
+                  end set local var by bin operator local & number i (9 0)
                 end code list ret values 0
               end loop ret values 0
             end scope ret values 0

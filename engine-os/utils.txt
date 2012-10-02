@@ -1486,28 +1486,28 @@ begin function
 [122] this.a = m[0]; this.c = m[4]; this.tx = m[12];
 
           begin set property
-            begin get property
+            begin get property by local & number
               get local var m (0 0 param)
               push const number 0
-            end get property ret values 1
+            end get property by local & number ret values 1
             push this
             push const string "a"
           end set property ret values 0
 
           begin set property
-            begin get property
+            begin get property by local & number
               get local var m (0 0 param)
               push const number 4
-            end get property ret values 1
+            end get property by local & number ret values 1
             push this
             push const string "c"
           end set property ret values 0
 
           begin set property
-            begin get property
+            begin get property by local & number
               get local var m (0 0 param)
               push const number 12
-            end get property ret values 1
+            end get property by local & number ret values 1
             push this
             push const string "tx"
           end set property ret values 0
@@ -1516,28 +1516,28 @@ begin function
 [123] this.b = m[1]; this.d = m[5]; this.ty = m[13];
 
           begin set property
-            begin get property
+            begin get property by local & number
               get local var m (0 0 param)
               push const number 1
-            end get property ret values 1
+            end get property by local & number ret values 1
             push this
             push const string "b"
           end set property ret values 0
 
           begin set property
-            begin get property
+            begin get property by local & number
               get local var m (0 0 param)
               push const number 5
-            end get property ret values 1
+            end get property by local & number ret values 1
             push this
             push const string "d"
           end set property ret values 0
 
           begin set property
-            begin get property
+            begin get property by local & number
               get local var m (0 0 param)
               push const number 13
-            end get property ret values 1
+            end get property by local & number ret values 1
             push this
             push const string "ty"
           end set property ret values 0
@@ -1593,10 +1593,12 @@ begin function
 [134] return t * t
 
           begin return
-            begin operator *
-              get local var t (0 0 param)
-              get local var t (0 0 param)
-            end operator *
+            begin binary operator by locals
+              begin operator *
+                get local var t (0 0 param)
+                get local var t (0 0 param)
+              end operator *
+            end binary operator by locals
           end return values 1
         end function
       end set by name: [inQuad]
@@ -1615,10 +1617,12 @@ begin function
 [138] return t ** 3
 
           begin return
-            begin operator **
-              get local var t (0 0 param)
-              push const number 3
-            end operator **
+            begin binary operator by local & number
+              begin operator **
+                get local var t (0 0 param)
+                push const number 3
+              end operator **
+            end binary operator by local & number
           end return values 1
         end function
       end set by name: [inCubic]
@@ -1637,10 +1641,12 @@ begin function
 [142] return t ** 4
 
           begin return
-            begin operator **
-              get local var t (0 0 param)
-              push const number 4
-            end operator **
+            begin binary operator by local & number
+              begin operator **
+                get local var t (0 0 param)
+                push const number 4
+              end operator **
+            end binary operator by local & number
           end return values 1
         end function
       end set by name: [inQuart]
@@ -1659,10 +1665,12 @@ begin function
 [146] return t ** 5
 
           begin return
-            begin operator **
-              get local var t (0 0 param)
-              push const number 5
-            end operator **
+            begin binary operator by local & number
+              begin operator **
+                get local var t (0 0 param)
+                push const number 5
+              end operator **
+            end binary operator by local & number
           end return values 1
         end function
       end set by name: [inQuint]
@@ -1723,10 +1731,12 @@ begin function
               push const number 2
               begin operator *
                 push const number 10
-                begin operator -
-                  get local var t (0 0 param)
-                  push const number 1
-                end operator -
+                begin binary operator by local & number
+                  begin operator -
+                    get local var t (0 0 param)
+                    push const number 1
+                  end operator -
+                end binary operator by local & number
               end operator *
             end operator **
           end return values 1
@@ -1752,10 +1762,12 @@ begin function
               begin operator **
                 begin operator -
                   push const number 1
-                  begin operator **
-                    get local var t (0 0 param)
-                    push const number 2
-                  end operator **
+                  begin binary operator by local & number
+                    begin operator **
+                      get local var t (0 0 param)
+                      push const number 2
+                    end operator **
+                  end binary operator by local & number
                 end operator -
                 push const number 0.5
               end operator **
@@ -1798,16 +1810,20 @@ begin function
           begin code list
             begin return
               begin operator *
-                begin operator *
-                  get local var t (0 0 param)
-                  get local var t (0 0 param)
-                end operator *
+                begin binary operator by locals
+                  begin operator *
+                    get local var t (0 0 param)
+                    get local var t (0 0 param)
+                  end operator *
+                end binary operator by locals
                 begin operator -
                   begin operator *
-                    begin operator +
-                      get local var s (3 0)
-                      push const number 1
-                    end operator +
+                    begin binary operator by local & number
+                      begin operator +
+                        get local var s (3 0)
+                        push const number 1
+                      end operator +
+                    end binary operator by local & number
                     get local var t (0 0 param)
                   end operator *
                   get local var s (3 0)
@@ -1872,10 +1888,12 @@ begin function
 
       begin if
         begin bool exp
-          begin logic <
-            get local var t (0 0 param)
-            push const number 0.363636363636f
-          end logic <
+          begin binary operator by local & number
+            begin logic <
+              get local var t (0 0 param)
+              push const number 0.363636363636f
+            end logic <
+          end binary operator by local & number
         end bool exp
         begin then
 
@@ -1900,22 +1918,26 @@ begin function
 
       begin if
         begin bool exp
-          begin logic <
-            get local var t (0 0 param)
-            push const number 0.727272727273f
-          end logic <
+          begin binary operator by local & number
+            begin logic <
+              get local var t (0 0 param)
+              push const number 0.727272727273f
+            end logic <
+          end binary operator by local & number
         end bool exp
         begin then
 
 [180] t = t - 0.545454545455f
 
           begin scope
-            begin set local var
-              begin operator -
-                get local var t (0 0 param)
-                push const number 0.545454545455f
-              end operator -
-            end set local var t (0 0 param)
+            begin set local var by bin operator local & number
+              begin binary operator by local & number
+                begin operator -
+                  get local var t (0 0 param)
+                  push const number 0.545454545455f
+                end operator -
+              end binary operator by local & number
+            end set local var by bin operator local & number t (0 0 param)
 
 
 [181] return 7.5625f * t * t + 0.75f
@@ -1943,22 +1965,26 @@ begin function
 
       begin if
         begin bool exp
-          begin logic <
-            get local var t (0 0 param)
-            push const number 0.909090909091f
-          end logic <
+          begin binary operator by local & number
+            begin logic <
+              get local var t (0 0 param)
+              push const number 0.909090909091f
+            end logic <
+          end binary operator by local & number
         end bool exp
         begin then
 
 [184] t = t - 0.818181818182f
 
           begin scope
-            begin set local var
-              begin operator -
-                get local var t (0 0 param)
-                push const number 0.818181818182f
-              end operator -
-            end set local var t (0 0 param)
+            begin set local var by bin operator local & number
+              begin binary operator by local & number
+                begin operator -
+                  get local var t (0 0 param)
+                  push const number 0.818181818182f
+                end operator -
+              end binary operator by local & number
+            end set local var by bin operator local & number t (0 0 param)
 
 
 [185] return 7.5625f * t * t + 0.9375f
@@ -1984,12 +2010,14 @@ begin function
 
 [187] t = t - 0.954545454545f;
 
-      begin set local var
-        begin operator -
-          get local var t (0 0 param)
-          push const number 0.954545454545f
-        end operator -
-      end set local var t (0 0 param)
+      begin set local var by bin operator local & number
+        begin binary operator by local & number
+          begin operator -
+            get local var t (0 0 param)
+            push const number 0.954545454545f
+          end operator -
+        end binary operator by local & number
+      end set local var by bin operator local & number t (0 0 param)
 
 
 [188] return 7.5625f * t * t + 0.984375f
@@ -2028,20 +2056,24 @@ begin function
       begin return
         begin question
           begin bool exp
-            begin logic <=
-              get local var t (0 0 param)
-              push const number 0.5
-            end logic <=
+            begin binary operator by local & number
+              begin logic <=
+                get local var t (0 0 param)
+                push const number 0.5
+              end logic <=
+            end binary operator by local & number
           end bool exp
           begin then value
             begin operator /
               begin call
                 get local var inFunc (1 0 param)
                 begin params 1
-                  begin operator *
-                    get local var t (0 0 param)
-                    push const number 2
-                  end operator *
+                  begin binary operator by local & number
+                    begin operator *
+                      get local var t (0 0 param)
+                      push const number 2
+                    end operator *
+                  end binary operator by local & number
                 end params ret values 1
               end call ret values 1
               push const number 2
@@ -2056,10 +2088,12 @@ begin function
                   begin params 1
                     begin operator -
                       push const number 2
-                      begin operator *
-                        get local var t (0 0 param)
-                        push const number 2
-                      end operator *
+                      begin binary operator by local & number
+                        begin operator *
+                          get local var t (0 0 param)
+                          push const number 2
+                        end operator *
+                      end binary operator by local & number
                     end operator -
                   end params ret values 1
                 end call ret values 1
@@ -2324,10 +2358,12 @@ begin function
                             begin params 1
                               begin question
                                 begin bool exp
-                                  begin logic <
-                                    get local var t (0 0 param)
-                                    push const number 0
-                                  end logic <
+                                  begin binary operator by local & number
+                                    begin logic <
+                                      get local var t (0 0 param)
+                                      push const number 0
+                                    end logic <
+                                  end binary operator by local & number
                                 end bool exp
                                 begin then value
                                   push const number 0
@@ -2335,10 +2371,12 @@ begin function
                                 begin else value
                                   begin question
                                     begin bool exp
-                                      begin logic >
-                                        get local var t (0 0 param)
-                                        push const number 1
-                                      end logic >
+                                      begin binary operator by local & number
+                                        begin logic >
+                                          get local var t (0 0 param)
+                                          push const number 1
+                                        end logic >
+                                      end binary operator by local & number
                                     end bool exp
                                     begin then value
                                       push const number 1
@@ -2371,7 +2409,7 @@ begin function
   end scope ret values 0
 
 
-[215] }
+[216] }
 
   begin code list
     begin return
