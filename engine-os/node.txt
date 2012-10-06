@@ -189,10 +189,10 @@ begin function
             1 _G
           end locals
           begin return
-            begin get property
+            begin get this property by string
               push this
               push const string "__parent"
-            end get property ret values 1
+            end get this property by string ret values 1
           end return values 1
         end function
       end set by name: [__get@parent]
@@ -213,10 +213,10 @@ begin function
           begin if
             begin bool exp
               begin logic !==
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__parent"
-                end get property ret values 1
+                end get this property by string ret values 1
                 get local var a (0 0 param)
               end logic !==
             end bool exp
@@ -266,10 +266,10 @@ begin function
             1 _G
           end locals
           begin return
-            begin get property
+            begin get this property by string
               push this
               push const string "__zOrder"
-            end get property ret values 1
+            end get this property by string ret values 1
           end return values 1
         end function
       end set by name: [__get@zOrder]
@@ -304,10 +304,10 @@ begin function
           begin if
             begin bool exp
               begin logic !==
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__zOrder"
-                end get property ret values 1
+                end get this property by string ret values 1
                 get local var a (0 0 param)
               end logic !==
             end bool exp
@@ -327,10 +327,10 @@ begin function
 
                 begin if
                   begin bool exp
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "__parent"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                   end bool exp
                   begin then
 
@@ -353,17 +353,17 @@ begin function
 [48] this.__parent.sortChildren(this.__parentChildren)
 
                       begin call method
-                        begin get property
+                        begin get this property by string
                           push this
                           push const string "__parent"
-                        end get property ret values 1
+                        end get this property by string ret values 1
                         begin params 2
                           push const string "sortChildren"
                           ,
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__parentChildren"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                         end params ret values 2
                       end call method ret values 0
                     end scope ret values 0
@@ -626,16 +626,16 @@ begin function
                 end binary operator by local & number
               end bool exp
               begin then value
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__childrenNeg"
-                end get property ret values 1
+                end get this property by string ret values 1
               end then value
               begin else value
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__childrenPos"
-                end get property ret values 1
+                end get this property by string ret values 1
               end else value
             end question ret values 1
           end set local var children (4 0)
@@ -883,17 +883,17 @@ begin function
             begin logic ||
               begin in
                 get local var node (0 0 param)
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__childrenNeg"
-                end get property ret values 1
+                end get this property by string ret values 1
               end in
               begin in
                 get local var node (0 0 param)
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__childrenPos"
-                end get property ret values 1
+                end get this property by string ret values 1
               end in
             end logic ||
           end return values 1
@@ -927,10 +927,10 @@ begin function
           begin set property
             begin operator *
               get local var deltaTime (3 0)
-              begin get property
+              begin get this property by string
                 push this
                 push const string "timeSpeed"
-              end get property ret values 1
+              end get this property by string ret values 1
             end operator *
             get local var auto create params (0 0 param)
             push const string "deltaTime"
@@ -941,10 +941,10 @@ begin function
 
           begin set property
             begin operator +
-              begin get property
+              begin get this property by string
                 push this
                 push const string "time"
-              end get property ret values 1
+              end get this property by string ret values 1
               begin get property
                 get local var params (0 0 param)
                 push const string "deltaTime"
@@ -984,10 +984,10 @@ begin function
             begin code list
               begin set local var
                 begin call method
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__childrenPos"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   begin params 1
                     push const string "__iter"
                   end params ret values 1
@@ -1040,10 +1040,10 @@ begin function
             begin bool exp
               begin in
                 push const string "enterFrame"
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__events"
-                end get property ret values 1
+                end get this property by string ret values 1
               end in
             end bool exp
             begin then
@@ -1067,10 +1067,10 @@ begin function
                     begin set local var
                       begin call method
                         begin get property
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__events"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           push const string "enterFrame"
                         end get property ret values 1
                         begin params 1
@@ -1141,10 +1141,10 @@ begin function
             begin code list
               begin set local var
                 begin call method
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__childrenNeg"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   begin params 1
                     push const string "__iter"
                   end params ret values 1
@@ -1286,10 +1286,10 @@ begin function
 
           begin call method
             begin get property
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__events"
-              end get property ret values 1
+              end get this property by string ret values 1
               get local var eventName (0 0 param)
             end get property ret values 1
             begin params 1
@@ -1367,10 +1367,10 @@ begin function
             begin bool exp
               begin in
                 get local var eventName (0 0 param)
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__events"
-                end get property ret values 1
+                end get this property by string ret values 1
               end in
             end bool exp
             begin then
@@ -1380,10 +1380,10 @@ begin function
               begin scope
                 begin delete
                   begin get property
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "__events"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     get local var eventName (0 0 param)
                   end get property ret values 1
                   get local var func (1 0 param)
@@ -1412,10 +1412,10 @@ begin function
             begin bool exp
               begin in
                 get local var eventName (0 0 param)
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__events"
-                end get property ret values 1
+                end get this property by string ret values 1
               end in
             end bool exp
             begin then
@@ -1439,10 +1439,10 @@ begin function
                     begin set local var
                       begin call method
                         begin get property
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__events"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           get local var eventName (0 0 param)
                         end get property ret values 1
                         begin params 1
@@ -1526,10 +1526,10 @@ begin function
             begin code list
               begin set local var
                 begin call method
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__childrenPos"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   begin params 1
                     push const string "__iter"
                   end params ret values 1
@@ -1584,10 +1584,10 @@ begin function
             begin bool exp
               begin in
                 get local var eventName (0 0 param)
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__events"
-                end get property ret values 1
+                end get this property by string ret values 1
               end in
             end bool exp
             begin then
@@ -1611,10 +1611,10 @@ begin function
                     begin set local var
                       begin call method
                         begin get property
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__events"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           get local var eventName (0 0 param)
                         end get property ret values 1
                         begin params 1
@@ -1685,10 +1685,10 @@ begin function
             begin code list
               begin set local var
                 begin call method
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__childrenNeg"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   begin params 1
                     push const string "__iter"
                   end params ret values 1
@@ -1793,10 +1793,10 @@ begin function
 
               begin set by name
                 begin operator +
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "time"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var delay (1 0 param)
                 end operator +
               end set by name: [nextTime]
@@ -1839,10 +1839,10 @@ begin function
 [180] this.__timers.rsort "priority"
 
           begin call method
-            begin get property
+            begin get this property by string
               push this
               push const string "__timers"
-            end get property ret values 1
+            end get this property by string ret values 1
             begin params 2
               push const string "rsort"
               ,
@@ -1875,10 +1875,10 @@ begin function
 [185] delete this.__timers[t]
 
           begin delete
-            begin get property
+            begin get this property by string
               push this
               push const string "__timers"
-            end get property ret values 1
+            end get this property by string ret values 1
             get local var t (0 0 param)
           end delete
         end function
@@ -1898,10 +1898,10 @@ begin function
 [189] var time = this.time
 
           begin set local var
-            begin get property
+            begin get this property by string
               push this
               push const string "time"
-            end get property ret values 1
+            end get this property by string ret values 1
           end set local var time (2 0)
 
 
@@ -1925,10 +1925,10 @@ begin function
             begin code list
               begin set local var
                 begin call method
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__timers"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   begin params 1
                     push const string "__iter"
                   end params ret values 1
@@ -2039,10 +2039,10 @@ begin function
 
                                   begin scope
                                     begin delete
-                                      begin get property
+                                      begin get this property by string
                                         push this
                                         push const string "__timers"
-                                      end get property ret values 1
+                                      end get this property by string ret values 1
                                       get local var func (3 0)
                                     end delete
                                   end scope ret values 0
@@ -2202,10 +2202,10 @@ begin function
             begin code list
               begin set local var
                 begin call method
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__childrenPos"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   begin params 1
                     push const string "__iter"
                   end params ret values 1
@@ -2280,10 +2280,10 @@ begin function
             begin code list
               begin set local var
                 begin call method
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__childrenNeg"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   begin params 1
                     push const string "__iter"
                   end params ret values 1
@@ -2515,10 +2515,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__x"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@x]
@@ -2536,10 +2536,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__x"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -2580,10 +2580,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__y"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@y]
@@ -2601,10 +2601,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__y"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -2649,15 +2649,15 @@ begin function
               begin params 3
                 push const string "Point"
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__x"
-                end get property ret values 1
+                end get this property by string ret values 1
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__y"
-                end get property ret values 1
+                end get this property by string ret values 1
               end params ret values 3
             end tail call method
           end function
@@ -2705,10 +2705,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__width"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@width]
@@ -2726,10 +2726,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__width"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -2770,10 +2770,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__height"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@height]
@@ -2791,10 +2791,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__height"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -2835,10 +2835,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__scaleX"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@scaleX]
@@ -2856,10 +2856,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__scaleX"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -2900,10 +2900,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__scaleY"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@scaleY]
@@ -2921,10 +2921,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__scaleY"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -2965,10 +2965,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__scaleX"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@scale]
@@ -3052,10 +3052,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__skewX"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@skewX]
@@ -3073,10 +3073,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__skewX"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -3117,10 +3117,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__skewY"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@skewY]
@@ -3138,10 +3138,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__skewY"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -3186,15 +3186,15 @@ begin function
               begin params 3
                 push const string "Point"
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__skewX"
-                end get property ret values 1
+                end get this property by string ret values 1
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__skewY"
-                end get property ret values 1
+                end get this property by string ret values 1
               end params ret values 3
             end tail call method
           end function
@@ -3242,10 +3242,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__anchorX"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@anchorX]
@@ -3263,10 +3263,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__anchorX"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -3307,10 +3307,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__anchorY"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@anchorY]
@@ -3328,10 +3328,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__anchorY"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -3376,15 +3376,15 @@ begin function
               begin params 3
                 push const string "Point"
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__anchorX"
-                end get property ret values 1
+                end get this property by string ret values 1
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__anchorY"
-                end get property ret values 1
+                end get this property by string ret values 1
               end params ret values 3
             end tail call method
           end function
@@ -3432,10 +3432,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__rotation"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@rotation]
@@ -3453,10 +3453,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__rotation"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -3497,10 +3497,10 @@ begin function
               1 _G
             end locals
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__isRelativeAnchor"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@isRelativeAnchor]
@@ -3518,10 +3518,10 @@ begin function
             begin if
               begin bool exp
                 begin logic !==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__isRelativeAnchor"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var a (0 0 param)
                 end logic !==
               end bool exp
@@ -3622,10 +3622,10 @@ begin function
 
             begin if
               begin bool exp
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__transformDirty"
-                end get property ret values 1
+                end get this property by string ret values 1
               end bool exp
               begin then
 
@@ -3662,17 +3662,17 @@ begin function
                     begin bool exp
                       begin logic ||
                         begin logic !==
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__anchorX"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           push const number 0
                         end logic !==
                         begin logic !==
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__anchorY"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           push const number 0
                         end logic !==
                       end logic ||
@@ -3684,14 +3684,14 @@ begin function
                       begin scope
                         begin set local var
                           begin operator *
-                            begin get property
+                            begin get this property by string
                               push this
                               push const string "__anchorX"
-                            end get property ret values 1
-                            begin get property
+                            end get this property by string ret values 1
+                            begin get this property by string
                               push this
                               push const string "__width"
-                            end get property ret values 1
+                            end get this property by string ret values 1
                           end operator *
                         end set local var anchorX (3 0)
 
@@ -3700,14 +3700,14 @@ begin function
 
                         begin set local var
                           begin operator *
-                            begin get property
+                            begin get this property by string
                               push this
                               push const string "__anchorY"
-                            end get property ret values 1
-                            begin get property
+                            end get this property by string ret values 1
+                            begin get this property by string
                               push this
                               push const string "__height"
-                            end get property ret values 1
+                            end get this property by string ret values 1
                           end operator *
                         end set local var anchorY (4 0)
                       end scope ret values 0
@@ -3722,10 +3722,10 @@ begin function
                       begin logic &&
                         get local var anchorX (3 0)
                         begin logic not
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__isRelativeAnchor"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                         end logic not
                       end logic &&
                     end bool exp
@@ -3757,17 +3757,17 @@ begin function
                     begin bool exp
                       begin logic ||
                         begin logic !==
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__x"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           push const number 0
                         end logic !==
                         begin logic !==
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__y"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           push const number 0
                         end logic !==
                       end logic ||
@@ -3783,15 +3783,15 @@ begin function
                             begin params 3
                               push const string "translate"
                               ,
-                              begin get property
+                              begin get this property by string
                                 push this
                                 push const string "__x"
-                              end get property ret values 1
+                              end get this property by string ret values 1
                               ,
-                              begin get property
+                              begin get this property by string
                                 push this
                                 push const string "__y"
-                              end get property ret values 1
+                              end get this property by string ret values 1
                             end params ret values 3
                           end call method ret values 1
                         end set local var t (2 0)
@@ -3805,10 +3805,10 @@ begin function
                   begin if
                     begin bool exp
                       begin logic !==
-                        begin get property
+                        begin get this property by string
                           push this
                           push const string "__rotation"
-                        end get property ret values 1
+                        end get this property by string ret values 1
                         push const number 0
                       end logic !==
                     end bool exp
@@ -3823,10 +3823,10 @@ begin function
                             begin params 2
                               push const string "rotate"
                               ,
-                              begin get property
+                              begin get this property by string
                                 push this
                                 push const string "__rotation"
-                              end get property ret values 1
+                              end get this property by string ret values 1
                             end params ret values 2
                           end call method ret values 1
                         end set local var t (2 0)
@@ -3841,17 +3841,17 @@ begin function
                     begin bool exp
                       begin logic ||
                         begin logic !==
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__skewX"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           push const number 0
                         end logic !==
                         begin logic !==
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__skewY"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           push const number 0
                         end logic !==
                       end logic ||
@@ -3867,15 +3867,15 @@ begin function
                             begin params 3
                               push const string "skew"
                               ,
-                              begin get property
+                              begin get this property by string
                                 push this
                                 push const string "__skewX"
-                              end get property ret values 1
+                              end get this property by string ret values 1
                               ,
-                              begin get property
+                              begin get this property by string
                                 push this
                                 push const string "__skewY"
-                              end get property ret values 1
+                              end get this property by string ret values 1
                             end params ret values 3
                           end call method ret values 1
                         end set local var t (2 0)
@@ -3890,17 +3890,17 @@ begin function
                     begin bool exp
                       begin logic ||
                         begin logic !==
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__scaleX"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           push const number 0
                         end logic !==
                         begin logic !==
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__scaleY"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           push const number 0
                         end logic !==
                       end logic ||
@@ -3916,15 +3916,15 @@ begin function
                             begin params 3
                               push const string "scale"
                               ,
-                              begin get property
+                              begin get this property by string
                                 push this
                                 push const string "__scaleX"
-                              end get property ret values 1
+                              end get this property by string ret values 1
                               ,
-                              begin get property
+                              begin get this property by string
                                 push this
                                 push const string "__scaleY"
-                              end get property ret values 1
+                              end get this property by string ret values 1
                             end params ret values 3
                           end call method ret values 1
                         end set local var t (2 0)
@@ -4004,10 +4004,10 @@ begin function
 
             begin code list
               begin return
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__transform"
-                end get property ret values 1
+                end get this property by string ret values 1
               end return values 1
             end code list ret values 0
           end function
@@ -4027,10 +4027,10 @@ begin function
 
             begin if
               begin bool exp
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__inverseDirty"
-                end get property ret values 1
+                end get this property by string ret values 1
               end bool exp
               begin then
 
@@ -4101,10 +4101,10 @@ begin function
                 3 p
               end locals
               begin set local var
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__parent"
-                end get property ret values 1
+                end get this property by string ret values 1
               end set local var p (3 0)
 
               begin loop
@@ -4258,10 +4258,10 @@ begin function
                         get local var point (0 0 param)
                         push const string "x"
                       end get property ret values 1
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "__width"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                     end logic <
                   end logic &&
 
@@ -4280,10 +4280,10 @@ begin function
                     get local var point (0 0 param)
                     push const string "y"
                   end get property ret values 1
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__height"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end logic <
               end logic &&
             end return values 1
@@ -4317,10 +4317,10 @@ begin function
               begin params 2
                 push const string "glMultMatrix"
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__transformGL"
-                end get property ret values 1
+                end get this property by string ret values 1
               end params ret values 2
             end call method ret values 0
           end function
@@ -4342,10 +4342,10 @@ begin function
 
             begin pop
               begin logic ||
-                begin get property
+                begin get this property by string
                   push this
                   push const string "visible"
-                end get property ret values 1
+                end get this property by string ret values 1
                 begin code list
                   return
                 end code list ret values 1
@@ -4371,10 +4371,10 @@ begin function
                   get local var params (0 0 param)
                   push const string "opacity"
                 end get property ret values 1
-                begin get property
+                begin get this property by string
                   push this
                   push const string "opacity"
-                end get property ret values 1
+                end get this property by string ret values 1
               end operator *
               get local var auto create params (0 0 param)
               push const string "opacity"
@@ -4419,10 +4419,10 @@ begin function
                 begin set local var
                   begin call method
                     begin call method
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "__childrenNeg"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       begin params 1
                         push const string "reverseIter"
                       end params ret values 1
@@ -4491,10 +4491,10 @@ begin function
               begin bool exp
                 begin in
                   push const string "paint"
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__events"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end in
               end bool exp
               begin then
@@ -4518,10 +4518,10 @@ begin function
                       begin set local var
                         begin call method
                           begin get property
-                            begin get property
+                            begin get this property by string
                               push this
                               push const string "__events"
-                            end get property ret values 1
+                            end get this property by string ret values 1
                             push const string "paint"
                           end get property ret values 1
                           begin params 1
@@ -4593,10 +4593,10 @@ begin function
                 begin set local var
                   begin call method
                     begin call method
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "__childrenPos"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       begin params 1
                         push const string "reverseIter"
                       end params ret values 1
@@ -4710,10 +4710,10 @@ begin function
                     begin code list
                       begin set local var
                         begin call method
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__childrenPos"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           begin params 1
                             push const string "__iter"
                           end params ret values 1
@@ -4776,10 +4776,10 @@ begin function
               begin bool exp
                 begin in
                   push const string "key"
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__events"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end in
               end bool exp
               begin then
@@ -4803,10 +4803,10 @@ begin function
                       begin set local var
                         begin call method
                           begin get property
-                            begin get property
+                            begin get this property by string
                               push this
                               push const string "__events"
-                            end get property ret values 1
+                            end get this property by string ret values 1
                             push const string "key"
                           end get property ret values 1
                           begin params 1
@@ -4892,10 +4892,10 @@ begin function
                     begin code list
                       begin set local var
                         begin call method
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__childrenNeg"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           begin params 1
                             push const string "__iter"
                           end params ret values 1
@@ -4963,10 +4963,10 @@ begin function
                       push const string "captured"
                     end get property ret values 1
                   end logic not
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "modal"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end logic &&
               end bool exp
               begin then
@@ -5056,10 +5056,10 @@ begin function
                     begin code list
                       begin set local var
                         begin call method
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__childrenPos"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           begin params 1
                             push const string "__iter"
                           end params ret values 1
@@ -5122,10 +5122,10 @@ begin function
               begin bool exp
                 begin in
                   push const string "nativeTouch"
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__events"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end in
               end bool exp
               begin then
@@ -5149,10 +5149,10 @@ begin function
                       begin set local var
                         begin call method
                           begin get property
-                            begin get property
+                            begin get this property by string
                               push this
                               push const string "__events"
-                            end get property ret values 1
+                            end get this property by string ret values 1
                             push const string "nativeTouch"
                           end get property ret values 1
                           begin params 1
@@ -5219,10 +5219,10 @@ begin function
               begin bool exp
                 begin in
                   push const string "touch"
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__events"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end in
               end bool exp
               begin then
@@ -5323,10 +5323,10 @@ begin function
                                         begin set local var
                                           begin call method
                                             begin get property
-                                              begin get property
+                                              begin get this property by string
                                                 push this
                                                 push const string "__events"
-                                              end get property ret values 1
+                                              end get this property by string ret values 1
                                               push const string "touch"
                                             end get property ret values 1
                                             begin params 1
@@ -5493,10 +5493,10 @@ begin function
                                               push const string "capturedFunc"
                                             end get property ret values 1
                                             begin get property
-                                              begin get property
+                                              begin get this property by string
                                                 push this
                                                 push const string "__events"
-                                              end get property ret values 1
+                                              end get this property by string ret values 1
                                               push const string "touch"
                                             end get property ret values 1
                                           end in
@@ -5545,10 +5545,10 @@ begin function
                                           begin set local var
                                             begin call method
                                               begin get property
-                                                begin get property
+                                                begin get this property by string
                                                   push this
                                                   push const string "__events"
-                                                end get property ret values 1
+                                                end get this property by string ret values 1
                                                 push const string "touch"
                                               end get property ret values 1
                                               begin params 1
@@ -5665,10 +5665,10 @@ begin function
                     begin code list
                       begin set local var
                         begin call method
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "__childrenNeg"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                           begin params 1
                             push const string "__iter"
                           end params ret values 1
@@ -5772,10 +5772,10 @@ begin function
 
                       begin if
                         begin bool exp
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "modal"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                         end bool exp
                         begin then
 
@@ -5914,10 +5914,10 @@ begin function
                 begin set auto index
                   begin array 2
                     begin set auto index
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "width"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                     end set auto index
                     ,
                     begin set auto index
@@ -5932,17 +5932,17 @@ begin function
                 begin set auto index
                   begin array 2
                     begin set auto index
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "width"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                     end set auto index
                     ,
                     begin set auto index
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "height"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                     end set auto index
                   end array
                 end set auto index
@@ -5957,10 +5957,10 @@ begin function
                     end set auto index
                     ,
                     begin set auto index
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "height"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                     end set auto index
                   end array
                 end set auto index
@@ -6119,10 +6119,10 @@ begin function
                 begin params 5
                   push const string "calculateTransition"
                   ,
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "list"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   ,
                   get local var params (0 0 param)
                   ,
@@ -6155,10 +6155,10 @@ begin function
                 ,
                 push const string "enterFrame"
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "update"
-                end get property ret values 1
+                end get this property by string ret values 1
                 ,
                 const true
               end params ret values 4
@@ -7330,15 +7330,15 @@ begin function
             begin set local var
               begin set local var
                 begin params 2
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "time"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   ,
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "duration"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end params ret values 2
               end set local var duration (3 0)
             end set local var time (2 0)
@@ -7381,22 +7381,22 @@ begin function
 
                   begin pop
                     begin logic &&
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "onComplete"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       begin call method
-                        begin get property
+                        begin get this property by string
                           push this
                           push const string "onComplete"
-                        end get property ret values 1
+                        end get this property by string ret values 1
                         begin params 2
                           push const string "call"
                           ,
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "target"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                         end params ret values 2
                       end call method ret values 1
                     end logic &&
@@ -7422,10 +7422,10 @@ begin function
                 ,
                 get local var time (2 0)
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "list"
-                end get property ret values 1
+                end get this property by string ret values 1
               end params ret values 3
             end call method ret values 0
           end function
@@ -7608,10 +7608,10 @@ begin function
 [696] var target = this.target
 
             begin set local var
-              begin get property
+              begin get this property by string
                 push this
                 push const string "target"
-              end get property ret values 1
+              end get this property by string ret values 1
             end set local var target (5 0)
 
 
@@ -8025,10 +8025,10 @@ begin function
 
             begin if
               begin bool exp
-                begin get property
+                begin get this property by string
                   push this
                   push const string "finished"
-                end get property ret values 1
+                end get this property by string ret values 1
               end bool exp
               begin then
 
@@ -8339,10 +8339,10 @@ begin function
               begin params 3
                 push const string "drawBB"
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "color"
-                end get property ret values 1
+                end get this property by string ret values 1
                 ,
                 const true
               end params ret values 3

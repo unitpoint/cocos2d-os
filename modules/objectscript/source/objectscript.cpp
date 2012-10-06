@@ -1,4 +1,5 @@
 #include "objectscript.h"
+#include "os-binder.h"
 #include <time.h>
 
 using namespace ObjectScript;
@@ -67,6 +68,12 @@ template <> int OS_getMaxValue<int>(){ return INT_MAX; }
 #define IS_PDP_ENDIAN    (CURRENT_BYTE_ORDER == PDP_ENDIAN_BYTE_ORDER)
 
 static inline OS_BYTE toLittleEndianByteOrder(OS_BYTE val)
+{
+	OS_ASSERT(sizeof(val) == sizeof(OS_BYTE)*1);
+	return val;
+}
+
+static inline OS_INT8 toLittleEndianByteOrder(OS_INT8 val)
 {
 	OS_ASSERT(sizeof(val) == sizeof(OS_BYTE)*1);
 	return val;
@@ -2185,6 +2192,7 @@ void OS::Core::Compiler::Expression::debugPrint(StringBuffer& out, OS::Core::Com
 		// case EXP_TYPE_GET_DIM:
 	case EXP_TYPE_CALL_METHOD:
 	case EXP_TYPE_GET_PROPERTY:
+	case EXP_TYPE_GET_THIS_PROPERTY_BY_STRING:
 	case EXP_TYPE_GET_PROPERTY_BY_LOCALS:
 	case EXP_TYPE_GET_PROPERTY_BY_LOCAL_AND_NUMBER:
 	case EXP_TYPE_GET_PROPERTY_AUTO_CREATE:
@@ -2460,6 +2468,65 @@ void OS::Core::Compiler::writeDebugInfo(Expression * exp)
 	}
 }
 
+void OS::Core::Compiler::writeJumpOpcode(int offs)
+{
+	offs += 3;
+	if((int)(OS_INT8)offs == offs){
+		prog_opcodes->writeByte(Program::OP_JUMP_1);
+		prog_opcodes->writeInt8(offs);
+		prog_opcodes->writeInt8(0);
+		prog_opcodes->writeInt16(0);
+		return;
+	}
+	if((int)(OS_INT16)offs == offs){
+		prog_opcodes->writeByte(Program::OP_JUMP_2);
+		prog_opcodes->writeInt16(offs);
+		prog_opcodes->writeInt16(0);
+		return;
+	}
+	prog_opcodes->writeByte(Program::OP_JUMP_4);
+	prog_opcodes->writeInt32(offs);
+}
+
+void OS::Core::Compiler::fixJumpOpcode(StreamWriter * writer, int offs, int pos)
+{
+	fixJumpOpcode(writer, offs, pos, Program::OP_JUMP_4);
+}
+
+void OS::Core::Compiler::fixJumpOpcode(StreamWriter * writer, int offs, int pos, int opcode)
+{
+	struct Lib
+	{
+		static int getFastOpcode(int opcode, int type)
+		{
+			OS_ASSERT(type >= 1 && type <= 3);
+			switch(opcode){
+			case Program::OP_JUMP_4:
+			case Program::OP_IF_JUMP_4:
+			case Program::OP_IF_NOT_JUMP_4:
+			case Program::OP_LOGIC_AND_4:
+			case Program::OP_LOGIC_OR_4:
+				return opcode - 3 + type;
+			}
+			OS_ASSERT(false);
+			return Program::OP_UNKNOWN;
+		}
+	};
+	offs += 4;
+	if((int)(OS_INT8)offs == offs){
+		writer->writeByteAtPos(Lib::getFastOpcode(opcode, 1), pos);
+		writer->writeInt8AtPos(offs, pos+1);
+		return;
+	}
+	if((int)(OS_INT16)offs == offs){
+		writer->writeByteAtPos(Lib::getFastOpcode(opcode, 2), pos);
+		writer->writeInt16AtPos(offs, pos+1);
+		return;
+	}
+	writer->writeByteAtPos(Lib::getFastOpcode(opcode, 3), pos);
+	writer->writeInt32AtPos(offs, pos+1);
+}
+
 bool OS::Core::Compiler::writeOpcodes(Scope * scope, ExpressionList& list)
 {
 	for(int i = 0; i < list.count; i++){
@@ -2496,18 +2563,39 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 		break;
 
 	case EXP_TYPE_CONST_NUMBER:
-		OS_ASSERT(exp->list.count == 0);
-		writeDebugInfo(exp);
-		prog_opcodes->writeByte(Program::OP_PUSH_NUMBER);
-		prog_opcodes->writeUVariable(cacheNumber((OS_NUMBER)exp->token->getFloat()));
-		break;
+		{
+			OS_ASSERT(exp->list.count == 0);
+			writeDebugInfo(exp);
+			OS_NUMBER number = (OS_NUMBER)exp->token->getFloat();
+			if(number == 1.0f){
+				prog_opcodes->writeByte(Program::OP_PUSH_ONE);
+			}else{
+				int i = cacheNumber(number);
+				if(i <= 255){
+					prog_opcodes->writeByte(Program::OP_PUSH_NUMBER_1);
+					prog_opcodes->writeByte(i);
+				}else{
+					prog_opcodes->writeByte(Program::OP_PUSH_NUMBER_BY_AUTO_INDEX);
+					prog_opcodes->writeUVariable(i);
+				}
+			}
+			break;
+		}
 
 	case EXP_TYPE_CONST_STRING:
-		OS_ASSERT(exp->list.count == 0);
-		writeDebugInfo(exp);
-		prog_opcodes->writeByte(Program::OP_PUSH_STRING);
-		prog_opcodes->writeUVariable(cacheString(exp->token->str));
-		break;
+		{
+			OS_ASSERT(exp->list.count == 0);
+			writeDebugInfo(exp);
+			int i = cacheString(exp->token->str);
+			if(i <= 255){
+				prog_opcodes->writeByte(Program::OP_PUSH_STRING_1);
+				prog_opcodes->writeByte(i);
+			}else{
+				prog_opcodes->writeByte(Program::OP_PUSH_STRING_BY_AUTO_INDEX);
+				prog_opcodes->writeUVariable(i);
+			}
+			break;
+		}
 
 	case EXP_TYPE_CONST_NULL:
 		OS_ASSERT(exp->list.count == 0);
@@ -2568,10 +2656,11 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 				return false;
 			}
 			if(exp->type == EXP_TYPE_LOOP_SCOPE){
-				prog_opcodes->writeByte(Program::OP_JUMP);
-				prog_opcodes->writeInt32(start_code_pos - prog_opcodes->getPos() - sizeof(OS_INT32));
+				// prog_opcodes->writeByte(Program::OP_JUMP);
+				// prog_opcodes->writeInt32(start_code_pos - prog_opcodes->getPos() - sizeof(OS_INT32));
+				writeJumpOpcode(start_code_pos - prog_opcodes->getPos() - sizeof(OS_INT32));
 
-				scope->fixLoopBreaks(start_code_pos, prog_opcodes->getPos(), prog_opcodes);
+				scope->fixLoopBreaks(this, start_code_pos, prog_opcodes->getPos(), prog_opcodes);
 			}else{
 				OS_ASSERT(scope->loop_breaks.count == 0);
 			}
@@ -2588,83 +2677,86 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 	case EXP_TYPE_IF:
 		{
 			OS_ASSERT(exp->list.count == 2 || exp->list.count == 3);
+			int if_opcode;
 			if(exp->list[0]->type == EXP_TYPE_LOGIC_NOT){
 				OS_ASSERT(exp->list[0]->list.count == 1);
 				if(!writeOpcodes(scope, exp->list[0]->list)){
 					return false;
 				}
-				writeDebugInfo(exp);
-				prog_opcodes->writeByte(Program::OP_IF_JUMP);
+				if_opcode = Program::OP_IF_JUMP_4;
 			}else{
 				if(!writeOpcodes(scope, exp->list[0])){
 					return false;
 				}
-				writeDebugInfo(exp);
-				prog_opcodes->writeByte(Program::OP_IF_NOT_JUMP);
+				if_opcode = Program::OP_IF_NOT_JUMP_4;
 			}
-
-			int if_not_jump_pos = prog_opcodes->getPos();
+			writeDebugInfo(exp);
+			
+			int if_jump_pos = prog_opcodes->getPos();
+			prog_opcodes->writeByte(if_opcode);
 			prog_opcodes->writeInt32(0);
 
 			if(!writeOpcodes(scope, exp->list[1])){
 				return false;
 			}
 
-			int if_not_jump_to = prog_opcodes->getPos();
+			int if_jump_to = prog_opcodes->getPos();
 			if(exp->list.count == 3 && exp->list[2]->list.count > 0){
-				prog_opcodes->writeByte(Program::OP_JUMP);
-
 				int jump_pos = prog_opcodes->getPos();
+				prog_opcodes->writeByte(Program::OP_JUMP_4);
 				prog_opcodes->writeInt32(0);
 
-				if_not_jump_to = prog_opcodes->getPos();
+				if_jump_to = prog_opcodes->getPos();
 				if(!writeOpcodes(scope, exp->list[2])){
 					return false;
 				}
-				prog_opcodes->writeInt32AtPos(prog_opcodes->getPos() - jump_pos - sizeof(OS_INT32), jump_pos);
+				// prog_opcodes->writeInt32AtPos(prog_opcodes->getPos() - jump_pos - sizeof(OS_BYTE)*5, jump_pos);
+				fixJumpOpcode(prog_opcodes, prog_opcodes->getPos() - jump_pos - sizeof(OS_BYTE)*5, jump_pos, Program::OP_JUMP_4);
 			}
-			prog_opcodes->writeInt32AtPos(if_not_jump_to - if_not_jump_pos - sizeof(OS_INT32), if_not_jump_pos);
+			// prog_opcodes->writeInt32AtPos(if_jump_to - if_jump_pos - sizeof(OS_BYTE)*5, if_jump_pos);
+			fixJumpOpcode(prog_opcodes, if_jump_to - if_jump_pos - sizeof(OS_BYTE)*5, if_jump_pos, if_opcode);
 			break;
 		}
 
 	case EXP_TYPE_QUESTION:
 		{
 			OS_ASSERT(exp->list.count == 3);
+			int if_opcode;
 			if(exp->list[0]->type == EXP_TYPE_LOGIC_NOT){
 				OS_ASSERT(exp->list[0]->list.count == 1);
 				if(!writeOpcodes(scope, exp->list[0]->list)){
 					return false;
 				}
-				writeDebugInfo(exp);
-				prog_opcodes->writeByte(Program::OP_IF_JUMP);
+				if_opcode = Program::OP_IF_JUMP_4;
 			}else{
 				if(!writeOpcodes(scope, exp->list[0])){
 					return false;
 				}
-				writeDebugInfo(exp);
-				prog_opcodes->writeByte(Program::OP_IF_NOT_JUMP);
+				if_opcode = Program::OP_IF_NOT_JUMP_4;
 			}
-
-			int if_not_jump_pos = prog_opcodes->getPos();
+			writeDebugInfo(exp);
+			
+			int if_jump_pos = prog_opcodes->getPos();
+			prog_opcodes->writeByte(if_opcode);
 			prog_opcodes->writeInt32(0);
 
 			if(!writeOpcodes(scope, exp->list[1])){
 				return false;
 			}
 
-			int if_not_jump_to = prog_opcodes->getPos();
-			prog_opcodes->writeByte(Program::OP_JUMP);
-
 			int jump_pos = prog_opcodes->getPos();
+			prog_opcodes->writeByte(Program::OP_JUMP_4);
 			prog_opcodes->writeInt32(0);
 
-			if_not_jump_to = prog_opcodes->getPos();
+			int if_jump_to = prog_opcodes->getPos();
 			if(!writeOpcodes(scope, exp->list[2])){
 				return false;
 			}
-			prog_opcodes->writeInt32AtPos(prog_opcodes->getPos() - jump_pos - sizeof(OS_INT32), jump_pos);
+			// prog_opcodes->writeInt32AtPos(prog_opcodes->getPos() - jump_pos - sizeof(OS_BYTE)*5, jump_pos);
+			fixJumpOpcode(prog_opcodes, prog_opcodes->getPos() - jump_pos - sizeof(OS_BYTE)*5, jump_pos, Program::OP_JUMP_4);
 
-			prog_opcodes->writeInt32AtPos(if_not_jump_to - if_not_jump_pos - sizeof(OS_INT32), if_not_jump_pos);
+			// prog_opcodes->writeInt32AtPos(if_jump_to - if_jump_pos - sizeof(OS_BYTE)*5, if_jump_pos);
+			fixJumpOpcode(prog_opcodes, if_jump_to - if_jump_pos - sizeof(OS_BYTE)*5, if_jump_pos, if_opcode);
 			break;
 		}
 
@@ -2676,9 +2768,10 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 				return false;
 			}
 			writeDebugInfo(exp);
-			prog_opcodes->writeByte(Program::getOpcodeType(exp->type));
 
+			int opcode = Program::getOpcodeType(exp->type);
 			int op_jump_pos = prog_opcodes->getPos();
+			prog_opcodes->writeByte(opcode);
 			prog_opcodes->writeInt32(0);
 
 			if(!writeOpcodes(scope, exp->list[1])){
@@ -2686,7 +2779,8 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 			}
 
 			int op_jump_to = prog_opcodes->getPos();
-			prog_opcodes->writeInt32AtPos(op_jump_to - op_jump_pos - sizeof(OS_INT32), op_jump_pos);
+			// prog_opcodes->writeInt32AtPos(op_jump_to - op_jump_pos - sizeof(OS_BYTE)*5, op_jump_pos);
+			fixJumpOpcode(prog_opcodes, op_jump_to - op_jump_pos - sizeof(OS_BYTE)*5, op_jump_pos, opcode);
 			break;
 		}
 
@@ -2811,7 +2905,7 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 		if(!exp->local_var.up_count){
 			writeDebugInfo(exp);
 			if(exp->local_var.index <= 255){
-				prog_opcodes->writeByte(Program::OP_PUSH_LOCAL_VAR);
+				prog_opcodes->writeByte(Program::OP_PUSH_LOCAL_VAR_1);
 				prog_opcodes->writeByte(exp->local_var.index);
 			}else{
 				prog_opcodes->writeByte(Program::OP_PUSH_LOCAL_VAR_BY_AUTO_INDEX);
@@ -2844,12 +2938,16 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 		if(!writeOpcodes(scope, exp->list)){
 			return false;
 		}
+		writeDebugInfo(exp);
 		if(!exp->local_var.up_count){
-			writeDebugInfo(exp);
-			prog_opcodes->writeByte(Program::OP_SET_LOCAL_VAR);
-			prog_opcodes->writeUVariable(exp->local_var.index);
+			if(exp->local_var.index <= 255){
+				prog_opcodes->writeByte(Program::OP_SET_LOCAL_VAR_1);
+				prog_opcodes->writeByte(exp->local_var.index);
+			}else{
+				prog_opcodes->writeByte(Program::OP_SET_LOCAL_VAR);
+				prog_opcodes->writeUVariable(exp->local_var.index);
+			}
 		}else{
-			writeDebugInfo(exp);
 			prog_opcodes->writeByte(Program::OP_SET_UP_LOCAL_VAR);
 			prog_opcodes->writeUVariable(exp->local_var.index);
 			prog_opcodes->writeByte(exp->local_var.up_count);
@@ -2879,14 +2977,23 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 			OS_ASSERT(!exp->local_var.up_count);
 			OS_ASSERT(exp->list[0]->type == EXP_TYPE_BIN_OPERATOR_BY_LOCAL_AND_NUMBER);
 			writeDebugInfo(exp);
-			prog_opcodes->writeByte(Program::OP_SET_LOCAL_VAR_BY_BIN_OPERATOR_LOCAL_AND_NUMBER);
 			Expression * exp_binary = exp->list[0]->list[0];
 			Expression * exp1 = exp_binary->list[0];
 			Expression * exp2 = exp_binary->list[1];
-			prog_opcodes->writeByte(Program::getOpcodeType(exp_binary->type));
-			prog_opcodes->writeByte(exp1->local_var.index);
-			prog_opcodes->writeUVariable(cacheNumber((OS_NUMBER)exp2->token->getFloat()));
-			prog_opcodes->writeUVariable(exp->local_var.index);
+			int number_index = cacheNumber((OS_NUMBER)exp2->token->getFloat());
+			if(number_index <= 255 && exp->local_var.index <= 255){
+				prog_opcodes->writeByte(Program::OP_SET_LOCAL_VAR_1_BY_BIN_OPERATOR_LOCAL_AND_NUMBER);
+				prog_opcodes->writeByte(Program::getOpcodeType(exp_binary->type));
+				prog_opcodes->writeByte(exp1->local_var.index);
+				prog_opcodes->writeByte(number_index);
+				prog_opcodes->writeByte(exp->local_var.index);
+			}else{
+				prog_opcodes->writeByte(Program::OP_SET_LOCAL_VAR_BY_BIN_OPERATOR_LOCAL_AND_NUMBER);
+				prog_opcodes->writeByte(Program::getOpcodeType(exp_binary->type));
+				prog_opcodes->writeByte(exp1->local_var.index);
+				prog_opcodes->writeUVariable(number_index);
+				prog_opcodes->writeUVariable(exp->local_var.index);
+			}
 			break;
 		}
 
@@ -2958,6 +3065,18 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 		prog_opcodes->writeByte(Program::OP_GET_PROPERTY);
 		prog_opcodes->writeByte(exp->ret_values);
 		break;
+
+	case EXP_TYPE_GET_THIS_PROPERTY_BY_STRING:
+		{
+			OS_ASSERT(exp->list.count == 2);
+			OS_ASSERT(exp->list[0]->type == EXP_TYPE_GET_THIS);
+			OS_ASSERT(exp->list[1]->type == EXP_TYPE_CONST_STRING);
+			writeDebugInfo(exp);
+			prog_opcodes->writeByte(Program::OP_GET_THIS_PROPERTY_BY_STRING);
+			prog_opcodes->writeByte(exp->ret_values);
+			prog_opcodes->writeUVariable(cacheString(exp->list[1]->token->str));
+			break;
+		}
 
 	case EXP_TYPE_GET_PROPERTY_BY_LOCALS:
 		OS_ASSERT(exp->list.count == 2);
@@ -3054,16 +3173,16 @@ bool OS::Core::Compiler::writeOpcodes(Scope * scope, Expression * exp)
 	case EXP_TYPE_BREAK:
 		OS_ASSERT(exp->list.count == 0);
 		writeDebugInfo(exp);
-		prog_opcodes->writeByte(Program::OP_JUMP);
 		scope->addLoopBreak(prog_opcodes->getPos(), Scope::LOOP_BREAK);
+		prog_opcodes->writeByte(Program::OP_JUMP_4);
 		prog_opcodes->writeInt32(0);
 		break;
 
 	case EXP_TYPE_CONTINUE:
 		OS_ASSERT(exp->list.count == 0);
 		writeDebugInfo(exp);
-		prog_opcodes->writeByte(Program::OP_JUMP);
 		scope->addLoopBreak(prog_opcodes->getPos(), Scope::LOOP_CONTINUE);
+		prog_opcodes->writeByte(Program::OP_JUMP_4);
 		prog_opcodes->writeInt32(0);
 		break;
 
@@ -3256,16 +3375,18 @@ bool OS::Core::Compiler::Scope::addLoopBreak(int pos, ELoopBreakType type)
 	return true;
 }
 
-void OS::Core::Compiler::Scope::fixLoopBreaks(int scope_start_pos, int scope_end_pos, StreamWriter * writer)
+void OS::Core::Compiler::Scope::fixLoopBreaks(Compiler * compiler, int scope_start_pos, int scope_end_pos, StreamWriter * writer)
 {
 	for(int i = 0; i < loop_breaks.count; i++){
 		LoopBreak& loop_break = loop_breaks[i];
 		if(loop_break.type == LOOP_BREAK){
-			int offs = scope_end_pos - loop_break.pos - sizeof(OS_INT32);
-			writer->writeInt32AtPos(offs, loop_break.pos);
+			int offs = scope_end_pos - loop_break.pos - sizeof(OS_BYTE)*5;
+			// writer->writeInt32AtPos(offs, loop_break.pos);
+			compiler->fixJumpOpcode(writer, offs, loop_break.pos);
 		}else{
-			int offs = scope_start_pos - loop_break.pos - sizeof(OS_INT32);
-			writer->writeInt32AtPos(offs, loop_break.pos);
+			int offs = scope_start_pos - loop_break.pos - sizeof(OS_BYTE)*5;
+			// writer->writeInt32AtPos(offs, loop_break.pos);
+			compiler->fixJumpOpcode(writer, offs, loop_break.pos);
 		}
 	}
 }
@@ -3895,6 +4016,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectExpressionValues(Expr
 		// case EXP_TYPE_GET_DIM:
 	case EXP_TYPE_CALL_METHOD:
 	case EXP_TYPE_GET_PROPERTY:
+	case EXP_TYPE_GET_THIS_PROPERTY_BY_STRING:
 	case EXP_TYPE_GET_PROPERTY_BY_LOCALS:
 	case EXP_TYPE_GET_PROPERTY_BY_LOCAL_AND_NUMBER:
 	case EXP_TYPE_GET_PROPERTY_AUTO_CREATE:
@@ -3916,6 +4038,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectExpressionValues(Expr
 				// case EXP_TYPE_GET_DIM:
 			case EXP_TYPE_CALL_METHOD:
 			case EXP_TYPE_GET_PROPERTY:
+			case EXP_TYPE_GET_THIS_PROPERTY_BY_STRING:
 			case EXP_TYPE_GET_PROPERTY_BY_LOCALS:
 			case EXP_TYPE_GET_PROPERTY_BY_LOCAL_AND_NUMBER:
 			case EXP_TYPE_GET_PROPERTY_AUTO_CREATE:
@@ -3966,6 +4089,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectExpressionValues(Expr
 					// case EXP_TYPE_GET_DIM:
 				case EXP_TYPE_CALL_METHOD:
 				case EXP_TYPE_GET_PROPERTY:
+				case EXP_TYPE_GET_THIS_PROPERTY_BY_STRING:
 				case EXP_TYPE_GET_PROPERTY_BY_LOCALS:
 				case EXP_TYPE_GET_PROPERTY_BY_LOCAL_AND_NUMBER:
 				case EXP_TYPE_GET_PROPERTY_AUTO_CREATE:
@@ -4027,6 +4151,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::newSingleValueExpression(Ex
 		// case EXP_TYPE_GET_DIM:
 	case EXP_TYPE_CALL_METHOD:
 	case EXP_TYPE_GET_PROPERTY:
+	case EXP_TYPE_GET_THIS_PROPERTY_BY_STRING:
 	case EXP_TYPE_GET_PROPERTY_BY_LOCALS:
 	case EXP_TYPE_GET_PROPERTY_BY_LOCAL_AND_NUMBER:
 	case EXP_TYPE_GET_PROPERTY_AUTO_CREATE:
@@ -4518,7 +4643,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::postProcessExpression(Scope
 #endif
 }
 
-#if 1
+#if 1 // speed optimization
 OS::Core::Compiler::Expression * OS::Core::Compiler::stepPass3(Scope * scope, Expression * exp)
 {
 	struct Lib {
@@ -4564,6 +4689,8 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::stepPass3(Scope * scope, Ex
 				&& !exp1->local_var.up_count && exp1->local_var.index <= 255)
 			{
 				exp->type = EXP_TYPE_GET_PROPERTY_BY_LOCAL_AND_NUMBER;
+			}else if(exp1->type == EXP_TYPE_GET_THIS && exp2->type == EXP_TYPE_CONST_STRING){
+				exp->type = EXP_TYPE_GET_THIS_PROPERTY_BY_STRING;
 			}
 			return exp;
 		}
@@ -7230,6 +7357,9 @@ const OS_CHAR * OS::Core::Compiler::getExpName(ExpressionType type)
 	case EXP_TYPE_GET_PROPERTY:
 		return OS_TEXT("get property");
 
+	case EXP_TYPE_GET_THIS_PROPERTY_BY_STRING:
+		return OS_TEXT("get this property by string");
+
 	case EXP_TYPE_GET_PROPERTY_BY_LOCALS:
 		return OS_TEXT("get property by locals");
 
@@ -7928,8 +8058,8 @@ OS::Core::Program::OpcodeType OS::Core::Program::getOpcodeType(Compiler::Express
 	case Compiler::EXP_TYPE_ISPROTOTYPEOF: return OP_ISPROTOTYPEOF;
 	case Compiler::EXP_TYPE_IS: return OP_IS;
 
-	case Compiler::EXP_TYPE_LOGIC_AND: return OP_LOGIC_AND;
-	case Compiler::EXP_TYPE_LOGIC_OR: return OP_LOGIC_OR;
+	case Compiler::EXP_TYPE_LOGIC_AND: return OP_LOGIC_AND_4;
+	case Compiler::EXP_TYPE_LOGIC_OR: return OP_LOGIC_OR_4;
 	case Compiler::EXP_TYPE_LOGIC_PTR_EQ: return OP_LOGIC_PTR_EQ;
 	case Compiler::EXP_TYPE_LOGIC_PTR_NE: return OP_LOGIC_PTR_NE;
 	case Compiler::EXP_TYPE_LOGIC_EQ: return OP_LOGIC_EQ;
@@ -8022,6 +8152,20 @@ void OS::Core::StreamWriter::writeU16AtPos(int value, int pos)
 {
 	OS_ASSERT(value >= 0 && value <= 0xffff);
 	OS_U16 le_value = toLittleEndianByteOrder((OS_U16)value);
+	writeBytesAtPos(&le_value, sizeof(le_value), pos);
+}
+
+void OS::Core::StreamWriter::writeInt8(int value)
+{
+	OS_ASSERT((int)(OS_INT8)value == value);
+	OS_INT8 le_value = toLittleEndianByteOrder((OS_INT8)value);
+	writeBytes(&le_value, sizeof(le_value));
+}
+
+void OS::Core::StreamWriter::writeInt8AtPos(int value, int pos)
+{
+	OS_ASSERT((int)(OS_INT8)value == value);
+	OS_INT8 le_value = toLittleEndianByteOrder((OS_INT8)value);
 	writeBytesAtPos(&le_value, sizeof(le_value), pos);
 }
 
@@ -8261,6 +8405,20 @@ OS_U16 OS::Core::StreamReader::readU16AtPos(int pos)
 	return fromLittleEndianByteOrder(le_value);
 }
 
+OS_INT8 OS::Core::StreamReader::readInt8()
+{
+	OS_INT8 le_value;
+	readBytes(&le_value, sizeof(le_value));
+	return fromLittleEndianByteOrder(le_value);
+}
+
+OS_INT8 OS::Core::StreamReader::readInt8AtPos(int pos)
+{
+	OS_INT8 le_value;
+	readBytesAtPos(&le_value, sizeof(le_value), pos);
+	return fromLittleEndianByteOrder(le_value);
+}
+
 OS_INT16 OS::Core::StreamReader::readInt16()
 {
 	OS_INT16 le_value;
@@ -8407,6 +8565,21 @@ OS_BYTE OS::Core::MemStreamReader::readByteAtPos(int pos)
 {
 	OS_ASSERT(pos >= 0 && pos+(int)sizeof(OS_BYTE) <= size);
 	return buffer[pos];
+}
+
+OS_INT8 OS::Core::MemStreamReader::readInt8()
+{
+	OS_ASSERT(getPos() >= 0 && getPos()+1 <= size);
+	return (OS_INT8)*cur++;
+}
+
+OS_INT16 OS::Core::MemStreamReader::readInt16()
+{
+	OS_ASSERT(getPos() >= 0 && getPos()+(int)sizeof(OS_INT16) <= size);
+	OS_BYTE * buf = cur;
+	cur += sizeof(OS_INT16);
+	OS_INT16 value = buf[0] | (buf[1] << 8);
+	return value;
 }
 
 OS_INT32 OS::Core::MemStreamReader::readInt32()
@@ -8637,7 +8810,7 @@ int OS::Core::PropertyIndex::getHash() const
 		*/
 
 	case OS_VALUE_TYPE_NUMBER:
-#if 1
+#if 1 // speed optimization
 		// return getNumberHash(index.v.number);
 		{
 			union { 
@@ -9060,7 +9233,7 @@ void OS::Core::deleteValueProperty(Value table_value, const PropertyIndex& index
 	case OS_VALUE_TYPE_ARRAY:
 	case OS_VALUE_TYPE_OBJECT:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_CFUNCTION:
 		return deleteValueProperty(table_value.v.value, index, anonymous_del_enabled, named_del_enabled, prototype_enabled);
@@ -9105,7 +9278,7 @@ void OS::Core::sortTable(Table * table, int(*comp)(OS*, const void*, const void*
 		table->last = props[i-1];
 
 		if(reorder_keys){
-#if 1
+#if 1 // speed optimization
 			OS_MEMSET(table->heads, 0, sizeof(Property*)*(table->head_mask+1));
 			for(i = 0; i < table->count; i++){
 				Property * cur = props[i];
@@ -9513,7 +9686,7 @@ OS::Core::GCValue * OS::Core::Value::getGCValue() const
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_CFUNCTION:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		OS_ASSERT(v.value);
 		return v.value;
 	}
@@ -9539,7 +9712,7 @@ bool OS::Core::Value::isUserdata() const
 {
 	switch(type){
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		return true;
 	}
 	return false;
@@ -9613,7 +9786,7 @@ void OS::Core::ValueRetained::retain()
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_CFUNCTION:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		OS_ASSERT(v.value);
 		v.value->external_ref_count++;
 		break;
@@ -9629,7 +9802,7 @@ void OS::Core::ValueRetained::release()
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_CFUNCTION:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		OS_ASSERT(v.value && v.value->external_ref_count > 0);
 		v.value->external_ref_count--;
 		if(v.value->gc_color == GC_WHITE){
@@ -9782,7 +9955,7 @@ void OS::Core::GCStringValue::calcHash()
 
 // =====================================================================
 
-bool OS::Core::valueToBool(Value val)
+bool OS::Core::valueToBool(const Value& val)
 {
 	switch(val.type){
 	case OS_VALUE_TYPE_NULL:
@@ -9805,7 +9978,7 @@ bool OS::Core::valueToBool(Value val)
 	return true;
 }
 
-OS_INT OS::Core::valueToInt(Value val, bool valueof_enabled)
+OS_INT OS::Core::valueToInt(const Value& val, bool valueof_enabled)
 {
 	return (OS_INT)valueToNumber(val, valueof_enabled);
 }
@@ -9837,7 +10010,7 @@ OS_NUMBER OS::Core::Compiler::Expression::toNumber()
 	return 0;
 }
 
-OS_NUMBER OS::Core::valueToNumber(Value val, bool valueof_enabled)
+OS_NUMBER OS::Core::valueToNumber(const Value& val, bool valueof_enabled)
 {
 	switch(val.type){
 	case OS_VALUE_TYPE_NULL:
@@ -10111,7 +10284,7 @@ void OS::Core::unregisterStringRef(StringRef * str_ref)
 
 void OS::Core::deleteStringRefs()
 {
-	if(!string_refs.count){
+	if(!string_refs.heads){
 		return;
 	}
 	for(int i = 0; i <= string_refs.head_mask; i++){
@@ -10125,6 +10298,117 @@ void OS::Core::deleteStringRefs()
 	string_refs.heads = NULL;
 	string_refs.head_mask = 0;
 	string_refs.count = 0;
+}
+
+// =====================================================================
+// =====================================================================
+// =====================================================================
+
+OS::Core::UserptrRefs::UserptrRefs()
+{
+	head_mask = 0;
+	heads = NULL;
+	count = 0;
+}
+OS::Core::UserptrRefs::~UserptrRefs()
+{
+	OS_ASSERT(count == 0);
+	OS_ASSERT(!heads);
+}
+
+void OS::Core::registerUserptrRef(UserptrRef * user_pointer_ref)
+{
+	if((userptr_refs.count>>HASH_GROW_SHIFT) >= userptr_refs.head_mask){
+		int new_size = userptr_refs.heads ? (userptr_refs.head_mask+1) * 2 : 32;
+		int alloc_size = sizeof(UserptrRef*) * new_size;
+		UserptrRef ** new_heads = (UserptrRef**)malloc(alloc_size OS_DBG_FILEPOS);
+		OS_ASSERT(new_heads);
+		OS_MEMSET(new_heads, 0, alloc_size);
+
+		UserptrRef ** old_heads = userptr_refs.heads;
+		int old_mask = userptr_refs.head_mask;
+
+		userptr_refs.heads = new_heads;
+		userptr_refs.head_mask = new_size-1;
+
+		if(old_heads){
+			for(int i = 0; i <= old_mask; i++){
+				for(UserptrRef * user_pointer_ref = old_heads[i], * next; user_pointer_ref; user_pointer_ref = next){
+					next = user_pointer_ref->hash_next;
+					int slot = user_pointer_ref->userptr_hash & userptr_refs.head_mask;
+					user_pointer_ref->hash_next = userptr_refs.heads[slot];
+					userptr_refs.heads[slot] = user_pointer_ref;
+				}
+			}
+			free(old_heads);
+		}
+	}
+
+	int slot = user_pointer_ref->userptr_hash & userptr_refs.head_mask;
+	user_pointer_ref->hash_next = userptr_refs.heads[slot];
+	userptr_refs.heads[slot] = user_pointer_ref;
+	userptr_refs.count++;
+}
+
+void OS::Core::unregisterUserptrRef(UserptrRef * userptr_ref)
+{
+	int slot = userptr_ref->userptr_hash & userptr_refs.head_mask;
+	UserptrRef * cur = userptr_refs.heads[slot], * prev = NULL;
+	for(; cur; prev = cur, cur = cur->hash_next){
+		if(cur == userptr_ref){
+			if(prev){
+				prev->hash_next = cur->hash_next;
+			}else{
+				userptr_refs.heads[slot] = cur->hash_next;
+			}
+			OS_ASSERT(userptr_refs.count > 0);
+			userptr_refs.count--;
+			cur->hash_next = NULL;
+			return;
+		}
+	}
+	OS_ASSERT(false);
+}
+
+void OS::Core::unregisterUserptrRef(void * ptr, int value_id)
+{
+	if(userptr_refs.count > 0){
+		OS_ASSERT(userptr_refs.heads && userptr_refs.head_mask);
+		int hash = (int)(intptr_t)ptr;
+		int slot = hash & userptr_refs.head_mask;
+		UserptrRef * userptr_ref = userptr_refs.heads[slot];
+		for(UserptrRef * prev = NULL, * next; userptr_ref; userptr_ref = next){
+			next = userptr_ref->hash_next;
+			if(userptr_ref->userptr_value_id == value_id){
+				if(!prev){
+					userptr_refs.heads[slot] = next;
+				}else{
+					prev->hash_next = next;					
+				}
+				free(userptr_ref);
+				userptr_refs.count--;
+				return;
+			}
+		}
+	}
+}
+
+void OS::Core::deleteUserptrRefs()
+{
+	if(!userptr_refs.heads){
+		return;
+	}
+	for(int i = 0; i <= userptr_refs.head_mask; i++){
+		while(userptr_refs.heads[i]){
+			UserptrRef * cur = userptr_refs.heads[i];
+			userptr_refs.heads[i] = cur->hash_next;
+			free(cur);
+		}
+	}
+	free(userptr_refs.heads);
+	userptr_refs.heads = NULL;
+	userptr_refs.head_mask = 0;
+	userptr_refs.count = 0;
 }
 
 // =====================================================================
@@ -11188,6 +11472,7 @@ void OS::Core::shutdown()
 		prototypes[i] = NULL;
 	}
 	deleteStringRefs();
+	deleteUserptrRefs();
 	if(stack_values.buf){ // it makes sense because of someone could use stack while the finalizing in process
 		free(stack_values.buf);
 		stack_values.buf = NULL;
@@ -11308,14 +11593,16 @@ bool OS::isAbsolutePath(const String& p_filename)
 OS::String OS::resolvePath(const String& filename, const String& cur_path)
 {
 	String resolved_path = filename;
-	if(!isAbsolutePath(filename) && cur_path.getDataSize()){
-		resolved_path = cur_path + OS_PATH_SEPARATOR + filename;
+	if(!isAbsolutePath(filename) && cur_path.getLen()){
+		if(filename.getLen() < cur_path.getLen() || String(this, filename.toChar(), cur_path.getLen()) != cur_path){
+			resolved_path = cur_path + OS_PATH_SEPARATOR + filename;
+		}
 	}
-	resolved_path = changeFilenameExt(filename, OS_SOURCECODE_EXT);
+	resolved_path = changeFilenameExt(resolved_path, OS_SOURCECODE_EXT);
 	if(isFileExist(resolved_path)){
 		return resolved_path;
 	}
-	resolved_path = changeFilenameExt(filename, OS_COMPILED_EXT);
+	resolved_path = changeFilenameExt(resolved_path, OS_COMPILED_EXT);
 	if(isFileExist(resolved_path)){
 		return resolved_path;
 	}
@@ -11545,7 +11832,7 @@ void OS::Core::gcAddToGreyList(Value val)
 	case OS_VALUE_TYPE_ARRAY:
 	case OS_VALUE_TYPE_OBJECT:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_CFUNCTION:
 		gcAddToGreyList(val.v.value);
@@ -11644,7 +11931,7 @@ void OS::Core::gcMarkValue(GCValue * value)
 		}
 
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		OS_ASSERT(dynamic_cast<GCUserdataValue*>(value));
 		break;
 	}
@@ -11883,7 +12170,7 @@ void OS::Core::clearValue(GCValue * val)
 		}
 
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		{
 			OS_ASSERT(dynamic_cast<GCUserdataValue*>(val));
 			GCUserdataValue * userdata = (GCUserdataValue*)val;
@@ -11896,6 +12183,9 @@ void OS::Core::clearValue(GCValue * val)
 			userdata->crc = 0;
 			userdata->dtor = NULL;
 
+			if(val->type == OS_VALUE_TYPE_USERPTR){
+				unregisterUserptrRef(ptr, userdata->value_id);
+			}
 			if(dtor){
 				dtor(allocator, ptr, userdata->user_param);
 			}
@@ -12065,7 +12355,7 @@ bool OS::Core::isValueUsed(GCValue * val)
 				break;
 
 			case OS_VALUE_TYPE_USERDATA:
-				// case OS_VALUE_TYPE_USERPTR:
+			case OS_VALUE_TYPE_USERPTR:
 				OS_ASSERT(dynamic_cast<GCUserdataValue*>(cur));
 				break;
 
@@ -12248,7 +12538,7 @@ void OS::Core::setPropertyValue(GCValue * table_value, const PropertyIndex& inde
 			break;
 
 		case OS_VALUE_TYPE_USERDATA:
-			// case OS_VALUE_TYPE_USERPTR:
+		case OS_VALUE_TYPE_USERPTR:
 		case OS_VALUE_TYPE_CFUNCTION:
 			// TODO: warning???
 			break;
@@ -12260,6 +12550,7 @@ void OS::Core::setPropertyValue(GCValue * table_value, const PropertyIndex& inde
 		OS_ASSERT(dynamic_cast<GCArrayValue*>(table_value));
 		GCArrayValue * arr = (GCArrayValue*)table_value;
 		int i = (int)valueToInt(index.index);
+		if(i < 0) i += arr->values.count;
 		if(i >= 0){
 			while(i >= arr->values.count){
 				allocator->vectorAddItem(arr->values, Value() OS_DBG_FILEPOS);
@@ -12329,7 +12620,7 @@ void OS::Core::setPropertyValue(Value table_value, const PropertyIndex& index, V
 	case OS_VALUE_TYPE_ARRAY:
 	case OS_VALUE_TYPE_OBJECT:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_CFUNCTION:
 		return setPropertyValue(table_value.v.value, index, value, anonymous_setter_enabled, named_setter_enabled);
@@ -12355,7 +12646,7 @@ void OS::Core::pushPrototype(Value val)
 	case OS_VALUE_TYPE_ARRAY:
 	case OS_VALUE_TYPE_OBJECT:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_CFUNCTION:
 		pushValue(val.v.value);
@@ -12372,7 +12663,7 @@ void OS::Core::setPrototype(Value val, Value proto, int userdata_crc)
 		return;
 
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		if(val.v.userdata->crc != userdata_crc){
 			return;
 		}
@@ -12601,16 +12892,60 @@ OS::Core::GCUserdataValue * OS::Core::newUserdataValue(int crc, int data_size, O
 	return res;
 }
 
-OS::Core::GCUserdataValue * OS::Core::newUserPointerValue(int crc, void * data, OS_UserdataDtor dtor, void * user_param)
+OS::Core::GCUserdataValue * OS::Core::newUserPointerValue(int crc, void * ptr, OS_UserdataDtor dtor, void * user_param)
 {
+	int hash = (int)(intptr_t)ptr;
+	if(userptr_refs.count > 0){
+		OS_ASSERT(userptr_refs.heads && userptr_refs.head_mask);
+		int slot = hash & userptr_refs.head_mask;
+		UserptrRef * userptr_ref = userptr_refs.heads[slot];
+		for(UserptrRef * prev = NULL, * next; userptr_ref; userptr_ref = next){
+			next = userptr_ref->hash_next;
+			GCUserdataValue * userptr_value = (GCUserdataValue*)values.get(userptr_ref->userptr_value_id);
+			if(!userptr_value){
+				if(!prev){
+					userptr_refs.heads[slot] = next;
+				}else{
+					prev->hash_next = next;					
+				}
+				free(userptr_ref);
+				userptr_refs.count--;
+				continue;
+			}
+			OS_ASSERT(userptr_value->type == OS_VALUE_TYPE_USERPTR);
+			OS_ASSERT(dynamic_cast<GCUserdataValue*>(userptr_value));
+			if(userptr_value->ptr == ptr){ // && userptr_value->crc == crc){
+				OS_ASSERT(userptr_value->crc == crc);
+				if(userptr_value->crc != crc){
+					if(!prev){
+						userptr_refs.heads[slot] = next;
+					}else{
+						prev->hash_next = next;					
+					}
+					free(userptr_ref);
+					userptr_refs.count--;
+					continue;
+				}
+				return userptr_value;
+			}
+			prev = userptr_ref;
+		}
+	}
 	GCUserdataValue * res = new (malloc(sizeof(GCUserdataValue) OS_DBG_FILEPOS)) GCUserdataValue();
 	res->prototype = prototypes[PROTOTYPE_USERDATA];
 	res->crc = crc;
 	res->dtor = dtor;
 	res->user_param = user_param;
-	res->ptr = data;
-	res->type = OS_VALUE_TYPE_USERDATA; // PTR;
+	res->ptr = ptr;
+	res->type = OS_VALUE_TYPE_USERPTR;
 	registerValue(res);
+
+	UserptrRef * userptr_ref = (UserptrRef*)malloc(sizeof(UserptrRef) OS_DBG_FILEPOS);
+	userptr_ref->userptr_hash = hash;
+	userptr_ref->userptr_value_id = res->value_id;
+	userptr_ref->hash_next = NULL;
+	registerUserptrRef(userptr_ref);
+
 	return res;
 }
 
@@ -12680,7 +13015,7 @@ void OS::Core::pushFalse()
 */
 void OS::Core::pushBool(bool val)
 {
-#if 1
+#if 1 // speed optimization
 	StackValues& stack_values = this->stack_values;
 	if(stack_values.capacity < stack_values.count+1){
 		reserveStackValues(stack_values.count+1);
@@ -12693,7 +13028,7 @@ void OS::Core::pushBool(bool val)
 
 void OS::Core::pushNumber(OS_INT32 val)
 {
-#if 1
+#if 1 // speed optimization
 	StackValues& stack_values = this->stack_values;
 	if(stack_values.capacity < stack_values.count+1){
 		reserveStackValues(stack_values.count+1);
@@ -12706,7 +13041,7 @@ void OS::Core::pushNumber(OS_INT32 val)
 
 void OS::Core::pushNumber(OS_INT64 val)
 {
-#if 1
+#if 1 // speed optimization
 	StackValues& stack_values = this->stack_values;
 	if(stack_values.capacity < stack_values.count+1){
 		reserveStackValues(stack_values.count+1);
@@ -12719,7 +13054,7 @@ void OS::Core::pushNumber(OS_INT64 val)
 
 void OS::Core::pushNumber(float val)
 {
-#if 1
+#if 1 // speed optimization
 	StackValues& stack_values = this->stack_values;
 	if(stack_values.capacity < stack_values.count+1){
 		reserveStackValues(stack_values.count+1);
@@ -12732,7 +13067,7 @@ void OS::Core::pushNumber(float val)
 
 void OS::Core::pushNumber(double val)
 {
-#if 1
+#if 1 // speed optimization
 	StackValues& stack_values = this->stack_values;
 	if(stack_values.capacity < stack_values.count+1){
 		reserveStackValues(stack_values.count+1);
@@ -12818,7 +13153,7 @@ void OS::Core::pushTypeOf(Value val)
 		return;
 
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		pushStringValue(strings->typeof_userdata);
 		return;
 
@@ -12984,7 +13319,7 @@ OS::Core::GCUserdataValue * OS::Core::pushUserdataOf(Value val)
 {
 	switch(val.type){
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		return pushValue(val.v.userdata);
 	}
 	pushNull();
@@ -13036,7 +13371,7 @@ void OS::Core::pushCloneValue(Value val)
 
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 	case OS_VALUE_TYPE_CFUNCTION:
 		value = val.v.value;
 		new_value = pushValue(value);
@@ -13048,12 +13383,8 @@ void OS::Core::pushCloneValue(Value val)
 	}
 	OS_ASSERT(new_value->type != OS_VALUE_TYPE_NULL);
 	if(new_value != value && value->table && value->table->count > 0){
-#if 1
 		new_value->table = newTable(OS_DBG_FILEPOS_START);
 		copyTableProperties(new_value->table, value->table);
-#else
-		copyTableProperties(new_value, value, true);
-#endif
 	}
 	// removeStackValue(-2);
 
@@ -13061,7 +13392,7 @@ void OS::Core::pushCloneValue(Value val)
 	case OS_VALUE_TYPE_ARRAY:
 	case OS_VALUE_TYPE_OBJECT:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		{
 			bool prototype_enabled = true;
 			Value func;
@@ -13153,7 +13484,7 @@ void OS::Core::pushOpResultValue(int opcode, Value value)
 			case OS_VALUE_TYPE_ARRAY:
 			case OS_VALUE_TYPE_OBJECT:
 			case OS_VALUE_TYPE_USERDATA:
-				// case OS_VALUE_TYPE_USERPTR:
+			case OS_VALUE_TYPE_USERPTR:
 				return pushObjectOpcodeValue(opcode, value);
 			}
 			return core->pushNull();
@@ -13187,7 +13518,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 				case OS_VALUE_TYPE_ARRAY:
 				case OS_VALUE_TYPE_OBJECT:
 				case OS_VALUE_TYPE_USERDATA:
-					// case OS_VALUE_TYPE_USERPTR:
+				case OS_VALUE_TYPE_USERPTR:
 				case OS_VALUE_TYPE_FUNCTION:
 				case OS_VALUE_TYPE_CFUNCTION:
 					return left_value.v.value == right_value.v.value;
@@ -13236,7 +13567,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 			case OS_VALUE_TYPE_ARRAY:
 			case OS_VALUE_TYPE_OBJECT:
 			case OS_VALUE_TYPE_USERDATA:
-				// case OS_VALUE_TYPE_USERPTR:
+			case OS_VALUE_TYPE_USERPTR:
 				switch(right_value.type){
 				case OS_VALUE_TYPE_NULL:
 					return 1;
@@ -13247,7 +13578,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 				case OS_VALUE_TYPE_ARRAY:
 				case OS_VALUE_TYPE_OBJECT:
 				case OS_VALUE_TYPE_USERDATA:
-					// case OS_VALUE_TYPE_USERPTR:
+				case OS_VALUE_TYPE_USERPTR:
 					{
 						bool prototype_enabled = true;
 						Value func;
@@ -13274,7 +13605,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 								case OS_VALUE_TYPE_ARRAY:
 								case OS_VALUE_TYPE_OBJECT:
 								case OS_VALUE_TYPE_USERDATA:
-									// case OS_VALUE_TYPE_USERPTR:
+								case OS_VALUE_TYPE_USERPTR:
 									if(core->getPropertyValue(func, right, 
 										PropertyIndex(core->strings->__cmp, PropertyIndex::KeepStringIndex()), prototype_enabled)
 										&& func.isFunction())
@@ -13437,7 +13768,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 			case OS_VALUE_TYPE_ARRAY:
 			case OS_VALUE_TYPE_OBJECT:
 			case OS_VALUE_TYPE_USERDATA:
-				// case OS_VALUE_TYPE_USERPTR:
+			case OS_VALUE_TYPE_USERPTR:
 				{
 					GCValue * other = other_value.v.value;
 					if(object->prototype == other->prototype){
@@ -13528,7 +13859,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 				case OS_VALUE_TYPE_ARRAY:
 				case OS_VALUE_TYPE_OBJECT:
 				case OS_VALUE_TYPE_USERDATA:
-					// case OS_VALUE_TYPE_USERPTR:
+				case OS_VALUE_TYPE_USERPTR:
 					return pushObjectOpcodeValue(opcode, left_value, right_value, right_value.v.value, false);
 				}
 				break;
@@ -13536,7 +13867,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 			case OS_VALUE_TYPE_ARRAY:
 			case OS_VALUE_TYPE_OBJECT:
 			case OS_VALUE_TYPE_USERDATA:
-				// case OS_VALUE_TYPE_USERPTR:
+			case OS_VALUE_TYPE_USERPTR:
 				switch(right_value.type){
 				case OS_VALUE_TYPE_NULL:
 				case OS_VALUE_TYPE_NUMBER:
@@ -13547,7 +13878,7 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 				case OS_VALUE_TYPE_ARRAY:
 				case OS_VALUE_TYPE_OBJECT:
 				case OS_VALUE_TYPE_USERDATA:
-					// case OS_VALUE_TYPE_USERPTR:
+				case OS_VALUE_TYPE_USERPTR:
 					return pushObjectOpcodeValue(opcode, left_value, right_value, left_value.v.value, true);
 				}
 			}
@@ -13555,60 +13886,82 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 		}
 	} lib = {this};
 
+	StackValues * stack_values = &this->stack_values;
+	if(stack_values->capacity < stack_values->count+1){
+		reserveStackValues(stack_values->count+1);
+	}
 	switch(opcode){
 	case Program::OP_COMPARE:
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushNumber(left_value.v.number - right_value.v.number);
+			stack_values->buf[stack_values->count++] = left_value.v.number - right_value.v.number;
+			return;
 		}
-		return pushNumber(lib.compareValues(left_value, right_value));
+		stack_values->buf[stack_values->count++] = lib.compareValues(left_value, right_value);
+		return;
 
 	case Program::OP_LOGIC_PTR_EQ:
-		return pushBool(lib.isEqualExactly(left_value, right_value));
+		stack_values->buf[stack_values->count++] = lib.isEqualExactly(left_value, right_value);
+		return;
 
 	case Program::OP_LOGIC_PTR_NE:
-		return pushBool(!lib.isEqualExactly(left_value, right_value));
+		stack_values->buf[stack_values->count++] = !lib.isEqualExactly(left_value, right_value);
+		return;
 
 	case Program::OP_LOGIC_EQ:
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushBool(left_value.v.number == right_value.v.number);
+			stack_values->buf[stack_values->count++] = left_value.v.number == right_value.v.number;
+			return;
 		}
 		if(left_value.type == OS_VALUE_TYPE_STRING && right_value.type == OS_VALUE_TYPE_STRING){
-			return pushBool(left_value.v.string == right_value.v.string);
+			stack_values->buf[stack_values->count++] = left_value.v.string == right_value.v.string;
+			return;
 		}
-		return pushBool(lib.compareValues(left_value, right_value) == 0);
+		stack_values->buf[stack_values->count++] = lib.compareValues(left_value, right_value) == 0;
+		return;
 
 	case Program::OP_LOGIC_NE:
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushBool(left_value.v.number != right_value.v.number);
+			stack_values->buf[stack_values->count++] = left_value.v.number != right_value.v.number;
+			return;
 		}
 		if(left_value.type == OS_VALUE_TYPE_STRING && right_value.type == OS_VALUE_TYPE_STRING){
-			return pushBool(left_value.v.string != right_value.v.string);
+			stack_values->buf[stack_values->count++] = left_value.v.string != right_value.v.string;
+			return;
 		}
-		return pushBool(lib.compareValues(left_value, right_value) != 0);
+		stack_values->buf[stack_values->count++] = lib.compareValues(left_value, right_value) != 0;
+		return;
 
 	case Program::OP_LOGIC_GE:
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushBool(left_value.v.number >= right_value.v.number);
+			stack_values->buf[stack_values->count++] = left_value.v.number >= right_value.v.number;
+			return;
 		}
-		return pushBool(lib.compareValues(left_value, right_value) >= 0);
+		stack_values->buf[stack_values->count++] = lib.compareValues(left_value, right_value) >= 0;
+		return;
 
 	case Program::OP_LOGIC_LE:
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushBool(left_value.v.number <= right_value.v.number);
+			stack_values->buf[stack_values->count++] = left_value.v.number <= right_value.v.number;
+			return;
 		}
-		return pushBool(lib.compareValues(left_value, right_value) <= 0);
+		stack_values->buf[stack_values->count++] = lib.compareValues(left_value, right_value) <= 0;
+		return;
 
 	case Program::OP_LOGIC_GREATER:
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushBool(left_value.v.number > right_value.v.number);
+			stack_values->buf[stack_values->count++] = left_value.v.number > right_value.v.number;
+			return;
 		}
-		return pushBool(lib.compareValues(left_value, right_value) > 0);
+		stack_values->buf[stack_values->count++] = lib.compareValues(left_value, right_value) > 0;
+		return;
 
 	case Program::OP_LOGIC_LESS:
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushBool(left_value.v.number < right_value.v.number);
+			stack_values->buf[stack_values->count++] = left_value.v.number < right_value.v.number;
+			return;
 		}
-		return pushBool(lib.compareValues(left_value, right_value) < 0);
+		stack_values->buf[stack_values->count++] = lib.compareValues(left_value, right_value) < 0;
+		return;
 
 	case Program::OP_CONCAT:
 		if(left_value.type == OS_VALUE_TYPE_STRING && right_value.type == OS_VALUE_TYPE_STRING){
@@ -13619,37 +13972,43 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 
 	case Program::OP_BIT_AND:
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushNumber((OS_INT)left_value.v.number & (OS_INT)right_value.v.number);
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number & (OS_INT)right_value.v.number;
+			return;
 		}
 		break;
 
 	case Program::OP_BIT_OR:
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushNumber((OS_INT)left_value.v.number | (OS_INT)right_value.v.number);
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number | (OS_INT)right_value.v.number;
+			return;
 		}
 		break;
 
 	case Program::OP_BIT_XOR:
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushNumber((OS_INT)left_value.v.number ^ (OS_INT)right_value.v.number);
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number ^ (OS_INT)right_value.v.number;
+			return;
 		}
 		break;
 
 	case Program::OP_ADD: // +
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushNumber(left_value.v.number + right_value.v.number);
+			stack_values->buf[stack_values->count++] = left_value.v.number + right_value.v.number;
+			return;
 		}
 		break;
 
 	case Program::OP_SUB: // -
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushNumber(left_value.v.number - right_value.v.number);
+			stack_values->buf[stack_values->count++] = left_value.v.number - right_value.v.number;
+			return;
 		}
 		break;
 
 	case Program::OP_MUL: // *
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushNumber(left_value.v.number * right_value.v.number);
+			stack_values->buf[stack_values->count++] = left_value.v.number * right_value.v.number;
+			return;
 		}
 		break;
 
@@ -13657,9 +14016,11 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
 			if(!right_value.v.number){
 				errorDivisionByZero();
-				return pushNumber(0.0);
+				stack_values->buf[stack_values->count++] = 0.0;
+				return;
 			}
-			return pushNumber(left_value.v.number / right_value.v.number);
+			stack_values->buf[stack_values->count++] = left_value.v.number / right_value.v.number;
+			return;
 		}
 		break;
 
@@ -13667,27 +14028,32 @@ void OS::Core::pushOpResultValue(int opcode, Value left_value, Value right_value
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
 			if(!right_value.v.number){
 				errorDivisionByZero();
-				return pushNumber(0.0);
+				stack_values->buf[stack_values->count++] = 0.0;
+				return;
 			}
-			return pushNumber(OS_MATH_MOD_OPERATOR(left_value.v.number, right_value.v.number));
+			stack_values->buf[stack_values->count++] = OS_MATH_MOD_OPERATOR(left_value.v.number, right_value.v.number);
+			return;
 		}
 		break;
 
 	case Program::OP_LSHIFT: // <<
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushNumber((OS_INT)left_value.v.number << (OS_INT)right_value.v.number);
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number << (OS_INT)right_value.v.number;
+			return;
 		}
 		break;
 
 	case Program::OP_RSHIFT: // >>
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushNumber((OS_INT)left_value.v.number >> (OS_INT)right_value.v.number);
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number >> (OS_INT)right_value.v.number;
+			return;
 		}
 		break;
 
 	case Program::OP_POW: // **
 		if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
-			return pushNumber(OS_MATH_POW_OPERATOR((OS_FLOAT)left_value.v.number, (OS_FLOAT)right_value.v.number));
+			stack_values->buf[stack_values->count++] = OS_MATH_POW_OPERATOR((OS_FLOAT)left_value.v.number, (OS_FLOAT)right_value.v.number);
+			return;
 		}
 		break;
 	}
@@ -14235,7 +14601,7 @@ bool OS::isUserdata(int crc, int offs)
 	Core::Value val = core->getStackValue(offs);
 	switch(val.type){
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		return val.v.userdata->crc == crc;
 	}
 	return false;
@@ -14246,7 +14612,7 @@ void * OS::toUserdata(int crc, int offs)
 	Core::Value val = core->getStackValue(offs);
 	switch(val.type){
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		if(val.v.userdata->crc == crc){
 			return val.v.userdata->ptr;
 		}
@@ -14259,7 +14625,7 @@ void OS::clearUserdata(int crc, int offs)
 	Core::Value val = core->getStackValue(offs);
 	switch(val.type){
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 		if(val.v.userdata->crc == crc){ // && val.v.userdata->ptr){
 			core->clearValue(val.v.value);
 			// val.v.userdata->ptr = NULL;
@@ -14431,7 +14797,7 @@ int OS::getValueId(int offs)
 	case OS_VALUE_TYPE_ARRAY:
 	case OS_VALUE_TYPE_OBJECT:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_CFUNCTION:
 		return val.v.value->value_id;
@@ -14467,22 +14833,15 @@ bool OS::Core::getPropertyValue(Value& result, GCValue * table_value, const Prop
 	}
 #endif
 
-	struct Lib {
-		static bool getArrayIndex(Value& result, Core * core, GCValue * table_value, const PropertyIndex& index)
-		{
-			OS_ASSERT(dynamic_cast<GCArrayValue*>(table_value));
-			GCArrayValue * arr = (GCArrayValue*)table_value;
-			int i = (int)core->valueToInt(index.index);
-			if(i >= 0 && i < arr->values.count){
-				result = arr->values[i];
-				return true;
-			}
-			return false;
-		}
-	};
-
 	if(table_value->type == OS_VALUE_TYPE_ARRAY && index.index.type == OS_VALUE_TYPE_NUMBER){
-		return Lib::getArrayIndex(result, this, table_value, index);
+		OS_ASSERT(dynamic_cast<GCArrayValue*>(table_value));
+		int i = (int)index.index.v.number;
+		if((i >= 0 || (i += ((GCArrayValue*)table_value)->values.count) >= 0) && i < ((GCArrayValue*)table_value)->values.count){
+			result = ((GCArrayValue*)table_value)->values[i];
+		}else{
+			result = Value();
+		}
+		return true;
 	}
 	Property * prop = NULL;
 	Table * table = table_value->table;
@@ -14506,16 +14865,17 @@ bool OS::Core::getPropertyValue(Value& result, GCValue * table_value, const Prop
 		return true;
 	}
 	if(table_value->type == OS_VALUE_TYPE_ARRAY){
-		return Lib::getArrayIndex(result, this, table_value, index);
-		/*
 		OS_ASSERT(dynamic_cast<GCArrayValue*>(table_value));
-		GCArrayValue * arr = (GCArrayValue*)table_value;
-		int i = (int)valueToInt(index.index);
-		if(i >= 0 && i < arr->values.count){
-		result = arr->values[i];
-		return true;
+		OS_NUMBER number;
+		if(isValueNumber(index.index, &number)){
+			int i = (int)number;
+			if((i >= 0 || (i += ((GCArrayValue*)table_value)->values.count) >= 0) && i < ((GCArrayValue*)table_value)->values.count){
+				result = ((GCArrayValue*)table_value)->values[i];
+			}else{
+				result = Value();
+			}
+			return true;
 		}
-		*/
 	}
 	return false;
 }
@@ -14538,7 +14898,7 @@ bool OS::Core::getPropertyValue(Value& result, Value table_value, const Property
 	case OS_VALUE_TYPE_ARRAY:
 	case OS_VALUE_TYPE_OBJECT:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_CFUNCTION:
 		return getPropertyValue(result, table_value.v.value, index, prototype_enabled);
@@ -14723,7 +15083,7 @@ void OS::Core::pushPropertyValue(Value table_value, const PropertyIndex& index, 
 	case OS_VALUE_TYPE_ARRAY:
 	case OS_VALUE_TYPE_OBJECT:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_CFUNCTION:
 		return pushPropertyValue(table_value.v.value, index, anonymous_getter_enabled, named_getter_enabled, prototype_enabled, auto_create);
@@ -14958,6 +15318,7 @@ void OS::Core::opDebugger()
 	DEBUG_BREAK;
 }
 
+/*
 void OS::Core::opPushNumber()
 {
 	// StackFunction * stack_func = this->stack_func;
@@ -14974,6 +15335,7 @@ void OS::Core::opPushString()
 	OS_ASSERT(stack_func_prog_strings[i]->type == OS_VALUE_TYPE_STRING);
 	pushValue(stack_func_prog_strings[i]);
 }
+*/
 
 void OS::Core::opPushFunction()
 {
@@ -15010,7 +15372,7 @@ void OS::Core::opObjectSetByAutoIndex()
 
 	case OS_VALUE_TYPE_OBJECT:
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 	case OS_VALUE_TYPE_FUNCTION:
 	case OS_VALUE_TYPE_CFUNCTION:
 		num_index = object.v.object->table ? object.v.object->table->next_index : 0;
@@ -15126,7 +15488,8 @@ void OS::Core::opSetLocalVar()
 	int i = stack_func->opcodes.readUVariable();
 	// Upvalues * func_upvalues = stack_func->locals;
 	OS_ASSERT(i < num_stack_func_locals);
-	switch((stack_func_locals[i] = stack_values.lastElement()).type){
+	StackValues * stack_values = &this->stack_values;
+	switch((stack_func_locals[i] = stack_values->buf[--stack_values->count]).type){
 	case OS_VALUE_TYPE_FUNCTION:
 		OS_ASSERT(dynamic_cast<GCFunctionValue*>(stack_func_locals[i].v.func));
 		if(!stack_func_locals[i].v.func->name){
@@ -15141,14 +15504,16 @@ void OS::Core::opSetLocalVar()
 		}
 		break;
 	}
-	pop();
+	// already removed
+	// pop();
 }
 
 void OS::Core::opPushUpvalue()
 {
 	StackFunction * stack_func = this->stack_func;
 	int i = stack_func->opcodes.readUVariable();
-	int up_count = stack_func->opcodes.readByte();
+	OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+	int up_count = *stack_func->opcodes.cur++; // readByte();
 	OS_ASSERT(up_count <= stack_func->func->func_decl->max_up_count);
 	Upvalues * func_upvalues = stack_func->locals;
 	OS_ASSERT(up_count <= func_upvalues->num_parents);
@@ -15161,7 +15526,8 @@ void OS::Core::opPushUpvalueAutoCreate()
 {
 	StackFunction * stack_func = this->stack_func;
 	int i = stack_func->opcodes.readUVariable();
-	int up_count = stack_func->opcodes.readByte();
+	OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+	int up_count = *stack_func->opcodes.cur++; // readByte();
 	OS_ASSERT(up_count <= stack_func->func->func_decl->max_up_count);
 	Upvalues * func_upvalues = stack_func->locals;
 	OS_ASSERT(up_count <= func_upvalues->num_parents);
@@ -15178,7 +15544,8 @@ void OS::Core::opSetUpvalue()
 	StackFunction * stack_func = this->stack_func;
 	OS_ASSERT(stack_values.count >= 1);
 	int i = stack_func->opcodes.readUVariable();
-	int up_count = stack_func->opcodes.readByte();
+	OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+	int up_count = *stack_func->opcodes.cur++; // readByte();
 	OS_ASSERT(up_count <= stack_func->func->func_decl->max_up_count);
 	Upvalues * func_upvalues = stack_func->locals;
 	OS_ASSERT(up_count <= func_upvalues->num_parents);
@@ -15199,22 +15566,72 @@ void OS::Core::opSetUpvalue()
 		}
 		break;
 	}
-	pop();
+	// pop();
+	--stack_values.count;
 }
 
-void OS::Core::opIfJump(bool boolean)
+void OS::Core::opIfJump1(bool boolean)
 {
 	StackFunction * stack_func = this->stack_func;
 	OS_ASSERT(stack_values.count >= 1);
 	// Value value = stack_values.lastElement();
-	int offs = stack_func->opcodes.readInt32();
 	if(valueToBool(stack_values.lastElement()) == boolean){
-		stack_func->opcodes.movePos(offs);
+		// int offs = stack_func->opcodes.readInt16();
+		OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+		int offs = (OS_INT8)stack_func->opcodes.cur[0];
+		// stack_func->opcodes.movePos(offs);
+		OS_ASSERT(stack_func->opcodes.getPos()+offs >= 0 && stack_func->opcodes.getPos()+offs <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += offs;
+	}else{
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) >= 0);
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += sizeof(OS_INT32);
 	}
-	pop();
+	// pop();
+	--stack_values.count;
 }
 
-void OS::Core::opJump()
+void OS::Core::opIfJump2(bool boolean)
+{
+	StackFunction * stack_func = this->stack_func;
+	OS_ASSERT(stack_values.count >= 1);
+	// Value value = stack_values.lastElement();
+	if(valueToBool(stack_values.lastElement()) == boolean){
+		// int offs = stack_func->opcodes.readInt16();
+		OS_ASSERT(stack_func->opcodes.getPos()+2 <= stack_func->opcodes.getSize());
+		int offs = (OS_INT16)(stack_func->opcodes.cur[0] | (stack_func->opcodes.cur[1] << 8));
+		// stack_func->opcodes.movePos(offs);
+		OS_ASSERT(stack_func->opcodes.getPos()+offs >= 0 && stack_func->opcodes.getPos()+offs <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += offs;
+	}else{
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) >= 0);
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += sizeof(OS_INT32);
+	}
+	// pop();
+	--stack_values.count;
+}
+
+void OS::Core::opIfJump4(bool boolean)
+{
+	StackFunction * stack_func = this->stack_func;
+	OS_ASSERT(stack_values.count >= 1);
+	// Value value = stack_values.lastElement();
+	if(valueToBool(stack_values.lastElement()) == boolean){
+		int offs = stack_func->opcodes.readInt32();
+		// stack_func->opcodes.movePos(offs);
+		OS_ASSERT(stack_func->opcodes.getPos()+offs >= 0 && stack_func->opcodes.getPos()+offs <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += offs;
+	}else{
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) >= 0);
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += sizeof(OS_INT32);
+	}
+	// pop();
+	--stack_values.count;
+}
+
+void OS::Core::opJump4()
 {
 	StackFunction * stack_func = this->stack_func;
 	int offs = stack_func->opcodes.readInt32();
@@ -15224,7 +15641,7 @@ void OS::Core::opJump()
 void OS::Core::opCall()
 {
 	StackFunction * stack_func = this->stack_func;
-#if 1
+#if 1 // speed optimization
 	OS_ASSERT(stack_func->opcodes.getPos() + 2 <= stack_func->opcodes.size);
 	OS_BYTE * buf = stack_func->opcodes.cur;
 	stack_func->opcodes.cur += 2;
@@ -15242,7 +15659,7 @@ void OS::Core::opCall()
 void OS::Core::opSuperCall(int& break_with_ret_values)
 {
 	StackFunction * stack_func = this->stack_func;
-#if 1
+#if 1 // speed optimization
 	OS_ASSERT(stack_func->opcodes.getPos() + 2 <= stack_func->opcodes.size);
 	OS_BYTE * buf = stack_func->opcodes.cur;
 	stack_func->opcodes.cur += 2;
@@ -15307,7 +15724,8 @@ void OS::Core::opSuperCall(int& break_with_ret_values)
 void OS::Core::opTailCall(int& out_ret_values)
 {
 	StackFunction * stack_func = this->stack_func;
-	int params = stack_func->opcodes.readByte();
+	OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+	int params = *stack_func->opcodes.cur++; // readByte();
 	int ret_values = stack_func->need_ret_values;
 	OS_ASSERT(stack_values.count >= 1 + params);
 	Value func_value = stack_values[stack_values.count-1-params];
@@ -15350,7 +15768,7 @@ void OS::Core::opTailCall(int& out_ret_values)
 void OS::Core::opCallMethod()
 {
 	StackFunction * stack_func = this->stack_func;
-#if 1
+#if 1 // speed optimization
 	OS_ASSERT(stack_func->opcodes.getPos() + 2 <= stack_func->opcodes.size);
 	OS_BYTE * buf = stack_func->opcodes.cur;
 	stack_func->opcodes.cur += 2;
@@ -15363,7 +15781,7 @@ void OS::Core::opCallMethod()
 	OS_ASSERT(stack_values.count >= 2 + params);
 	Value table_value = stack_values[stack_values.count-2-params];
 	pushPropertyValue(table_value, PropertyIndex(stack_values[stack_values.count-1-params]), true, true, true, false);
-#if 1
+#if 1 // speed optimization
 	stack_values[stack_values.count-2-params-1] = stack_values.lastElement();
 	stack_values[stack_values.count-2-params-0] = table_value;
 	stack_values.count--;
@@ -15381,7 +15799,8 @@ void OS::Core::opCallMethod()
 void OS::Core::opTailCallMethod(int& out_ret_values)
 {
 	StackFunction * stack_func = this->stack_func;
-	int params = stack_func->opcodes.readByte();
+	OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+	int params = *stack_func->opcodes.cur++; // readByte();
 	int ret_values = stack_func->need_ret_values;
 	OS_ASSERT(stack_values.count >= 2 + params);
 	Value table_value = stack_values[stack_values.count-2-params];
@@ -15403,6 +15822,7 @@ void OS::Core::opTailCallMethod(int& out_ret_values)
 	case OS_VALUE_TYPE_CFUNCTION:
 	case OS_VALUE_TYPE_OBJECT:
 	case OS_VALUE_TYPE_USERDATA:
+	case OS_VALUE_TYPE_USERPTR:
 		call(params, ret_values);
 		removeStackValues(-2-ret_values, 2);
 		break;
@@ -15434,7 +15854,8 @@ void OS::Core::opTailCallMethod(int& out_ret_values)
 int OS::Core::opReturn()
 {
 	StackFunction * stack_func = this->stack_func;
-	int cur_ret_values = stack_func->opcodes.readByte();
+	OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+	int cur_ret_values = *stack_func->opcodes.cur++; // readByte();
 	int ret_values = stack_func->need_ret_values;
 	ret_values = syncRetValues(ret_values, cur_ret_values);
 	OS_ASSERT(stack_values.count == stack_func->stack_pos + ret_values);
@@ -15473,7 +15894,8 @@ int OS::Core::opReturnAuto()
 void OS::Core::opGetProperty(bool auto_create)
 {
 	StackFunction * stack_func = this->stack_func;
-	int ret_values = stack_func->opcodes.readByte();
+	OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+	int ret_values = *stack_func->opcodes.cur++; // readByte();
 	OS_ASSERT(stack_values.count >= 2);
 	pushPropertyValue(stack_values.buf[stack_values.count - 2], 
 		PropertyIndex(stack_values.buf[stack_values.count - 1]), true, true, true, auto_create);
@@ -15482,10 +15904,24 @@ void OS::Core::opGetProperty(bool auto_create)
 	syncRetValues(ret_values, 1);
 }
 
+void OS::Core::opGetThisPropertyByString()
+{
+	StackFunction * stack_func = this->stack_func;
+	OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+	int ret_values = *stack_func->opcodes.cur++; // readByte();
+	int i = stack_func->opcodes.readUVariable();
+	OS_ASSERT(i >= 0 && i < stack_func->func->prog->num_strings);
+	OS_ASSERT(stack_func_prog_strings[i]->type == OS_VALUE_TYPE_STRING);
+	pushPropertyValue(stack_func->self, 
+		PropertyIndex(stack_func_prog_strings[i], PropertyIndex::KeepStringIndex()), true, true, true, false);
+	// OS_ASSERT(ret_values == 1);
+	syncRetValues(ret_values, 1);
+}
+
 void OS::Core::opGetPropertyByLocals(bool auto_create)
 {
 	StackFunction * stack_func = this->stack_func;
-#if 1
+#if 1 // speed optimization
 	OS_ASSERT(stack_func->opcodes.getPos() + 3 <= stack_func->opcodes.size);
 	OS_BYTE * buf = stack_func->opcodes.cur;
 	stack_func->opcodes.cur += 3;
@@ -15498,8 +15934,145 @@ void OS::Core::opGetPropertyByLocals(bool auto_create)
 	int local_2 = stack_func->opcodes.readByte();
 #endif
 	OS_ASSERT(local_1 < num_stack_func_locals && local_2 < num_stack_func_locals);
+#if 1 // inline function for speed optimization
+	const bool anonymous_getter_enabled = true, named_getter_enabled = true, prototype_enabled = true;
+	Value * stack_func_locals = this->stack_func_locals;
+	Value table_value = stack_func_locals[local_1];
+	PropertyIndex index(stack_func_locals[local_2]);
+	switch(table_value.type){
+	case OS_VALUE_TYPE_NULL:
+		break;
+
+	case OS_VALUE_TYPE_BOOL:
+	case OS_VALUE_TYPE_NUMBER:
+		pushPropertyValueForPrimitive(table_value, index, anonymous_getter_enabled, named_getter_enabled, prototype_enabled, auto_create);
+		syncRetValues(ret_values, 1);
+		return;
+
+	case OS_VALUE_TYPE_STRING:
+	case OS_VALUE_TYPE_ARRAY:
+	case OS_VALUE_TYPE_OBJECT:
+	case OS_VALUE_TYPE_USERDATA:
+	case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_FUNCTION:
+	case OS_VALUE_TYPE_CFUNCTION:
+		for(GCValue * self = table_value.v.value;;){
+#if 1  // inline function for speed optimization
+			for(;;){
+				if(self->type == OS_VALUE_TYPE_ARRAY && index.index.type == OS_VALUE_TYPE_NUMBER){
+					OS_ASSERT(dynamic_cast<GCArrayValue*>(self));
+					int i = (int)index.index.v.number;
+					if((i >= 0 || (i += ((GCArrayValue*)self)->values.count) >= 0) && i < ((GCArrayValue*)self)->values.count){
+						pushValue(((GCArrayValue*)self)->values[i]);
+					}else{
+						pushNull();
+					}
+					syncRetValues(ret_values, 1);
+					return;
+				}
+				Property * prop;
+				Table * table = self->table;
+				if(table && (prop = table->get(index))){
+					pushValue(prop->value);
+					syncRetValues(ret_values, 1);
+					return;
+				}
+				if(prototype_enabled){
+					GCValue * cur_value = self;
+					while(cur_value->prototype){
+						cur_value = cur_value->prototype;
+						Table * cur_table = cur_value->table;
+						if(cur_table && (prop = cur_table->get(index))){
+							pushValue(prop->value);
+							syncRetValues(ret_values, 1);
+							return;
+						}
+					}
+				}
+				if(index.index.type == OS_VALUE_TYPE_STRING && strings->syntax_prototype == index.index.v.string){
+					pushValue(self->prototype);
+					syncRetValues(ret_values, 1);
+					return;
+				}
+				if(self->type == OS_VALUE_TYPE_ARRAY){
+					OS_ASSERT(dynamic_cast<GCArrayValue*>(self));
+					OS_NUMBER number;
+					if(isValueNumber(index.index, &number)){
+						int i = (int)number;
+						if((i >= 0 || (i += ((GCArrayValue*)self)->values.count) >= 0) && i < ((GCArrayValue*)self)->values.count){
+							pushValue(((GCArrayValue*)self)->values[i]);
+						}else{
+							pushNull();
+						}
+					}else{
+						pushNull();
+					}
+					syncRetValues(ret_values, 1);
+					return;
+				}
+				break;
+			}
+#else
+			Value value
+			if(getPropertyValue(value, table_value, index, prototype_enabled)){
+				pushValue(value);
+				syncRetValues(ret_values, 1);
+				return;
+			}
+#endif
+			if(!hasSpecialPrefix(index.index)){
+				Value value;
+				if(index.index.type == OS_VALUE_TYPE_STRING){
+					const void * buf1 = strings->__getAt.toChar();
+					int size1 = strings->__getAt.getDataSize();
+					const void * buf2 = index.index.v.string->toChar();
+					int size2 = index.index.v.string->getDataSize();
+					GCStringValue * getter_name = newStringValue(buf1, size1, buf2, size2);
+					if(getPropertyValue(value, table_value, PropertyIndex(getter_name, PropertyIndex::KeepStringIndex()), prototype_enabled)){
+						pushValue(value);
+						pushValue(self);
+						call(0, 1);
+						syncRetValues(ret_values, 1);
+						return;
+					}
+				}
+				if(getPropertyValue(value, table_value, PropertyIndex(strings->__get, PropertyIndex::KeepStringIndex()), prototype_enabled)){
+					// auto_create = false;
+					if(value.type == OS_VALUE_TYPE_OBJECT){
+						table_value = value.v.value;
+						continue;
+					}
+					pushValue(value);
+					pushValue(self);
+					pushValue(index.index);
+					if(!auto_create){
+						call(1, 1);
+					}else{
+						pushBool(true);
+						call(2, 1);
+					}
+					if(auto_create && stack_values.lastElement().type == OS_VALUE_TYPE_NULL){
+						pop();
+						setPropertyValue(self, index, Value(pushObjectValue()), false, false); 
+					}
+					syncRetValues(ret_values, 1);
+					return;
+				}
+			}
+			if(auto_create){
+				setPropertyValue(self, index, Value(pushObjectValue()), false, false); 
+				syncRetValues(ret_values, 1);
+				return;
+			}
+			break;
+		}
+		break;
+	}
+	pushNull();
+#else
 	pushPropertyValue(stack_func_locals[local_1], 
 		PropertyIndex(stack_func_locals[local_2]), true, true, true, auto_create);
+#endif
 	// OS_ASSERT(ret_values == 1);
 	syncRetValues(ret_values, 1);
 }
@@ -15507,7 +16080,7 @@ void OS::Core::opGetPropertyByLocals(bool auto_create)
 void OS::Core::opGetPropertyByLocalAndNumber(bool auto_create)
 {
 	StackFunction * stack_func = this->stack_func;
-#if 1
+#if 1 // speed optimization
 	OS_ASSERT(stack_func->opcodes.getPos() + 2 <= stack_func->opcodes.size);
 	OS_BYTE * buf = stack_func->opcodes.cur;
 	stack_func->opcodes.cur += 2;
@@ -15538,7 +16111,7 @@ void OS::Core::opSetProperty()
 void OS::Core::opSetPropertyByLocals(bool auto_create)
 {
 	OS_ASSERT(stack_values.count >= 1);
-#if 1
+#if 1 // speed optimization
 	OS_ASSERT(stack_func->opcodes.getPos() + 2 <= stack_func->opcodes.size);
 	OS_BYTE * buf = stack_func->opcodes.cur;
 	stack_func->opcodes.cur += 2;
@@ -15561,7 +16134,7 @@ void OS::Core::opSetPropertyByLocals(bool auto_create)
 void OS::Core::opGetSetPropertyByLocals(bool auto_create)
 {
 	OS_ASSERT(stack_values.count >= 1);
-#if 1
+#if 1 // speed optimization
 	OS_ASSERT(stack_func->opcodes.getPos() + 4 <= stack_func->opcodes.size);
 	OS_BYTE * buf = stack_func->opcodes.cur;
 	stack_func->opcodes.cur += 4;
@@ -15574,7 +16147,7 @@ void OS::Core::opGetSetPropertyByLocals(bool auto_create)
 	OS_ASSERT(local_1 < num_stack_func_locals && local_2 < num_stack_func_locals);
 	pushPropertyValue(stack_func_locals[local_1], 
 		PropertyIndex(stack_func_locals[local_2]), true, true, true, auto_create);
-#if 1
+#if 1 // speed optimization
 	local_1 = buf[2];
 	local_2 = buf[3];
 #else
@@ -15594,7 +16167,8 @@ void OS::Core::opGetSetPropertyByLocals(bool auto_create)
 void OS::Core::opSetDim()
 {
 	StackFunction * stack_func = this->stack_func;
-	int params = stack_func->opcodes.readByte();
+	OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+	int params = *stack_func->opcodes.cur++; // readByte();
 
 	OS_ASSERT(stack_values.count >= 2 + params);
 	moveStackValue(-2-params, -1-params); // put value to the first param
@@ -15606,7 +16180,7 @@ void OS::Core::opSetDim()
 		PropertyIndex(params == 1 ? strings->__setempty : strings->__setdim, PropertyIndex::KeepStringIndex()), true)
 		&& func.isFunction())
 	{
-#if 1
+#if 1 // speed optimization
 		insertValue(func, -1-params);
 		call(params, 0, NULL, true);
 #else
@@ -15642,7 +16216,7 @@ void OS::Core::opExtends()
 		break;
 
 	case OS_VALUE_TYPE_USERDATA:
-		// case OS_VALUE_TYPE_USERPTR:
+	case OS_VALUE_TYPE_USERPTR:
 	case OS_VALUE_TYPE_CFUNCTION:
 		// TODO: warning???
 		break;
@@ -15665,27 +16239,64 @@ void OS::Core::opDeleteProperty()
 	pop(2);
 }
 
-void OS::Core::opLogicAnd()
+void OS::Core::opLogicAndOr1(bool is_and)
 {
 	StackFunction * stack_func = this->stack_func;
 	OS_ASSERT(stack_values.count >= 1);
-	int offs = stack_func->opcodes.readInt32();
-	if(!valueToBool(stack_values.lastElement())){
-		stack_func->opcodes.movePos(offs);
+	// Value value = stack_values.lastElement();
+	if(valueToBool(stack_values.lastElement()) != is_and){
+		// int offs = stack_func->opcodes.readInt16();
+		OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+		int offs = (OS_INT8)stack_func->opcodes.cur[0];
+		// stack_func->opcodes.movePos(offs);
+		OS_ASSERT(stack_func->opcodes.getPos()+offs >= 0 && stack_func->opcodes.getPos()+offs <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += offs;
 	}else{
-		pop();
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) >= 0);
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += sizeof(OS_INT32);
+		// pop();
+		--stack_values.count;
 	}
 }
 
-void OS::Core::opLogicOr()
+void OS::Core::opLogicAndOr2(bool is_and)
 {
 	StackFunction * stack_func = this->stack_func;
 	OS_ASSERT(stack_values.count >= 1);
-	int offs = stack_func->opcodes.readInt32();
-	if(valueToBool(stack_values.lastElement())){
-		stack_func->opcodes.movePos(offs);
+	// Value value = stack_values.lastElement();
+	if(valueToBool(stack_values.lastElement()) != is_and){
+		// int offs = stack_func->opcodes.readInt16();
+		OS_ASSERT(stack_func->opcodes.getPos()+2 <= stack_func->opcodes.getSize());
+		int offs = (OS_INT16)(stack_func->opcodes.cur[0] | (stack_func->opcodes.cur[1] << 8));
+		// stack_func->opcodes.movePos(offs);
+		OS_ASSERT(stack_func->opcodes.getPos()+offs >= 0 && stack_func->opcodes.getPos()+offs <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += offs;
 	}else{
-		pop();
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) >= 0);
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += sizeof(OS_INT32);
+		// pop();
+		--stack_values.count;
+	}
+}
+
+void OS::Core::opLogicAndOr4(bool is_and)
+{
+	StackFunction * stack_func = this->stack_func;
+	OS_ASSERT(stack_values.count >= 1);
+	// Value value = stack_values.lastElement();
+	if(valueToBool(stack_values.lastElement()) != is_and){
+		int offs = stack_func->opcodes.readInt32();
+		// stack_func->opcodes.movePos(offs);
+		OS_ASSERT(stack_func->opcodes.getPos()+offs >= 0 && stack_func->opcodes.getPos()+offs <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += offs;
+	}else{
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) >= 0);
+		OS_ASSERT(stack_func->opcodes.getPos()+(int)sizeof(OS_INT32) <= stack_func->opcodes.getSize());
+		stack_func->opcodes.cur += sizeof(OS_INT32);
+		// pop();
+		--stack_values.count;
 	}
 }
 
@@ -15816,17 +16427,19 @@ void OS::Core::opUnaryOperator(int opcode)
 	removeStackValue(-2);
 }
 
+/*
 void OS::Core::opBinaryOperator(int opcode)
 {
 	OS_ASSERT(stack_values.count >= 2);
 	pushOpResultValue(opcode, stack_values[stack_values.count-2], stack_values.lastElement());
 	removeStackValues(-3, 2);
 }
+*/
 
 void OS::Core::opBinaryOperatorByLocals()
 {
 	StackFunction * stack_func = this->stack_func;
-#if 1
+#if 1 // speed optimization
 	OS_ASSERT(stack_func->opcodes.getPos() + 3 <= stack_func->opcodes.size);
 	OS_BYTE * buf = stack_func->opcodes.cur;
 	stack_func->opcodes.cur += 3;
@@ -15839,14 +16452,112 @@ void OS::Core::opBinaryOperatorByLocals()
 	int local_2 = stack_func->opcodes.readByte();
 #endif
 	OS_ASSERT(local_1 < num_stack_func_locals && local_2 < num_stack_func_locals);
+#if 0 // increase in speed is not detected
 	Value * stack_func_locals = this->stack_func_locals;
+	const Value& left_value = stack_func_locals[local_1];
+	const Value& right_value = stack_func_locals[local_2];
+	if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
+		StackValues * stack_values = &this->stack_values;
+		if(stack_values->capacity < stack_values->count+1){
+			reserveStackValues(stack_values->count+1);
+		}
+		OS_NUMBER right_num;
+		switch(opcode){
+		case Program::OP_COMPARE:
+			stack_values->buf[stack_values->count++] = left_value.v.number - right_value.v.number;
+			return;
+			
+		case Program::OP_LOGIC_EQ:
+			stack_values->buf[stack_values->count++] = left_value.v.number == right_value.v.number;
+			return;
+
+		case Program::OP_LOGIC_NE:
+			stack_values->buf[stack_values->count++] = left_value.v.number != right_value.v.number;
+			return;
+
+		case Program::OP_LOGIC_GE:
+			stack_values->buf[stack_values->count++] = left_value.v.number >= right_value.v.number;
+			return;
+
+		case Program::OP_LOGIC_LE:
+			stack_values->buf[stack_values->count++] = left_value.v.number <= right_value.v.number;
+			return;
+
+		case Program::OP_LOGIC_GREATER:
+			stack_values->buf[stack_values->count++] = left_value.v.number > right_value.v.number;
+			return;
+
+		case Program::OP_LOGIC_LESS:
+			stack_values->buf[stack_values->count++] = left_value.v.number < right_value.v.number;
+			return;
+
+		case Program::OP_BIT_AND:
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number & (OS_INT)right_value.v.number;
+			return;
+
+		case Program::OP_BIT_OR:
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number | (OS_INT)right_value.v.number;
+			return;
+
+		case Program::OP_BIT_XOR:
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number ^ (OS_INT)right_value.v.number;
+			return;
+
+		case Program::OP_ADD: // +
+			stack_values->buf[stack_values->count++] = left_value.v.number + right_value.v.number;
+			return;
+
+		case Program::OP_SUB: // -
+			stack_values->buf[stack_values->count++] = left_value.v.number - right_value.v.number;
+			return;
+
+		case Program::OP_MUL: // *
+			stack_values->buf[stack_values->count++] = left_value.v.number * right_value.v.number;
+			return;
+
+		case Program::OP_DIV: // /
+			right_num = right_value.v.number;
+			if(!right_num){
+				errorDivisionByZero();
+				stack_values->buf[stack_values->count++] = 0.0;
+			}else{
+				stack_values->buf[stack_values->count++] = left_value.v.number / right_num;
+			}
+			return;
+
+		case Program::OP_MOD: // %
+			right_num = right_value.v.number;
+			if(!right_num){
+				errorDivisionByZero();
+				stack_values->buf[stack_values->count++] = 0.0;
+			}else{
+				stack_values->buf[stack_values->count++] = OS_MATH_MOD_OPERATOR(left_value.v.number, right_num);
+			}
+			return;
+
+		case Program::OP_LSHIFT: // <<
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number << (OS_INT)right_value.v.number;
+			return;
+
+		case Program::OP_RSHIFT: // >>
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number >> (OS_INT)right_value.v.number;
+			return;
+
+		case Program::OP_POW: // **
+			stack_values->buf[stack_values->count++] = OS_MATH_POW_OPERATOR((OS_FLOAT)left_value.v.number, (OS_FLOAT)right_value.v.number);
+			return;
+		}
+	}
+	pushOpResultValue(opcode, left_value, right_value);
+#else
 	pushOpResultValue(opcode, stack_func_locals[local_1], stack_func_locals[local_2]);
+#endif
 }
 
 void OS::Core::opBinaryOperatorByLocalAndNumber()
 {
 	StackFunction * stack_func = this->stack_func;
-#if 1
+#if 1 // speed optimization
 	OS_ASSERT(stack_func->opcodes.getPos() + 2 <= stack_func->opcodes.size);
 	OS_BYTE * buf = stack_func->opcodes.cur;
 	stack_func->opcodes.cur += 2;
@@ -15859,6 +16570,101 @@ void OS::Core::opBinaryOperatorByLocalAndNumber()
 	OS_ASSERT(local_1 < num_stack_func_locals);
 	int number_index = stack_func->opcodes.readUVariable();
 	OS_ASSERT(number_index >= 0 && number_index < stack_func->func->prog->num_numbers);
+#if 1 // inline function for speed optimization
+	const Value& left_value = stack_func_locals[local_1];
+	if(left_value.type == OS_VALUE_TYPE_NUMBER){
+		StackValues * stack_values = &this->stack_values;
+		if(stack_values->capacity < stack_values->count+1){
+			reserveStackValues(stack_values->count+1);
+		}
+		OS_NUMBER right_num;
+		switch(opcode){
+		case Program::OP_COMPARE:
+			stack_values->buf[stack_values->count++] = left_value.v.number - stack_func_prog_numbers[number_index];
+			return;
+			
+		case Program::OP_LOGIC_EQ:
+			stack_values->buf[stack_values->count++] = left_value.v.number == stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_LOGIC_NE:
+			stack_values->buf[stack_values->count++] = left_value.v.number != stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_LOGIC_GE:
+			stack_values->buf[stack_values->count++] = left_value.v.number >= stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_LOGIC_LE:
+			stack_values->buf[stack_values->count++] = left_value.v.number <= stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_LOGIC_GREATER:
+			stack_values->buf[stack_values->count++] = left_value.v.number > stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_LOGIC_LESS:
+			stack_values->buf[stack_values->count++] = left_value.v.number < stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_BIT_AND:
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number & (OS_INT)stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_BIT_OR:
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number | (OS_INT)stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_BIT_XOR:
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number ^ (OS_INT)stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_ADD: // +
+			stack_values->buf[stack_values->count++] = left_value.v.number + stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_SUB: // -
+			stack_values->buf[stack_values->count++] = left_value.v.number - stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_MUL: // *
+			stack_values->buf[stack_values->count++] = left_value.v.number * stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_DIV: // /
+			right_num = stack_func_prog_numbers[number_index];
+			if(!right_num){
+				errorDivisionByZero();
+				stack_values->buf[stack_values->count++] = 0.0;
+			}else{
+				stack_values->buf[stack_values->count++] = left_value.v.number / right_num;
+			}
+			return;
+
+		case Program::OP_MOD: // %
+			right_num = stack_func_prog_numbers[number_index];
+			if(!right_num){
+				errorDivisionByZero();
+				stack_values->buf[stack_values->count++] = 0.0;
+			}else{
+				stack_values->buf[stack_values->count++] = OS_MATH_MOD_OPERATOR(left_value.v.number, right_num);
+			}
+			return;
+
+		case Program::OP_LSHIFT: // <<
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number << (OS_INT)stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_RSHIFT: // >>
+			stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number >> (OS_INT)stack_func_prog_numbers[number_index];
+			return;
+
+		case Program::OP_POW: // **
+			stack_values->buf[stack_values->count++] = OS_MATH_POW_OPERATOR((OS_FLOAT)left_value.v.number, (OS_FLOAT)stack_func_prog_numbers[number_index]);
+			return;
+		}
+	}
+#endif
 	pushOpResultValue(opcode, stack_func_locals[local_1], stack_func_prog_numbers[number_index]);
 }
 
@@ -15886,6 +16692,9 @@ int OS::Core::execute()
 #ifdef OS_DEBUG
 	allocator->checkNativeStackUsage(OS_TEXT("OS::Core::execute"));
 #endif
+	StackFunction * stack_func;
+	StackValues * stack_values;
+	OS_NUMBER right_num;
 	int i, ret_values, ret_stack_funcs = call_stack_funcs.count-1;
 #ifdef OS_INFINITE_LOOP_OPCODES
 	for(int opcodes_executed = 0;; opcodes_executed++){
@@ -15893,7 +16702,7 @@ int OS::Core::execute()
 	for(;;){
 #endif
 		// StackFunction * stack_func = &call_stack_funcs.lastElement(); // could be invalid because of stack resize
-		OS_ASSERT(stack_values.count >= stack_func->stack_pos);
+		OS_ASSERT(this->stack_values.count >= this->stack_func->stack_pos);
 		// stack_func->opcode_offs = opcodes.pos; // used by debugger to show currect position if debug info present
 		if(terminated
 #ifdef OS_INFINITE_LOOP_OPCODES
@@ -15903,7 +16712,8 @@ int OS::Core::execute()
 		{
 			break;
 		}
-		Program::OpcodeType opcode = (Program::OpcodeType)stack_func->opcodes.readByte();
+		OS_ASSERT(this->stack_func->opcodes.getPos()+1 <= this->stack_func->opcodes.getSize());
+		Program::OpcodeType opcode = (Program::OpcodeType)*(stack_func = this->stack_func)->opcodes.cur++; // readByte();
 		OS_PROFILE_BEGIN_OPCODE(opcode);
 		switch(opcode){
 		default:
@@ -15915,13 +16725,72 @@ int OS::Core::execute()
 			opDebugger();
 			break;
 
-		case Program::OP_PUSH_NUMBER:
-			opPushNumber();
+		case Program::OP_PUSH_ONE:
+			//opPushNumber();
+			stack_values = &this->stack_values;
+			if(stack_values->capacity < stack_values->count+1){
+				reserveStackValues(stack_values->count+1);
+			}
+			stack_values->buf[stack_values->count++] = 1.0f;
 			break;
 
-		case Program::OP_PUSH_STRING:
-			opPushString();
+		case Program::OP_PUSH_NUMBER_1:
+			//opPushNumber();
+			OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+			i = *stack_func->opcodes.cur++; // readByte();
+			OS_ASSERT(i >= 0 && i < stack_func->func->prog->num_numbers);
+			stack_values = &this->stack_values;
+			if(stack_values->capacity < stack_values->count+1){
+				reserveStackValues(stack_values->count+1);
+			}
+			stack_values->buf[stack_values->count++] = stack_func_prog_numbers[i];
+			// pushNumber(stack_func_prog_numbers[i]);
 			break;
+
+		case Program::OP_PUSH_NUMBER_BY_AUTO_INDEX:
+			//opPushNumber();
+			i = stack_func->opcodes.readUVariable();
+			OS_ASSERT(i >= 0 && i < stack_func->func->prog->num_numbers);
+			stack_values = &this->stack_values;
+			if(stack_values->capacity < stack_values->count+1){
+				reserveStackValues(stack_values->count+1);
+			}
+			stack_values->buf[stack_values->count++] = stack_func_prog_numbers[i];
+			// pushNumber(stack_func_prog_numbers[i]);
+			break;
+
+		case Program::OP_PUSH_STRING_1:
+			{
+				OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+				i = *stack_func->opcodes.cur++; // readByte();
+				OS_ASSERT(i >= 0 && i < stack_func->func->prog->num_strings);
+				OS_ASSERT(stack_func_prog_strings[i]->type == OS_VALUE_TYPE_STRING);
+				stack_values = &this->stack_values;
+				if(stack_values->capacity < stack_values->count+1){
+					reserveStackValues(stack_values->count+1);
+				}
+				Value& value = stack_values->buf[stack_values->count++];
+				value.v.string = stack_func_prog_strings[i];
+				value.type = OS_VALUE_TYPE_STRING;
+				// opPushString();
+				break;
+			}
+
+		case Program::OP_PUSH_STRING_BY_AUTO_INDEX:
+			{
+				i = stack_func->opcodes.readUVariable();
+				OS_ASSERT(i >= 0 && i < stack_func->func->prog->num_strings);
+				OS_ASSERT(stack_func_prog_strings[i]->type == OS_VALUE_TYPE_STRING);
+				stack_values = &this->stack_values;
+				if(stack_values->capacity < stack_values->count+1){
+					reserveStackValues(stack_values->count+1);
+				}
+				Value& value = stack_values->buf[stack_values->count++];
+				value.v.string = stack_func_prog_strings[i];
+				value.type = OS_VALUE_TYPE_STRING;
+				// opPushString();
+				break;
+			}
 
 		case Program::OP_PUSH_NULL:
 			pushNull();
@@ -15984,10 +16853,19 @@ int OS::Core::execute()
 			opPushRestArguments();
 			break;
 
-		case Program::OP_PUSH_LOCAL_VAR:
-			i = stack_func->opcodes.readByte();
+		case Program::OP_PUSH_LOCAL_VAR_1:
+			OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+			i = *stack_func->opcodes.cur++; // readByte();
 			OS_ASSERT(i < num_stack_func_locals);
+#if 1 // inline function for speed optimization
+			stack_values = &this->stack_values;
+			if(stack_values->capacity < stack_values->count+1){
+				reserveStackValues(stack_values->count+1);
+			}
+			stack_values->buf[stack_values->count++] = stack_func_locals[i];
+#else
 			pushValue(stack_func_locals[i]);
+#endif
 			break;
 
 		case Program::OP_PUSH_LOCAL_VAR_BY_AUTO_INDEX:
@@ -15998,6 +16876,36 @@ int OS::Core::execute()
 			opPushLocalVarAutoCreate();
 			break;
 
+		case Program::OP_SET_LOCAL_VAR_1:
+			// inline function for speed optimization
+			{
+				// StackFunction * stack_func = this->stack_func;
+				OS_ASSERT(this->stack_values.count >= 1);
+				OS_ASSERT(stack_func->opcodes.getPos()+1 <= stack_func->opcodes.getSize());
+				i = *stack_func->opcodes.cur++; // readByte();
+				// Upvalues * func_upvalues = stack_func->locals;
+				OS_ASSERT(i < num_stack_func_locals);
+				stack_values = &this->stack_values;
+				switch((stack_func_locals[i] = stack_values->buf[--stack_values->count]).type){
+				case OS_VALUE_TYPE_FUNCTION:
+					OS_ASSERT(dynamic_cast<GCFunctionValue*>(stack_func_locals[i].v.func));
+					if(!stack_func_locals[i].v.func->name){
+						stack_func_locals[i].v.func->name = stack_func->func->func_decl->locals[i].name.string;
+					}
+					break;
+
+				case OS_VALUE_TYPE_CFUNCTION:
+					OS_ASSERT(dynamic_cast<GCCFunctionValue*>(stack_func_locals[i].v.cfunc));
+					if(!stack_func_locals[i].v.cfunc->name){
+						stack_func_locals[i].v.cfunc->name = stack_func->func->func_decl->locals[i].name.string;
+					}
+					break;
+				}
+				// already removed
+				// pop();
+				break;
+			}
+
 		case Program::OP_SET_LOCAL_VAR:
 			opSetLocalVar();
 			break;
@@ -16006,6 +16914,141 @@ int OS::Core::execute()
 			opBinaryOperatorByLocals();
 			opSetLocalVar();
 			break;
+
+		case Program::OP_SET_LOCAL_VAR_1_BY_BIN_OPERATOR_LOCAL_AND_NUMBER:
+			// inline function for speed optimization
+			{
+				// StackFunction * stack_func = this->stack_func;
+				OS_ASSERT(stack_func->opcodes.getPos() + 4 <= stack_func->opcodes.size);
+				OS_BYTE * buf = stack_func->opcodes.cur;
+				stack_func->opcodes.cur += 4;
+				int opcode = buf[0];
+				int local_1 = buf[1];
+				OS_ASSERT(local_1 < num_stack_func_locals);
+				int number_index = buf[2]; // stack_func->opcodes.readUVariable();
+				OS_ASSERT(number_index >= 0 && number_index < stack_func->func->prog->num_numbers);
+				stack_values = &this->stack_values;
+				const Value& left_value = stack_func_locals[local_1];
+				if(left_value.type == OS_VALUE_TYPE_NUMBER){
+					if(stack_values->capacity < stack_values->count+1){
+						reserveStackValues(stack_values->count+1);
+					}
+					switch(opcode){
+					case Program::OP_COMPARE:
+						stack_values->buf[stack_values->count++] = left_value.v.number - stack_func_prog_numbers[number_index];
+						break;
+			
+					case Program::OP_LOGIC_EQ:
+						stack_values->buf[stack_values->count++] = left_value.v.number == stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_LOGIC_NE:
+						stack_values->buf[stack_values->count++] = left_value.v.number != stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_LOGIC_GE:
+						stack_values->buf[stack_values->count++] = left_value.v.number >= stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_LOGIC_LE:
+						stack_values->buf[stack_values->count++] = left_value.v.number <= stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_LOGIC_GREATER:
+						stack_values->buf[stack_values->count++] = left_value.v.number > stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_LOGIC_LESS:
+						stack_values->buf[stack_values->count++] = left_value.v.number < stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_BIT_AND:
+						stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number & (OS_INT)stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_BIT_OR:
+						stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number | (OS_INT)stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_BIT_XOR:
+						stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number ^ (OS_INT)stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_ADD: // +
+						stack_values->buf[stack_values->count++] = left_value.v.number + stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_SUB: // -
+						stack_values->buf[stack_values->count++] = left_value.v.number - stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_MUL: // *
+						stack_values->buf[stack_values->count++] = left_value.v.number * stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_DIV: // /
+						right_num = stack_func_prog_numbers[number_index];
+						if(!right_num){
+							errorDivisionByZero();
+							stack_values->buf[stack_values->count++] = 0.0;
+						}else{
+							stack_values->buf[stack_values->count++] = left_value.v.number / right_num;
+						}
+						break;
+
+					case Program::OP_MOD: // %
+						right_num = stack_func_prog_numbers[number_index];
+						if(!right_num){
+							errorDivisionByZero();
+							stack_values->buf[stack_values->count++] = 0.0;
+						}else{
+							stack_values->buf[stack_values->count++] = OS_MATH_MOD_OPERATOR(left_value.v.number, right_num);
+						}
+						break;
+
+					case Program::OP_LSHIFT: // <<
+						stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number << (OS_INT)stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_RSHIFT: // >>
+						stack_values->buf[stack_values->count++] = (OS_INT)left_value.v.number >> (OS_INT)stack_func_prog_numbers[number_index];
+						break;
+
+					case Program::OP_POW: // **
+						stack_values->buf[stack_values->count++] = OS_MATH_POW_OPERATOR((OS_FLOAT)left_value.v.number, (OS_FLOAT)stack_func_prog_numbers[number_index]);
+						break;
+
+					default:
+						pushOpResultValue(opcode, stack_func_locals[local_1], stack_func_prog_numbers[number_index]);
+					}
+				}else{
+					pushOpResultValue(opcode, stack_func_locals[local_1], stack_func_prog_numbers[number_index]);
+				}
+				// opSetLocalVar();
+				OS_ASSERT(this->stack_values.count >= 1);
+				i = buf[3];
+				// Upvalues * func_upvalues = stack_func->locals;
+				OS_ASSERT(i < num_stack_func_locals);
+				// stack_values = &this->stack_values;
+				switch((stack_func_locals[i] = stack_values->buf[--stack_values->count]).type){
+				case OS_VALUE_TYPE_FUNCTION:
+					OS_ASSERT(dynamic_cast<GCFunctionValue*>(stack_func_locals[i].v.func));
+					if(!stack_func_locals[i].v.func->name){
+						stack_func_locals[i].v.func->name = stack_func->func->func_decl->locals[i].name.string;
+					}
+					break;
+
+				case OS_VALUE_TYPE_CFUNCTION:
+					OS_ASSERT(dynamic_cast<GCCFunctionValue*>(stack_func_locals[i].v.cfunc));
+					if(!stack_func_locals[i].v.cfunc->name){
+						stack_func_locals[i].v.cfunc->name = stack_func->func->func_decl->locals[i].name.string;
+					}
+					break;
+				}
+				// already removed
+				// pop();
+				break;
+			}
 
 		case Program::OP_SET_LOCAL_VAR_BY_BIN_OPERATOR_LOCAL_AND_NUMBER:
 			opBinaryOperatorByLocalAndNumber();
@@ -16024,16 +17067,44 @@ int OS::Core::execute()
 			opSetUpvalue();
 			break;
 
-		case Program::OP_IF_NOT_JUMP:
-			opIfJump(false);
+		case Program::OP_IF_NOT_JUMP_1:
+			opIfJump1(false);
 			break;
 
-		case Program::OP_IF_JUMP:
-			opIfJump(true);
+		case Program::OP_IF_NOT_JUMP_2:
+			opIfJump2(false);
 			break;
 
-		case Program::OP_JUMP:
-			opJump();
+		case Program::OP_IF_NOT_JUMP_4:
+			opIfJump4(false);
+			break;
+
+		case Program::OP_IF_JUMP_1:
+			opIfJump1(true);
+			break;
+
+		case Program::OP_IF_JUMP_2:
+			opIfJump2(true);
+			break;
+
+		case Program::OP_IF_JUMP_4:
+			opIfJump4(true);
+			break;
+
+		case Program::OP_JUMP_1:
+			OS_ASSERT(stack_func->opcodes.getPos() + *(OS_INT8*)stack_func->opcodes.cur >= 0);
+			OS_ASSERT(stack_func->opcodes.getPos() + *(OS_INT8*)stack_func->opcodes.cur <= stack_func->opcodes.getSize());
+			stack_func->opcodes.cur += *(OS_INT8*)stack_func->opcodes.cur;
+			break;
+
+		case Program::OP_JUMP_2:
+			OS_ASSERT(stack_func->opcodes.getPos() + (OS_INT16)(stack_func->opcodes.cur[0] | (stack_func->opcodes.cur[1] << 8)) >= 0);
+			OS_ASSERT(stack_func->opcodes.getPos() + (OS_INT16)(stack_func->opcodes.cur[0] | (stack_func->opcodes.cur[1] << 8)) <= stack_func->opcodes.getSize());
+			stack_func->opcodes.cur += (OS_INT16)(stack_func->opcodes.cur[0] | (stack_func->opcodes.cur[1] << 8));
+			break;
+
+		case Program::OP_JUMP_4:
+			opJump4();
 			break;
 
 		case Program::OP_CALL:
@@ -16094,6 +17165,10 @@ int OS::Core::execute()
 			opGetProperty(false);
 			break;
 
+		case Program::OP_GET_THIS_PROPERTY_BY_STRING:
+			opGetThisPropertyByString();
+			break;
+
 		case Program::OP_GET_PROPERTY_AUTO_CREATE:
 			opGetProperty(true);
 			break;
@@ -16107,12 +17182,71 @@ int OS::Core::execute()
 			break;
 
 		case Program::OP_SET_PROPERTY:
+#if 1 // inline function for speed optimization
+			OS_ASSERT(this->stack_values.count >= 3);
+			stack_values = &this->stack_values;
+			setPropertyValue(stack_values->buf[stack_values->count - 2], 
+				PropertyIndex(stack_values->buf[stack_values->count - 1]), 
+				stack_values->buf[stack_values->count - 3], true, true);
+			OS_ASSERT(this->stack_values.count >= 3);
+			// pop(3);
+			stack_values->count -= 3;
+#else
 			opSetProperty();
+#endif
 			break;
 
 		case Program::OP_SET_PROPERTY_BY_LOCALS_AUTO_CREATE:
-			opSetPropertyByLocals(true);
-			break;
+			{
+#if 0 // increase in speed is not detected
+				OS_ASSERT(this->stack_values.count >= 1);
+				OS_ASSERT(stack_func->opcodes.getPos() + 2 <= stack_func->opcodes.size);
+				OS_BYTE * buf = stack_func->opcodes.cur;
+				stack_func->opcodes.cur += 2;
+				int local_1 = buf[0];
+				int local_2 = buf[1];
+				OS_ASSERT(local_1 < num_stack_func_locals && local_2 < num_stack_func_locals);
+				Value * stack_func_locals = this->stack_func_locals;
+				if(stack_func_locals[local_1].type == OS_VALUE_TYPE_NULL){
+					stack_func_locals[local_1] = newObjectValue();
+				}
+				
+				//setPropertyValue(stack_func_locals[local_1], PropertyIndex(stack_func_locals[local_2]), stack_values.lastElement(), true, true);
+				PropertyIndex index(stack_func_locals[local_2]);
+				Value value = stack_values->buf[--stack_values->count];
+				Value table_value = stack_func_locals[local_1];
+				switch(table_value.type){
+				case OS_VALUE_TYPE_NULL:
+					break;
+
+				case OS_VALUE_TYPE_BOOL:
+					// return setPropertyValue(prototypes[PROTOTYPE_BOOL], index, value, setter_enabled);
+					break;
+
+				case OS_VALUE_TYPE_NUMBER:
+					// return setPropertyValue(prototypes[PROTOTYPE_NUMBER], index, value, setter_enabled);
+					break;
+
+				case OS_VALUE_TYPE_STRING:
+					// return setPropertyValue(prototypes[PROTOTYPE_STRING], index, value, setter_enabled);
+					// return;
+
+				case OS_VALUE_TYPE_ARRAY:
+				case OS_VALUE_TYPE_OBJECT:
+				case OS_VALUE_TYPE_USERDATA:
+				case OS_VALUE_TYPE_USERPTR:
+				case OS_VALUE_TYPE_FUNCTION:
+				case OS_VALUE_TYPE_CFUNCTION:
+					setPropertyValue(table_value.v.value, index, value, true, true);
+					break;
+				}
+				// already removed
+				// pop();
+#else
+				opSetPropertyByLocals(true);
+#endif
+				break;
+			}
 
 		case Program::OP_GET_SET_PROPERTY_BY_LOCALS_AUTO_CREATE:
 			opGetSetPropertyByLocals(true);
@@ -16135,15 +17269,33 @@ int OS::Core::execute()
 			break;
 
 		case Program::OP_POP:
-			pop();
+			// pop();
+			OS_ASSERT(this->stack_values.count > 0);
+			--this->stack_values.count;
 			break;
 
-		case Program::OP_LOGIC_AND:
-			opLogicAnd();
+		case Program::OP_LOGIC_AND_1:
+			opLogicAndOr1(true);
 			break;
 
-		case Program::OP_LOGIC_OR:
-			opLogicOr();
+		case Program::OP_LOGIC_AND_2:
+			opLogicAndOr2(true);
+			break;
+
+		case Program::OP_LOGIC_AND_4:
+			opLogicAndOr4(true);
+			break;
+
+		case Program::OP_LOGIC_OR_1:
+			opLogicAndOr1(false);
+			break;
+
+		case Program::OP_LOGIC_OR_2:
+			opLogicAndOr2(false);
+			break;
+
+		case Program::OP_LOGIC_OR_4:
+			opLogicAndOr4(false);
 			break;
 
 		case Program::OP_SUPER:
@@ -16237,8 +17389,118 @@ int OS::Core::execute()
 		case Program::OP_LSHIFT: // <<
 		case Program::OP_RSHIFT: // >>
 		case Program::OP_POW: // **
-			opBinaryOperator(opcode);
-			break;
+			// opBinaryOperator(opcode);
+			{
+				OS_ASSERT(this->stack_values.count >= 2);
+				stack_values = &this->stack_values;
+#if 1 // speed optimization
+				const Value& left_value = stack_values->buf[stack_values->count-2];
+				const Value& right_value = stack_values->buf[stack_values->count-1];
+				if(left_value.type == OS_VALUE_TYPE_NUMBER && right_value.type == OS_VALUE_TYPE_NUMBER){
+					if(stack_values->capacity < stack_values->count+1){
+						reserveStackValues(stack_values->count+1);
+					}
+					switch(opcode){
+					case Program::OP_COMPARE:
+						stack_values->buf[--stack_values->count - 1] = left_value.v.number - right_value.v.number;
+						break;
+			
+					case Program::OP_LOGIC_EQ:
+						stack_values->buf[--stack_values->count - 1] = left_value.v.number == right_value.v.number;
+						break;
+
+					case Program::OP_LOGIC_NE:
+						stack_values->buf[--stack_values->count - 1] = left_value.v.number != right_value.v.number;
+						break;
+
+					case Program::OP_LOGIC_GE:
+						stack_values->buf[--stack_values->count - 1] = left_value.v.number >= right_value.v.number;
+						break;
+
+					case Program::OP_LOGIC_LE:
+						stack_values->buf[--stack_values->count - 1] = left_value.v.number <= right_value.v.number;
+						break;
+
+					case Program::OP_LOGIC_GREATER:
+						stack_values->buf[--stack_values->count - 1] = left_value.v.number > right_value.v.number;
+						break;
+
+					case Program::OP_LOGIC_LESS:
+						stack_values->buf[--stack_values->count - 1] = left_value.v.number < right_value.v.number;
+						break;
+
+					case Program::OP_BIT_AND:
+						stack_values->buf[--stack_values->count - 1] = (OS_INT)left_value.v.number & (OS_INT)right_value.v.number;
+						break;
+
+					case Program::OP_BIT_OR:
+						stack_values->buf[--stack_values->count - 1] = (OS_INT)left_value.v.number | (OS_INT)right_value.v.number;
+						break;
+
+					case Program::OP_BIT_XOR:
+						stack_values->buf[--stack_values->count - 1] = (OS_INT)left_value.v.number ^ (OS_INT)right_value.v.number;
+						break;
+
+					case Program::OP_ADD: // +
+						stack_values->buf[--stack_values->count - 1] = left_value.v.number + right_value.v.number;
+						break;
+
+					case Program::OP_SUB: // -
+						stack_values->buf[--stack_values->count - 1] = left_value.v.number - right_value.v.number;
+						break;
+
+					case Program::OP_MUL: // *
+						stack_values->buf[--stack_values->count - 1] = left_value.v.number * right_value.v.number;
+						break;
+
+					case Program::OP_DIV: // /
+						right_num = right_value.v.number;
+						if(!right_num){
+							errorDivisionByZero();
+							stack_values->buf[--stack_values->count - 1] = 0.0;
+						}else{
+							stack_values->buf[--stack_values->count - 1] = left_value.v.number / right_num;
+						}
+						break;
+
+					case Program::OP_MOD: // %
+						right_num = right_value.v.number;
+						if(!right_num){
+							errorDivisionByZero();
+							stack_values->buf[--stack_values->count - 1] = 0.0;
+						}else{
+							stack_values->buf[--stack_values->count - 1] = OS_MATH_MOD_OPERATOR(left_value.v.number, right_num);
+						}
+						break;
+
+					case Program::OP_LSHIFT: // <<
+						stack_values->buf[--stack_values->count - 1] = (OS_INT)left_value.v.number << (OS_INT)right_value.v.number;
+						break;
+
+					case Program::OP_RSHIFT: // >>
+						stack_values->buf[--stack_values->count - 1] = (OS_INT)left_value.v.number >> (OS_INT)right_value.v.number;
+						break;
+
+					case Program::OP_POW: // **
+						stack_values->buf[--stack_values->count - 1] = OS_MATH_POW_OPERATOR((OS_FLOAT)left_value.v.number, (OS_FLOAT)right_value.v.number);
+						break;
+
+					default:
+						goto generic_bin_op;
+					}
+					break;
+				}
+generic_bin_op:
+				pushOpResultValue(opcode, left_value, right_value);
+#else
+				pushOpResultValue(opcode, stack_values->buf[stack_values->count-2], stack_values->buf[stack_values->count-1]);
+#endif
+				OS_ASSERT(this->stack_values.count >= 3);
+				stack_values->buf[stack_values->count-3] = stack_values->buf[stack_values->count-1];
+				stack_values->count -= 2;
+				// removeStackValues(-3, 2);
+				break;
+			}
 		}
 		OS_PROFILE_END_OPCODE(opcode);
 	}
@@ -16435,6 +17697,12 @@ void OS::setErrorHandler(int code)
 	remove(-2);
 }
 
+void OS::setFunc(const FuncDef& def, bool anonymous_setter_enabled, bool named_setter_enabled, int closure_values, void * user_param)
+{
+	const FuncDef list[] = {def, {}};
+	setFuncs(list, anonymous_setter_enabled, named_setter_enabled, closure_values, user_param);
+}
+
 void OS::setFuncs(const FuncDef * list, bool anonymous_setter_enabled, bool named_setter_enabled, int closure_values, void * user_param)
 {
 	for(; list->func; list++){
@@ -16444,9 +17712,15 @@ void OS::setFuncs(const FuncDef * list, bool anonymous_setter_enabled, bool name
 		for(int i = 0; i < closure_values; i++){
 			pushStackValue(-2-closure_values);
 		}
-		pushCFunction(list->func, closure_values, user_param);
+		pushCFunction(list->func, closure_values, list->user_param ? list->user_param : user_param);
 		setProperty(anonymous_setter_enabled, named_setter_enabled);
 	}
+}
+
+void OS::setNumber(const NumberDef& def, bool anonymous_setter_enabled, bool named_setter_enabled)
+{
+	const NumberDef list[] = {def, {}};
+	setNumbers(list, anonymous_setter_enabled, named_setter_enabled);
 }
 
 void OS::setNumbers(const NumberDef * list, bool anonymous_setter_enabled, bool named_setter_enabled)
@@ -16459,6 +17733,12 @@ void OS::setNumbers(const NumberDef * list, bool anonymous_setter_enabled, bool 
 	}
 }
 
+void OS::setString(const StringDef& def, bool anonymous_setter_enabled, bool named_setter_enabled)
+{
+	const StringDef list[] = {def, {}};
+	setStrings(list, anonymous_setter_enabled, named_setter_enabled);
+}
+
 void OS::setStrings(const StringDef * list, bool anonymous_setter_enabled, bool named_setter_enabled)
 {
 	for(; list->name; list++){
@@ -16467,6 +17747,12 @@ void OS::setStrings(const StringDef * list, bool anonymous_setter_enabled, bool 
 		pushString(list->value);
 		setProperty(anonymous_setter_enabled, named_setter_enabled);
 	}
+}
+
+void OS::setNull(const NullDef& def, bool anonymous_setter_enabled, bool named_setter_enabled)
+{
+	const NullDef list[] = {def, {}};
+	setNulls(list, anonymous_setter_enabled, named_setter_enabled);
 }
 
 void OS::setNulls(const NullDef * list, bool anonymous_setter_enabled, bool named_setter_enabled)
@@ -16539,6 +17825,12 @@ void OS::setGlobal(const Core::String& name, bool anonymous_setter_enabled, bool
 	}
 }
 
+void OS::setGlobal(const FuncDef& func, bool anonymous_setter_enabled, bool named_setter_enabled)
+{
+	pushCFunction(func.func, func.user_param);
+	setGlobal(func.name, anonymous_setter_enabled, named_setter_enabled);
+}
+
 void OS::initGlobalFunctions()
 {
 	struct Lib
@@ -16597,7 +17889,7 @@ void OS::initGlobalFunctions()
 			if(params < 1){
 				return 0;
 			}
-			bool required = os->toBool(-params+1);
+			bool required = params > 1 ? os->toBool(-params+1) : false;
 			os->compileFile(os->toString(-params), required);
 			return 1;
 		}
@@ -17040,7 +18332,7 @@ void OS::initObjectClass()
 			}
 			switch(self->type){
 			case OS_VALUE_TYPE_USERDATA:
-				// case OS_VALUE_TYPE_USERPTR:
+			case OS_VALUE_TYPE_USERPTR:
 				{
 					Core::StringBuffer str(os);
 					str += OS_TEXT("<");
@@ -17172,7 +18464,7 @@ void OS::initObjectClass()
 
 			case OS_VALUE_TYPE_OBJECT:
 			case OS_VALUE_TYPE_USERDATA:
-				// case OS_VALUE_TYPE_USERPTR:
+			case OS_VALUE_TYPE_USERPTR:
 			case OS_VALUE_TYPE_FUNCTION:
 			case OS_VALUE_TYPE_CFUNCTION:
 				num_index = self_var.v.object->table ? self_var.v.object->table->next_index : 0;
@@ -17202,7 +18494,7 @@ void OS::initObjectClass()
 
 			case OS_VALUE_TYPE_OBJECT:
 			case OS_VALUE_TYPE_USERDATA:
-				// case OS_VALUE_TYPE_USERPTR:
+			case OS_VALUE_TYPE_USERPTR:
 			case OS_VALUE_TYPE_FUNCTION:
 			case OS_VALUE_TYPE_CFUNCTION:
 				if(self_var.v.object->table && self_var.v.object->table->count > 0){
@@ -17621,7 +18913,7 @@ void OS::initFunctionClass()
 
 		static int call(OS * os, int params, int, int need_ret_values, void*)
 		{
-#if 1
+#if 1 // speed optimization
 			return os->call(params-1, need_ret_values);
 #else
 			int offs = os->getAbsoluteOffs(-params);
@@ -17847,137 +19139,119 @@ void OS::initMathModule()
 			return minmax(os, params, OP_LOGIC_GE);
 		}
 
-		static int abs(OS * os, int params, int, int, void*)
+		/*
+		static double abs(double p)
 		{
-			os->pushNumber(::fabs(os->toNumber(-params)));
-			return 1;
+			return ::fabs(p);
 		}
 
-		static int ceil(OS * os, int params, int, int, void*)
+		static double ceil(double p)
 		{
-			os->pushNumber(::ceil(os->toNumber(-params)));
-			return 1;
+			return ::ceil(p);
 		}
 
-		static int floor(OS * os, int params, int, int, void*)
+		static double floor(double p)
 		{
-			os->pushNumber(::floor(os->toNumber(-params)));
-			return 1;
+			return ::floor(p);
 		}
+		*/
 
-		static int round(OS * os, int params, int, int, void*)
+		static double round(double a, int precision)
 		{
-			double a = (double)os->toNumber(-params);
-			if(params >= 2){
-				int precision = (int)os->toNumber(-params+1);
-				if(precision <= 0){
-					if(precision < 0){
-						double p = 10.0f;
-						for(int i = -precision-1; i > 0; i--){
-							p *= 10.0f;
-						}
-						os->pushNumber(::floor(a / p + 0.5f) * p);
-						return 1;
+			if(precision <= 0){
+				if(precision < 0){
+					double p = 10.0f;
+					for(int i = -precision-1; i > 0; i--){
+						p *= 10.0f;
 					}
-					os->pushNumber(::floor(a + 0.5f));
-					return 1;
+					return ::floor(a / p + 0.5f) * p;
 				}
-				double p = 10.0f;
-				for(int i = precision-1; i > 0; i--){
-					p *= 10.0f;
-				}
-				os->pushNumber(::floor(a * p + 0.5f) / p);
-				return 1;
+				return ::floor(a + 0.5f);
 			}
-			os->pushNumber(::floor(a + 0.5f));
-			return 1;
+			double p = 10.0f;
+			for(int i = precision-1; i > 0; i--){
+				p *= 10.0f;
+			}
+			return ::floor(a * p + 0.5f) / p;
 		}
 
-		static int sin(OS * os, int params, int, int, void*)
+		/*
+		static double sin(double p)
 		{
-			os->pushNumber(::sin(os->toNumber(-params)));
-			return 1;
+			return ::sin(p);
 		}
 
-		static int sinh(OS * os, int params, int, int, void*)
+		static double sinh(double p)
 		{
-			os->pushNumber(::sinh(os->toNumber(-params)));
-			return 1;
+			return ::sinh(p);
 		}
 
-		static int cos(OS * os, int params, int, int, void*)
+		static double cos(double p)
 		{
-			os->pushNumber(::cos(os->toNumber(-params)));
-			return 1;
+			return ::cos(p);
 		}
 
-		static int cosh(OS * os, int params, int, int, void*)
+		static double cosh(double p)
 		{
-			os->pushNumber(::cosh(os->toNumber(-params)));
-			return 1;
+			return ::cosh(p);
 		}
 
-		static int tan(OS * os, int params, int, int, void*)
+		static double tan(double p)
 		{
-			os->pushNumber(::tan(os->toNumber(-params)));
-			return 1;
+			return ::tan(p);
 		}
 
-		static int tanh(OS * os, int params, int, int, void*)
+		static double tanh(double p)
 		{
-			os->pushNumber(::tanh(os->toNumber(-params)));
-			return 1;
+			return ::tanh(p);
 		}
 
-		static int acos(OS * os, int params, int, int, void*)
+		static double acos(double p)
 		{
-			os->pushNumber(::acos(os->toNumber(-params)));
-			return 1;
+			return ::acos(p);
 		}
 
-		static int asin(OS * os, int params, int, int, void*)
+		static double asin(double p)
 		{
-			os->pushNumber(::asin(os->toNumber(-params)));
-			return 1;
+			return ::asin(p);
 		}
 
-		static int atan(OS * os, int params, int, int, void*)
+		static double atan(double p)
 		{
-			os->pushNumber(::atan(os->toNumber(-params)));
-			return 1;
+			return ::atan(p);
 		}
 
-		static int atan2(OS * os, int params, int, int, void*)
+		static double atan2(double y, double x)
 		{
-			os->pushNumber(::atan2(os->toNumber(-params), os->toNumber(-params+1)));
-			return 1;
+			return ::atan2(y, x);
 		}
 
-		static int exp(OS * os, int params, int, int, void*)
+		static double exp(double p)
 		{
-			os->pushNumber(::exp(os->toNumber(-params)));
-			return 1;
+			return ::exp(p);
 		}
+		*/
 
 		static int frexp(OS * os, int params, int, int, void*)
 		{
+			if(!params) return 0;
 			int e;
 			os->pushNumber(::frexp(os->toNumber(-params), &e));
 			os->pushNumber(e);
 			return 2;
 		}
 
-		static int ldexp(OS * os, int params, int, int, void*)
+		/*
+		static double ldexp(double x, int y)
 		{
-			os->pushNumber(::ldexp(os->toNumber(-params), (int)os->toNumber(-params+1)));
-			return 1;
+			return ::ldexp(x, y);
 		}
 
-		static int pow(OS * os, int params, int, int, void*)
+		static double pow(double x, double y)
 		{
-			os->pushNumber(::pow(os->toNumber(-params), os->toNumber(-params+1)));
-			return 1;
+			return ::pow(x, y);
 		}
+		*/
 
 		static int random(OS * os, int params, int, int, void*)
 		{
@@ -17992,6 +19266,7 @@ void OS::initMathModule()
 				return 1;
 
 			case 2:
+			default:
 				os->pushNumber(core->getRand(os->toNumber(-params), os->toNumber(-params+1)));
 				return 1;
 			}
@@ -18006,18 +19281,21 @@ void OS::initMathModule()
 
 		static int setrandseed(OS * os, int params, int, int, void*)
 		{
+			if(!params) return 0;
 			os->core->rand_seed = (OS_U32)os->toNumber(-params);
 			return 0;
 		}
 
-		static int fmod(OS * os, int params, int, int, void*)
+		/*
+		static double fmod(double x, double y)
 		{
-			os->pushNumber(::fmod(os->toNumber(-params), os->toNumber(-params+1)));
-			return 1;
+			return ::fmod(x, y);
 		}
+		*/
 
 		static int modf(OS * os, int params, int, int, void*)
 		{
+			if(!params) return 0;
 			double ip;
 			double fp = ::modf(os->toNumber(-params), &ip);
 			os->pushNumber(ip);
@@ -18025,17 +19303,19 @@ void OS::initMathModule()
 			return 2;
 		}
 
-		static int sqrt(OS * os, int params, int, int, void*)
+		/*
+		static double sqrt(double p)
 		{
-			os->pushNumber(::sqrt(os->toNumber(-params)));
-			return 1;
+			return ::sqrt(p);
 		}
+		*/
 
 		static int log(OS * os, int params, int, int, void*)
 		{
+			if(!params) return 0;
 			double x = os->toNumber(-params);
 			OS_NUMBER base;
-			if(os->isNumber(-params+1, &base)){
+			if(params > 1 && os->isNumber(-params+1, &base)){
 				if(base == 10){
 					os->pushNumber(::log10(x));
 				}else{
@@ -18047,47 +19327,46 @@ void OS::initMathModule()
 			return 1;
 		}
 
-		static int deg(OS * os, int params, int, int, void*)
+		static double deg(double p)
 		{
-			os->pushNumber(os->toNumber(-params)/OS_RADIANS_PER_DEGREE);
-			return 1;
+			return p / OS_RADIANS_PER_DEGREE;
 		}
-
-		static int rad(OS * os, int params, int, int, void*)
+		
+		static double rad(double p)
 		{
-			os->pushNumber(os->toNumber(-params)*OS_RADIANS_PER_DEGREE);
-			return 1;
+			return p * OS_RADIANS_PER_DEGREE;
 		}
 	};
 	FuncDef list[] = {
 		{OS_TEXT("min"), Math::min_func},
 		{OS_TEXT("max"), Math::max_func},
-		{OS_TEXT("abs"), Math::abs},
-		{OS_TEXT("ceil"), Math::ceil},
-		{OS_TEXT("floor"), Math::floor},
-		{OS_TEXT("round"), Math::round},
-		{OS_TEXT("sin"), Math::sin},
-		{OS_TEXT("sinh"), Math::sinh},
-		{OS_TEXT("cos"), Math::cos},
-		{OS_TEXT("cosh"), Math::cosh},
-		{OS_TEXT("tan"), Math::tan},
-		{OS_TEXT("tanh"), Math::tanh},
-		{OS_TEXT("acos"), Math::acos},
-		{OS_TEXT("asin"), Math::asin},
-		{OS_TEXT("atan"), Math::atan},
-		{OS_TEXT("atan2"), Math::atan2},
-		{OS_TEXT("exp"), Math::exp},
+		def(OS_TEXT("abs"), (double(__cdecl*)(double))::fabs), // Math::abs),
+		def(OS_TEXT("ceil"), (double(__cdecl*)(double))::ceil), // Math::ceil),
+		def(OS_TEXT("floor"), (double(__cdecl*)(double))::floor), // Math::floor),
+		def(OS_TEXT("round"), Math::round),
+		def(OS_TEXT("sin"), (double(__cdecl*)(double))::sin), // Math::sin),
+		def(OS_TEXT("sinh"), (double(__cdecl*)(double))::sinh), // Math::sinh),
+		def(OS_TEXT("cos"), (double(__cdecl*)(double))::cos), // Math::cos),
+		def(OS_TEXT("cosh"), (double(__cdecl*)(double))::cosh), // Math::cosh),
+		def(OS_TEXT("tan"), (double(__cdecl*)(double))::tan), // Math::tan),
+		def(OS_TEXT("tanh"), (double(__cdecl*)(double))::tanh), // Math::tanh),
+		def(OS_TEXT("acos"), (double(__cdecl*)(double))::acos), // Math::acos),
+		def(OS_TEXT("asin"), (double(__cdecl*)(double))::asin), // Math::asin),
+		def(OS_TEXT("atan"), (double(__cdecl*)(double))::atan), // Math::atan),
+		def(OS_TEXT("atan2"), (double(__cdecl*)(double, double))::atan2), // Math::atan2),
+		def(OS_TEXT("exp"), (double(__cdecl*)(double))::exp), // Math::exp),
 		{OS_TEXT("frexp"), Math::frexp},
-		{OS_TEXT("ldexp"), Math::ldexp},
+		def(OS_TEXT("ldexp"), (double(__cdecl*)(double, int))::ldexp), // Math::ldexp),
+		def(OS_TEXT("pow"), (double(__cdecl*)(double, double))::pow), // Math::pow),
 		{OS_TEXT("random"), Math::random},
 		{OS_TEXT("__get@randseed"), Math::getrandseed},
 		{OS_TEXT("__set@randseed"), Math::setrandseed},
-		{OS_TEXT("fmod"), Math::fmod},
+		def(OS_TEXT("fmod"), (double(__cdecl*)(double, double))::fmod), // Math::fmod),
 		{OS_TEXT("modf"), Math::modf},
-		{OS_TEXT("sqrt"), Math::sqrt},
+		def(OS_TEXT("sqrt"), (double(__cdecl*)(double))::sqrt), // Math::sqrt),
 		{OS_TEXT("log"), Math::log},
-		{OS_TEXT("deg"), Math::deg},
-		{OS_TEXT("rad"), Math::rad},
+		def(OS_TEXT("deg"), Math::deg),
+		def(OS_TEXT("rad"), Math::rad),
 		{}
 	};
 	NumberDef numbers[] = {
@@ -18318,7 +19597,7 @@ OS::Core::GCObjectValue * OS::Core::initObjectInstance(GCObjectValue * object)
 			Value value;
 			if(core->getPropertyValue(value, prototype, PropertyIndex(core->strings->__object, PropertyIndex::KeepStringIndex()), false)){
 				GCValue * object_props = value.getGCValue();
-				if(object_props->table){
+				if(object_props && object_props->table){
 					Property * prop = object_props->table->first;
 					for(; prop; prop = prop->next){
 						core->pushCloneValue(prop->value);
@@ -18523,6 +19802,7 @@ int OS::Core::call(int params, int ret_values, GCValue * self_for_proto, bool al
 			}
 
 		case OS_VALUE_TYPE_USERDATA:
+		case OS_VALUE_TYPE_USERPTR:
 			{
 				bool prototype_enabled = true;
 				Value func;
@@ -18836,3 +20116,36 @@ recurse:
 		goto recurse;
 	}
 }
+
+// =====================================================================
+// =====================================================================
+// =====================================================================
+
+static OS_FunctionDataChain * function_data_first = NULL;
+
+OS_FunctionDataChain::OS_FunctionDataChain()
+{ 
+	next = function_data_first;
+	function_data_first = this;
+}
+OS_FunctionDataChain::~OS_FunctionDataChain()
+{
+}
+
+void OS_finalizeAllBinds()
+{
+	while(function_data_first){
+		OS_FunctionDataChain * cur = function_data_first;
+		function_data_first = cur->next;
+		delete cur;
+	}
+}
+
+struct OS_FunctionDataFinalizer
+{
+	~OS_FunctionDataFinalizer(){ OS_finalizeAllBinds(); }
+} __functionDataFinalizer__;
+
+// =====================================================================
+// =====================================================================
+// =====================================================================

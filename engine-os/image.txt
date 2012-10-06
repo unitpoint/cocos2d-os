@@ -111,10 +111,10 @@ begin function
 
             begin set property
               begin get property
-                begin get property
+                begin get this property by string
                   push this
                   push const string "texture"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const string "width"
               end get property ret values 1
               push this
@@ -126,10 +126,10 @@ begin function
 
             begin set property
               begin get property
-                begin get property
+                begin get this property by string
                   push this
                   push const string "texture"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const string "height"
               end get property ret values 1
               push this
@@ -140,10 +140,10 @@ begin function
 [16] this.width = this.frameWidth
 
             begin set property
-              begin get property
+              begin get this property by string
                 push this
                 push const string "frameWidth"
-              end get property ret values 1
+              end get this property by string ret values 1
               push this
               push const string "width"
             end set property ret values 0
@@ -152,10 +152,10 @@ begin function
 [17] this.height = this.frameHeight
 
             begin set property
-              begin get property
+              begin get this property by string
                 push this
                 push const string "frameHeight"
-              end get property ret values 1
+              end get this property by string ret values 1
               push this
               push const string "height"
             end set property ret values 0
@@ -673,10 +673,10 @@ begin function
 
                             begin scope
                               begin call method
-                                begin get property
+                                begin get this property by string
                                   push this
                                   push const string "frames"
-                                end get property ret values 1
+                                end get this property by string ret values 1
                                 begin params 2
                                   push const string "push"
                                   ,
@@ -777,10 +777,10 @@ begin function
               begin params 4
                 push const string "setTimeout"
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "update"
-                end get property ret values 1
+                end get this property by string ret values 1
                 ,
                 begin get property
                   get local var params (0 0 param)
@@ -811,20 +811,20 @@ begin function
               begin set local var
                 begin params 2
                   begin get property
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "frames"
-                    end get property ret values 1
-                    begin get property
+                    end get this property by string ret values 1
+                    begin get this property by string
                       push this
                       push const string "index"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                   end get property ret values 1
                   ,
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "target"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end params ret values 2
               end set local var target (3 0)
             end set local var frame (2 0)
@@ -835,17 +835,17 @@ begin function
             begin set property
               begin operator %
                 begin operator +
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "index"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   push const number 1
                 end operator +
                 begin length
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "frames"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end length
               end operator %
               push this
@@ -859,16 +859,16 @@ begin function
               begin bool exp
                 begin logic &&
                   begin logic ==
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "index"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     push const number 0
                   end logic ==
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "onComplete"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end logic &&
               end bool exp
               begin then
@@ -877,10 +877,10 @@ begin function
 
                 begin scope
                   begin call method
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "onComplete"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     begin params 3
                       push const string "call"
                       ,
@@ -1017,10 +1017,10 @@ begin function
 
             begin set property
               begin get property
-                begin get property
+                begin get this property by string
                   push this
                   push const string "image"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const string "width"
               end get property ret values 1
               push this
@@ -1032,10 +1032,10 @@ begin function
 
             begin set property
               begin get property
-                begin get property
+                begin get this property by string
                   push this
                   push const string "image"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const string "height"
               end get property ret values 1
               push this
@@ -1047,10 +1047,10 @@ begin function
 
             begin set property
               begin operator *
-                begin get property
+                begin get this property by string
                   push this
                   push const string "width"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const number 0.5
               end operator *
               begin get property auto create
@@ -1065,10 +1065,10 @@ begin function
 
             begin set property
               begin operator *
-                begin get property
+                begin get this property by string
                   push this
                   push const string "height"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const number 0.5
               end operator *
               begin get property auto create
@@ -1086,10 +1086,10 @@ begin function
               begin params 3
                 push const string "insert"
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "image"
-                end get property ret values 1
+                end get this property by string ret values 1
                 ,
                 begin neg
                   push const number 1
@@ -1118,10 +1118,10 @@ begin function
             end locals
             begin return
               begin get property
-                begin get property
+                begin get this property by string
                   push this
                   push const string "image"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const string "color"
               end get property ret values 1
             end return values 1
@@ -1160,10 +1160,10 @@ begin function
             end locals
             begin return
               begin get property
-                begin get property
+                begin get this property by string
                   push this
                   push const string "image"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const string "flipX"
               end get property ret values 1
             end return values 1
@@ -1202,10 +1202,10 @@ begin function
             end locals
             begin return
               begin get property
-                begin get property
+                begin get this property by string
                   push this
                   push const string "image"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const string "flipY"
               end get property ret values 1
             end return values 1
@@ -1258,10 +1258,10 @@ begin function
 
             begin set local var
               begin call method
-                begin get property
+                begin get this property by string
                   push this
                   push const string "image"
-                end get property ret values 1
+                end get this property by string ret values 1
                 begin params 3
                   push const string "animation"
                   ,
@@ -1327,10 +1327,10 @@ begin function
                   begin set property
                     begin operator *
                       begin get property
-                        begin get property
+                        begin get this property by string
                           push this
                           push const string "image"
-                        end get property ret values 1
+                        end get this property by string ret values 1
                         push const string "width"
                       end get property ret values 1
                       begin get property
@@ -1348,10 +1348,10 @@ begin function
                   begin set property
                     begin operator *
                       begin get property
-                        begin get property
+                        begin get this property by string
                           push this
                           push const string "image"
-                        end get property ret values 1
+                        end get this property by string ret values 1
                         push const string "height"
                       end get property ret values 1
                       begin get property
@@ -1485,10 +1485,10 @@ begin function
                 begin scope
                   begin set property
                     begin get property
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "image"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       push const string "width"
                     end get property ret values 1
                     push this
@@ -1500,10 +1500,10 @@ begin function
 
                   begin set property
                     begin get property
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "image"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       push const string "height"
                     end get property ret values 1
                     push this
@@ -1518,10 +1518,10 @@ begin function
 
             begin set property
               begin operator *
-                begin get property
+                begin get this property by string
                   push this
                   push const string "width"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const number 0.5
               end operator *
               begin get property auto create
@@ -1536,10 +1536,10 @@ begin function
 
             begin set property
               begin operator *
-                begin get property
+                begin get this property by string
                   push this
                   push const string "height"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const number 0.5
               end operator *
               begin get property auto create
@@ -1574,10 +1574,10 @@ begin function
 [137] this.image.stopAnimation(t)
 
             begin call method
-              begin get property
+              begin get this property by string
                 push this
                 push const string "image"
-              end get property ret values 1
+              end get this property by string ret values 1
               begin params 2
                 push const string "stopAnimation"
                 ,
@@ -1600,10 +1600,10 @@ begin function
 [141] this.image.stopAllAnimations()
 
             begin call method
-              begin get property
+              begin get this property by string
                 push this
                 push const string "image"
-              end get property ret values 1
+              end get this property by string ret values 1
               begin params 1
                 push const string "stopAllAnimations"
               end params ret values 1

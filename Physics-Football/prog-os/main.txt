@@ -96,10 +96,10 @@ begin function
 
             begin set property
               begin operator /
-                begin get property
+                begin get this property by string
                   push this
                   push const string "width"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const number 2
               end operator /
               get local var auto create bg (2 0)
@@ -111,10 +111,10 @@ begin function
 
             begin set property
               begin operator /
-                begin get property
+                begin get this property by string
                   push this
                   push const string "height"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const number 2
               end operator /
               get local var auto create bg (2 0)
@@ -131,10 +131,10 @@ begin function
                   push const string "max"
                   ,
                   begin operator /
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "width"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     begin get property
                       get local var bg (2 0)
                       push const string "width"
@@ -142,10 +142,10 @@ begin function
                   end operator /
                   ,
                   begin operator /
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "height"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     begin get property
                       get local var bg (2 0)
                       push const string "height"
@@ -467,10 +467,10 @@ begin function
 
                                   begin set by name
                                     begin operator /
-                                      begin get property
+                                      begin get this property by string
                                         push this
                                         push const string "width"
-                                      end get property ret values 1
+                                      end get this property by string ret values 1
                                       push const number 2
                                     end operator /
                                   end set by name: [radius]
@@ -603,10 +603,10 @@ begin function
                           begin set local var
                             begin operator /
                               begin operator -
-                                begin get property
+                                begin get this property by string
                                   push this
                                   push const string "x"
-                                end get property ret values 1
+                                end get this property by string ret values 1
                                 get local var prevX (6 1)
                               end operator -
                               begin get property
@@ -622,10 +622,10 @@ begin function
                           begin set local var
                             begin operator /
                               begin operator -
-                                begin get property
+                                begin get this property by string
                                   push this
                                   push const string "y"
-                                end get property ret values 1
+                                end get this property by string ret values 1
                                 get local var prevY (7 1)
                               end operator -
                               begin get property
@@ -641,15 +641,15 @@ begin function
                           begin set local var
                             begin set local var
                               begin params 2
-                                begin get property
+                                begin get this property by string
                                   push this
                                   push const string "x"
-                                end get property ret values 1
+                                end get this property by string ret values 1
                                 ,
-                                begin get property
+                                begin get this property by string
                                   push this
                                   push const string "y"
-                                end get property ret values 1
+                                end get this property by string ret values 1
                               end params ret values 2
                             end set local var prevY (7 1)
                           end set local var prevX (6 1)
@@ -724,10 +724,10 @@ begin function
                                             get local var touch (0 0 param)
                                             push const string "x"
                                           end get property ret values 1
-                                          begin get property
+                                          begin get this property by string
                                             push this
                                             push const string "x"
-                                          end get property ret values 1
+                                          end get this property by string ret values 1
                                         end operator -
                                         ,
                                         begin operator -
@@ -735,10 +735,10 @@ begin function
                                             get local var touch (0 0 param)
                                             push const string "y"
                                           end get property ret values 1
-                                          begin get property
+                                          begin get this property by string
                                             push this
                                             push const string "y"
-                                          end get property ret values 1
+                                          end get this property by string ret values 1
                                         end operator -
                                       end params ret values 2
                                       push this
@@ -790,10 +790,10 @@ begin function
                                                 get local var touch (0 0 param)
                                                 push const string "x"
                                               end get property ret values 1
-                                              begin get property
+                                              begin get this property by string
                                                 push this
                                                 push const string "x0"
-                                              end get property ret values 1
+                                              end get this property by string ret values 1
                                             end operator -
                                             ,
                                             begin operator -
@@ -801,10 +801,10 @@ begin function
                                                 get local var touch (0 0 param)
                                                 push const string "y"
                                               end get property ret values 1
-                                              begin get property
+                                              begin get this property by string
                                                 push this
                                                 push const string "y0"
-                                              end get property ret values 1
+                                              end get this property by string ret values 1
                                             end operator -
                                           end params ret values 2
                                           push this
@@ -1007,10 +1007,10 @@ begin function
 
                   begin set property
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "width"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       begin call method
                         get env var math
                         begin params 3
@@ -1031,10 +1031,10 @@ begin function
 
                   begin set property
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "height"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       begin call method
                         get env var math
                         begin params 3
@@ -1148,10 +1148,10 @@ begin function
 
                   begin set property
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "width"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       begin call method
                         get env var math
                         begin params 3
@@ -1172,10 +1172,10 @@ begin function
 
                   begin set property
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "height"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       begin call method
                         get env var math
                         begin params 3
@@ -1422,10 +1422,10 @@ begin function
 [103] message.x = this.width	// locate the message at right bottom corner
 
             begin set property
-              begin get property
+              begin get this property by string
                 push this
                 push const string "width"
-              end get property ret values 1
+              end get this property by string ret values 1
               get local var auto create message (12 0)
               push const string "x"
             end set property ret values 0
@@ -1434,10 +1434,10 @@ begin function
 [104] message.y = this.height
 
             begin set property
-              begin get property
+              begin get this property by string
                 push this
                 push const string "height"
-              end get property ret values 1
+              end get this property by string ret values 1
               get local var auto create message (12 0)
               push const string "y"
             end set property ret values 0
