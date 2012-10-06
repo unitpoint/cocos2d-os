@@ -511,30 +511,30 @@ begin function
                 begin operator +
                   begin operator +
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "a"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       begin get property
                         get local var point (0 0 param)
                         push const string "x"
                       end get property ret values 1
                     end operator *
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "c"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       begin get property
                         get local var point (0 0 param)
                         push const string "y"
                       end get property ret values 1
                     end operator *
                   end operator +
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "tx"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end operator +
               end set by name: [x]
               ,
@@ -545,30 +545,30 @@ begin function
                 begin operator +
                   begin operator +
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "b"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       begin get property
                         get local var point (0 0 param)
                         push const string "x"
                       end get property ret values 1
                     end operator *
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "d"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                       begin get property
                         get local var point (0 0 param)
                         push const string "y"
                       end get property ret values 1
                     end operator *
                   end operator +
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "ty"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end operator +
               end set by name: [y]
             end object
@@ -595,68 +595,68 @@ begin function
             begin params 7
               push const string "set"
               ,
-              begin get property
+              begin get this property by string
                 push this
                 push const string "a"
-              end get property ret values 1
+              end get this property by string ret values 1
               ,
-              begin get property
+              begin get this property by string
                 push this
                 push const string "b"
-              end get property ret values 1
+              end get this property by string ret values 1
               ,
-              begin get property
+              begin get this property by string
                 push this
                 push const string "c"
-              end get property ret values 1
+              end get this property by string ret values 1
               ,
-              begin get property
+              begin get this property by string
                 push this
                 push const string "d"
-              end get property ret values 1
+              end get this property by string ret values 1
               ,
               begin operator +
                 begin operator +
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "tx"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   begin operator *
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "a"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     get local var tx (0 0 param)
                   end operator *
                 end operator +
                 begin operator *
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "c"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var ty (1 0 param)
                 end operator *
               end operator +
               ,
               begin operator +
                 begin operator +
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "ty"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   begin operator *
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "b"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     get local var tx (0 0 param)
                   end operator *
                 end operator +
                 begin operator *
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "d"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                   get local var ty (1 0 param)
                 end operator *
               end operator +
@@ -685,46 +685,46 @@ begin function
               push const string "set"
               ,
               begin operator *
-                begin get property
+                begin get this property by string
                   push this
                   push const string "a"
-                end get property ret values 1
+                end get this property by string ret values 1
                 get local var sx (0 0 param)
               end operator *
               ,
               begin operator *
-                begin get property
+                begin get this property by string
                   push this
                   push const string "b"
-                end get property ret values 1
+                end get this property by string ret values 1
                 get local var sx (0 0 param)
               end operator *
               ,
               begin operator *
-                begin get property
+                begin get this property by string
                   push this
                   push const string "c"
-                end get property ret values 1
+                end get this property by string ret values 1
                 get local var sy (1 0 param)
               end operator *
               ,
               begin operator *
-                begin get property
+                begin get this property by string
                   push this
                   push const string "d"
-                end get property ret values 1
+                end get this property by string ret values 1
                 get local var sy (1 0 param)
               end operator *
               ,
-              begin get property
+              begin get this property by string
                 push this
                 push const string "tx"
-              end get property ret values 1
+              end get this property by string ret values 1
               ,
-              begin get property
+              begin get this property by string
                 push this
                 push const string "ty"
-              end get property ret values 1
+              end get this property by string ret values 1
             end params ret values 7
           end tail call method
         end function
@@ -795,17 +795,17 @@ begin function
                 ,
                 begin operator +
                   begin operator *
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "a"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     get local var fCos (4 0)
                   end operator *
                   begin operator *
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "c"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     get local var fSin (3 0)
                   end operator *
                 end operator +
@@ -815,17 +815,17 @@ begin function
 
                 begin operator +
                   begin operator *
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "b"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     get local var fCos (4 0)
                   end operator *
                   begin operator *
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "d"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     get local var fSin (3 0)
                   end operator *
                 end operator +
@@ -835,17 +835,17 @@ begin function
 
                 begin operator -
                   begin operator *
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "c"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     get local var fCos (4 0)
                   end operator *
                   begin operator *
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "a"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     get local var fSin (3 0)
                   end operator *
                 end operator -
@@ -855,17 +855,17 @@ begin function
 
                 begin operator -
                   begin operator *
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "d"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     get local var fCos (4 0)
                   end operator *
                   begin operator *
-                    begin get property
+                    begin get this property by string
                       push this
                       push const string "b"
-                    end get property ret values 1
+                    end get this property by string ret values 1
                     get local var fSin (3 0)
                   end operator *
                 end operator -
@@ -873,15 +873,15 @@ begin function
 
 [88] this.tx, this.ty)
 
-                begin get property
+                begin get this property by string
                   push this
                   push const string "tx"
-                end get property ret values 1
+                end get this property by string ret values 1
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "ty"
-                end get property ret values 1
+                end get this property by string ret values 1
               end params ret values 7
             end tail call method
           end code list ret values 0
@@ -1180,24 +1180,24 @@ begin function
               push const number 1
               begin operator -
                 begin operator *
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "a"
-                  end get property ret values 1
-                  begin get property
+                  end get this property by string ret values 1
+                  begin get this property by string
                     push this
                     push const string "d"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end operator *
                 begin operator *
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "b"
-                  end get property ret values 1
-                  begin get property
+                  end get this property by string ret values 1
+                  begin get this property by string
                     push this
                     push const string "c"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end operator *
               end operator -
             end operator /
@@ -1214,38 +1214,38 @@ begin function
                 ,
                 begin operator *
                   get local var determinant (2 0)
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "d"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end operator *
                 ,
                 begin operator *
                   begin neg
                     get local var determinant (2 0)
                   end neg
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "b"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end operator *
                 ,
                 begin operator *
                   begin neg
                     get local var determinant (2 0)
                   end neg
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "c"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end operator *
                 ,
                 begin operator *
                   get local var determinant (2 0)
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "a"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end operator *
                 ,
 
@@ -1255,24 +1255,24 @@ begin function
                   get local var determinant (2 0)
                   begin operator -
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "c"
-                      end get property ret values 1
-                      begin get property
+                      end get this property by string ret values 1
+                      begin get this property by string
                         push this
                         push const string "ty"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                     end operator *
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "d"
-                      end get property ret values 1
-                      begin get property
+                      end get this property by string ret values 1
+                      begin get this property by string
                         push this
                         push const string "tx"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                     end operator *
                   end operator -
                 end operator *
@@ -1281,24 +1281,24 @@ begin function
                   get local var determinant (2 0)
                   begin operator -
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "b"
-                      end get property ret values 1
-                      begin get property
+                      end get this property by string ret values 1
+                      begin get this property by string
                         push this
                         push const string "tx"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                     end operator *
                     begin operator *
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "a"
-                      end get property ret values 1
-                      begin get property
+                      end get this property by string ret values 1
+                      begin get this property by string
                         push this
                         push const string "ty"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                     end operator *
                   end operator -
                 end operator *
@@ -1405,28 +1405,28 @@ begin function
 [116] m[0] = this.a; m[4] = this.c; m[12] = this.tx;
 
           begin set property
-            begin get property
+            begin get this property by string
               push this
               push const string "a"
-            end get property ret values 1
+            end get this property by string ret values 1
             get local var auto create m (2 0)
             push const number 0
           end set property ret values 0
 
           begin set property
-            begin get property
+            begin get this property by string
               push this
               push const string "c"
-            end get property ret values 1
+            end get this property by string ret values 1
             get local var auto create m (2 0)
             push const number 4
           end set property ret values 0
 
           begin set property
-            begin get property
+            begin get this property by string
               push this
               push const string "tx"
-            end get property ret values 1
+            end get this property by string ret values 1
             get local var auto create m (2 0)
             push const number 12
           end set property ret values 0
@@ -1435,28 +1435,28 @@ begin function
 [117] m[1] = this.b; m[5] = this.d; m[13] = this.ty;
 
           begin set property
-            begin get property
+            begin get this property by string
               push this
               push const string "b"
-            end get property ret values 1
+            end get this property by string ret values 1
             get local var auto create m (2 0)
             push const number 1
           end set property ret values 0
 
           begin set property
-            begin get property
+            begin get this property by string
               push this
               push const string "d"
-            end get property ret values 1
+            end get this property by string ret values 1
             get local var auto create m (2 0)
             push const number 5
           end set property ret values 0
 
           begin set property
-            begin get property
+            begin get this property by string
               push this
               push const string "ty"
-            end get property ret values 1
+            end get this property by string ret values 1
             get local var auto create m (2 0)
             push const number 13
           end set property ret values 0
