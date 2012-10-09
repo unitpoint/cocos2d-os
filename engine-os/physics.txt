@@ -62,7 +62,7 @@ begin function
 [7] var fixedTimeStep = 1.0f / 60
 
   begin set local var
-    push const number 0.0166667
+    push const number 0.016666666666666666
   end set local var fixedTimeStep (3 0)
 
 
