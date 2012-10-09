@@ -439,17 +439,17 @@ OS_CHAR * OS::Utils::numToStr(OS_CHAR * dst, double a, int precision)
 		return dst;
 	}
 	if(precision == OS_AUTO_PRECISION){
-		OS_SNPRINTF(dst, sizeof(buf)-sizeof(OS_CHAR), OS_TEXT("%g"), a);
+		/* %G already handles removing trailing zeros from the fractional part, yay */ 
+		OS_SNPRINTF(dst, sizeof(buf)-sizeof(OS_CHAR), OS_TEXT("%.*G"), 17, a);
 		return dst;
 	}
-
-	OS_SNPRINTF(buf, sizeof(buf)-sizeof(OS_CHAR), OS_TEXT("%%.%dg"), precision);
+	OS_SNPRINTF(buf, sizeof(buf)-sizeof(OS_CHAR), OS_TEXT("%%.%df"), precision);
 	int n = OS_SNPRINTF(dst, sizeof(buf)-sizeof(OS_CHAR), buf, a);
-
 	OS_ASSERT(n >= 1 && !OS_STRSTR(dst, OS_TEXT(".")) || dst[n-1] != '0');
-	// while(n > 0 && dst[n-1] == '0') dst[--n] = (OS_CHAR)0;
-	// if(n > 0 && dst[n-1] == '.') dst[--n] = (OS_CHAR)0;
-
+	/* if(n > 0 && dst[n-1] == '0'){
+		do{ dst[--n] = (OS_CHAR)0; }while(n > 0 && dst[n-1] == '0');
+		if(n > 0 && dst[n-1] == '.') dst[--n] = (OS_CHAR)0;
+	} */
 	return dst;
 }
 
@@ -11390,7 +11390,8 @@ void OS::release()
 bool OS::Core::init()
 {
 	// string_values_table = newTable(OS_DBG_FILEPOS_START);
-	for(int i = 0; i < PROTOTYPE_COUNT; i++){
+	int i;
+	for(i = 0; i < PROTOTYPE_COUNT; i++){
 		prototypes[i] = newObjectValue(NULL);
 		prototypes[i]->type = OS_VALUE_TYPE_OBJECT;
 		prototypes[i]->external_ref_count++;
@@ -11417,6 +11418,17 @@ bool OS::Core::init()
 	setGlobalValue(OS_TEXT("Function"), Value(prototypes[PROTOTYPE_FUNCTION]), false, false);
 	setGlobalValue(OS_TEXT("Userdata"), Value(prototypes[PROTOTYPE_USERDATA]), false, false);
 
+	/*
+		SAFE usage of user function arguments 
+		so user can use just os->toNumber(-params+3) and so on
+		if function call has no enough arguments, for example params == 0
+		then (-params+3) will be not relative offset but absolute offset 3
+		lets make top OS_TOP_STACK_NULL_VALUES value as null values
+	*/
+	for(i = 0; i < OS_TOP_STACK_NULL_VALUES; i++){
+		pushValue(Value());
+	}
+
 	return true;
 }
 
@@ -11432,7 +11444,12 @@ int OS::Core::compareGCValues(const void * a, const void * b)
 
 void OS::Core::shutdown()
 {
-	stack_values.count = 0;
+	int i;
+	OS_ASSERT(stack_values.count >= OS_TOP_STACK_NULL_VALUES);
+	for(i = 0; i < OS_TOP_STACK_NULL_VALUES; i++){
+		OS_ASSERT(stack_values[i].type == OS_VALUE_TYPE_NULL);
+	}
+	// stack_values.count = 0;
 	while(call_stack_funcs.count > 0){
 		StackFunction * stack_func = &call_stack_funcs[--call_stack_funcs.count];
 		clearStackFunction(stack_func);
@@ -11445,7 +11462,6 @@ void OS::Core::shutdown()
 
 	allocator->deleteObj(strings);
 
-	int i;
 	// try to finalize the values accurately
 	Vector<GCValue*> collectedValues;
 	allocator->vectorReserveCapacity(collectedValues, values.count OS_DBG_FILEPOS);
@@ -19139,7 +19155,6 @@ void OS::initMathModule()
 			return minmax(os, params, OP_LOGIC_GE);
 		}
 
-		/*
 		static double abs(double p)
 		{
 			return ::fabs(p);
@@ -19154,7 +19169,6 @@ void OS::initMathModule()
 		{
 			return ::floor(p);
 		}
-		*/
 
 		static double round(double a, int precision)
 		{
@@ -19175,7 +19189,6 @@ void OS::initMathModule()
 			return ::floor(a * p + 0.5f) / p;
 		}
 
-		/*
 		static double sin(double p)
 		{
 			return ::sin(p);
@@ -19230,7 +19243,6 @@ void OS::initMathModule()
 		{
 			return ::exp(p);
 		}
-		*/
 
 		static int frexp(OS * os, int params, int, int, void*)
 		{
@@ -19241,7 +19253,6 @@ void OS::initMathModule()
 			return 2;
 		}
 
-		/*
 		static double ldexp(double x, int y)
 		{
 			return ::ldexp(x, y);
@@ -19251,7 +19262,6 @@ void OS::initMathModule()
 		{
 			return ::pow(x, y);
 		}
-		*/
 
 		static int random(OS * os, int params, int, int, void*)
 		{
@@ -19286,12 +19296,10 @@ void OS::initMathModule()
 			return 0;
 		}
 
-		/*
 		static double fmod(double x, double y)
 		{
 			return ::fmod(x, y);
 		}
-		*/
 
 		static int modf(OS * os, int params, int, int, void*)
 		{
@@ -19303,12 +19311,10 @@ void OS::initMathModule()
 			return 2;
 		}
 
-		/*
 		static double sqrt(double p)
 		{
 			return ::sqrt(p);
 		}
-		*/
 
 		static int log(OS * os, int params, int, int, void*)
 		{
@@ -19340,30 +19346,30 @@ void OS::initMathModule()
 	FuncDef list[] = {
 		{OS_TEXT("min"), Math::min_func},
 		{OS_TEXT("max"), Math::max_func},
-		def(OS_TEXT("abs"), (double(__cdecl*)(double))::fabs), // Math::abs),
-		def(OS_TEXT("ceil"), (double(__cdecl*)(double))::ceil), // Math::ceil),
-		def(OS_TEXT("floor"), (double(__cdecl*)(double))::floor), // Math::floor),
+		def(OS_TEXT("abs"), Math::abs),
+		def(OS_TEXT("ceil"), Math::ceil),
+		def(OS_TEXT("floor"), Math::floor),
 		def(OS_TEXT("round"), Math::round),
-		def(OS_TEXT("sin"), (double(__cdecl*)(double))::sin), // Math::sin),
-		def(OS_TEXT("sinh"), (double(__cdecl*)(double))::sinh), // Math::sinh),
-		def(OS_TEXT("cos"), (double(__cdecl*)(double))::cos), // Math::cos),
-		def(OS_TEXT("cosh"), (double(__cdecl*)(double))::cosh), // Math::cosh),
-		def(OS_TEXT("tan"), (double(__cdecl*)(double))::tan), // Math::tan),
-		def(OS_TEXT("tanh"), (double(__cdecl*)(double))::tanh), // Math::tanh),
-		def(OS_TEXT("acos"), (double(__cdecl*)(double))::acos), // Math::acos),
-		def(OS_TEXT("asin"), (double(__cdecl*)(double))::asin), // Math::asin),
-		def(OS_TEXT("atan"), (double(__cdecl*)(double))::atan), // Math::atan),
-		def(OS_TEXT("atan2"), (double(__cdecl*)(double, double))::atan2), // Math::atan2),
-		def(OS_TEXT("exp"), (double(__cdecl*)(double))::exp), // Math::exp),
+		def(OS_TEXT("sin"), Math::sin),
+		def(OS_TEXT("sinh"), Math::sinh),
+		def(OS_TEXT("cos"), Math::cos),
+		def(OS_TEXT("cosh"), Math::cosh),
+		def(OS_TEXT("tan"), Math::tan),
+		def(OS_TEXT("tanh"), Math::tanh),
+		def(OS_TEXT("acos"), Math::acos),
+		def(OS_TEXT("asin"), Math::asin),
+		def(OS_TEXT("atan"), Math::atan),
+		def(OS_TEXT("atan2"), Math::atan2),
+		def(OS_TEXT("exp"), Math::exp),
 		{OS_TEXT("frexp"), Math::frexp},
-		def(OS_TEXT("ldexp"), (double(__cdecl*)(double, int))::ldexp), // Math::ldexp),
-		def(OS_TEXT("pow"), (double(__cdecl*)(double, double))::pow), // Math::pow),
+		def(OS_TEXT("ldexp"), Math::ldexp),
+		def(OS_TEXT("pow"), Math::pow),
 		{OS_TEXT("random"), Math::random},
 		{OS_TEXT("__get@randseed"), Math::getrandseed},
 		{OS_TEXT("__set@randseed"), Math::setrandseed},
-		def(OS_TEXT("fmod"), (double(__cdecl*)(double, double))::fmod), // Math::fmod),
+		def(OS_TEXT("fmod"), Math::fmod),
 		{OS_TEXT("modf"), Math::modf},
-		def(OS_TEXT("sqrt"), (double(__cdecl*)(double))::sqrt), // Math::sqrt),
+		def(OS_TEXT("sqrt"), Math::sqrt),
 		{OS_TEXT("log"), Math::log},
 		def(OS_TEXT("deg"), Math::deg),
 		def(OS_TEXT("rad"), Math::rad),
@@ -20004,6 +20010,16 @@ void OS::triggerError(int code, const String& message)
 	core->error(code, message);
 }
 
+void OS::triggerError(const OS_CHAR * message)
+{
+	core->error(OS_E_ERROR, message);
+}
+
+void OS::triggerError(const String& message)
+{
+	core->error(OS_E_ERROR, message);
+}
+
 // =====================================================================
 // =====================================================================
 // =====================================================================
@@ -20121,29 +20137,29 @@ recurse:
 // =====================================================================
 // =====================================================================
 
-static OS_FunctionDataChain * function_data_first = NULL;
+static FunctionDataChain * function_data_first = NULL;
 
-OS_FunctionDataChain::OS_FunctionDataChain()
+FunctionDataChain::FunctionDataChain()
 { 
 	next = function_data_first;
 	function_data_first = this;
 }
-OS_FunctionDataChain::~OS_FunctionDataChain()
+FunctionDataChain::~FunctionDataChain()
 {
 }
 
-void OS_finalizeAllBinds()
+void ObjectScript::finalizeAllBinds()
 {
 	while(function_data_first){
-		OS_FunctionDataChain * cur = function_data_first;
+		FunctionDataChain * cur = function_data_first;
 		function_data_first = cur->next;
 		delete cur;
 	}
 }
 
-struct OS_FunctionDataFinalizer
+struct FunctionDataFinalizer
 {
-	~OS_FunctionDataFinalizer(){ OS_finalizeAllBinds(); }
+	~FunctionDataFinalizer(){ ObjectScript::finalizeAllBinds(); }
 } __functionDataFinalizer__;
 
 // =====================================================================

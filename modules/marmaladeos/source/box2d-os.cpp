@@ -2,7 +2,7 @@
 #include "Box2D\Box2D.h"
 #include "os-binder.h"
 
-using namespace ObjectScript;
+// using namespace ObjectScript;
 
 // =====================================================================
 
@@ -17,6 +17,12 @@ static float32 fromBox2dMetric(float32 x)
 {
 	return x * physicsMetricScale;
 }
+
+namespace OSBox2d {
+	class World;
+};
+
+namespace ObjectScript {
 
 OS_DECL_CTYPE(b2Vec2);
 OS_DECL_CTYPE(b2Transform);
@@ -43,10 +49,6 @@ OS_DECL_CTYPE(b2ContactImpulse);
 OS_DECL_CTYPE(b2Body);
 OS_DECL_CTYPE(b2BodyType);
 OS_DECL_CTYPE(b2Manifold);
-
-namespace OSBox2d {
-	class World;
-};
 
 OS_DECL_CTYPE(b2World);
 OS_DECL_CTYPE_NAME(OSBox2d::World, "b2World");
@@ -372,121 +374,13 @@ template <> void userObjectDestructor<b2Joint>(b2Joint * joint)
 }
 
 // =====================================================================
-/*
-template <class T>
-struct Box2dObject
-{
-};
-
-template <class T>
-struct Box2dObject<T*>
-{
-	typedef typename RemoveConst<T>::type * type;
-
-	static bool isValid(type obj){ return obj != NULL; }
-
-	static type to(type val){ return (type)val; }
-	static type to(const typename RemoveConst<T>::type * val){ return (type)val; }
-
-	static type to(OS * os, int offs)
-	{
-		return (type)os->toUserdata(getInstanceId<T>(), offs);
-	}
-
-	static int getValueId(OS * os, type val)
-	{
-		return (int)val->GetUserData();
-	}
-
-	static void setValueId(OS * os, type val)
-	{
-		val->SetUserData((void*)os->getValueId());
-	}
-
-	static void push(OS * os, type val)
-	{
-		if(!val){
-			os->pushNull();
-			return;
-		}
-		int valueId = getValueId(os, val);
-		if(valueId){
-			os->pushValueById(valueId);
-			if(!os->isNull()){
-				OS_ASSERT(to(os, -1));
-				return;
-			}
-			os->pop();
-		}
-		os->pushUserPointer(getInstanceId<T>(), val, osObjectDestructor<T>);
-		setValueId(os, val);
-		os->pushStackValue();
-		os->getGlobal(getCtypeName<T>());
-		OS_ASSERT(os->isUserdata(getCtypeId<T>(), -1));
-		os->setPrototype(getInstanceId<T>());
-	}
-};
-*/
-// =====================================================================
-
-// template <> struct CtypeValue<b2Body*>: public Box2dObject<b2Body*> {};
-// template <> struct CtypeValue<const b2Body*>: public Box2dObject<b2Body*> {};
-
-// =====================================================================
 
 template <> struct CtypeValue<b2Fixture*>: public CtypeUserClass<b2Fixture*> {};
-// template <> struct CtypeValue<const b2Fixture*>: public Box2dObject<b2Fixture*> {};
-
-// =====================================================================
-/*
-template <class T>
-struct Box2dSimpleObject
-{
-};
-
-template <class T>
-struct Box2dSimpleObject<T*>
-{
-	typedef typename RemoveConst<T>::type * type;
-
-	static bool isValid(type obj){ return obj != NULL; }
-
-	static type to(type val){ return (type)val; }
-	static type to(const typename RemoveConst<T>::type * val){ return (type)val; }
-
-	static type to(OS * os, int offs)
-	{
-		return (type)os->toUserdata(getInstanceId<T>(), offs);
-	}
-
-	static void push(OS * os, type val)
-	{
-		if(!val){
-			os->pushNull();
-			return;
-		}
-		os->pushUserPointer(getInstanceId<T>(), val, osObjectDestructor<T>);
-		os->pushStackValue();
-		os->getGlobal(getCtypeName<T>());
-		OS_ASSERT(os->isUserdata(getCtypeId<T>(), -1));
-		os->setPrototype(getInstanceId<T>());
-	}
-};
-*/
-// =====================================================================
-
 template <> struct CtypeValue<b2Contact*>: public CtypeUserClass<b2Contact*> {};
-// template <> struct CtypeValue<const b2Contact*>: public Box2dSimpleObject<b2Contact*> {};
-
-// =====================================================================
-
 template <> struct CtypeValue<b2ContactImpulse*>: public CtypeUserClass<b2ContactImpulse*> {};
-// template <> struct CtypeValue<const b2ContactImpulse*>: public Box2dSimpleObject<b2ContactImpulse*> {};
-
-// =====================================================================
-
 template <> struct CtypeValue<b2Manifold*>: public CtypeUserClass<b2Manifold*> {};
-// template <> struct CtypeValue<const b2Manifold*>: public Box2dSimpleObject<b2Manifold*> {};
+
+} // namespace ObjectScript
 
 // =====================================================================
 
@@ -543,27 +437,11 @@ int error(OS * os, const char * message, int pop = 1)
 
 } // namespace OSBox2d
 
+namespace ObjectScript {
+
 template <> struct CtypeValue<OSBox2d::World*>: public CtypeUserClass<OSBox2d::World*>{};
 
-/*
-template <>
-struct CtypeValue<OSBox2d::World*>
-{
-	typedef OSBox2d::World * type;
-
-	static bool isValid(type obj){ return obj != NULL; }
-
-	// static type to(World * val){ return (type)val; }
-	// static type to(const World * val){ return (type)val; }
-	static type def(ObjectScript::OS * os){ return NULL; }
-	static type getArg(OS * os, int offs)
-	{
-		return (type)os->toUserdata(getInstanceId<OSBox2d::World>(), offs);
-	}
-
-	static void push(OS * os, type val);
-};
-*/
+} // namespace ObjectScript
 
 namespace OSBox2d {
 
@@ -1029,8 +907,8 @@ public:
 			def("step", &World::Step),
 			def("clearForces", &World::ClearForces),
 			def("drawDebugData", &World::DrawDebugData),
-			def("__get@bodyList", &World::GetBodyList),
-			def("__get@contactList", &World::GetContactList),
+			def("__get@bodyList", (b2Body*(World::*)())&World::GetBodyList),
+			def("__get@contactList", (b2Contact*(World::*)())&World::GetContactList),
 			def("__set@warmStarting", &World::SetWarmStarting),
 			def("__set@continuousPhysics", &World::SetContinuousPhysics),
 			def("__set@subStepping", &World::SetSubStepping),
@@ -1076,7 +954,8 @@ public:
 
 } // namespace OSBox2d
 
-// template <> struct CtypeValue<b2World*>: public CtypeUserClass<b2World*>{};
+namespace ObjectScript {
+
 template <> struct CtypeValue<b2World*>
 {
 	typedef RemoveConst<b2World>::type ttype;
@@ -1111,6 +990,8 @@ template <> void userObjectDestructor<b2World>(b2World * p_world)
 template <> void userObjectDestructor<OSBox2d::World>(OSBox2d::World * world)
 {
 	// delete world;
+}
+
 }
 
 /*
@@ -1534,8 +1415,8 @@ struct Body
 			def("__set@isActive", &b2Body::SetActive),
 			def("__get@isFixedRotation", &b2Body::IsFixedRotation),
 			def("__set@isFixedRotation", &b2Body::SetFixedRotation),
-			def("__get@fixtureList", &b2Body::GetFixtureList),
-			def("__get@next", &b2Body::GetNext),
+			def("__get@fixtureList", (b2Fixture*(b2Body::*)())&b2Body::GetFixtureList),
+			def("__get@next", (b2Body*(b2Body::*)())&b2Body::GetNext),
 			{"__get@world", getWorld},
 			{}
 		};
