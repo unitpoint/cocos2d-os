@@ -1124,7 +1124,7 @@ begin function
 [113] animationInterval = 1 / 60
 
   begin set env var
-    push const number 0.01666666753590107
+    push const number 0.016666666666666666
   end set env var animationInterval
 
 
