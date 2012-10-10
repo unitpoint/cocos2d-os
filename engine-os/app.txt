@@ -44,15 +44,15 @@ begin function
         begin params 3
           push const string "Size"
           ,
-          begin get property
+          begin get this property by string
             push this
             push const string "screenWidth"
-          end get property ret values 1
+          end get this property by string ret values 1
           ,
-          begin get property
+          begin get this property by string
             push this
             push const string "screenHeight"
-          end get property ret values 1
+          end get this property by string ret values 1
         end params ret values 3
       end tail call method
     end function

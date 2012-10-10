@@ -62,7 +62,7 @@ begin function
 [7] var fixedTimeStep = 1.0f / 60
 
   begin set local var
-    push const number 0.0166667
+    push const number 0.016666666666666666
   end set local var fixedTimeStep (3 0)
 
 
@@ -415,20 +415,20 @@ begin function
 [49] x = this.x
 
                         begin set by name
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "x"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                         end set by name: [x]
                         ,
 
 [50] y = this.y
 
                         begin set by name
-                          begin get property
+                          begin get this property by string
                             push this
                             push const string "y"
-                          end get property ret values 1
+                          end get this property by string ret values 1
                         end set by name: [y]
                         ,
 
@@ -440,10 +440,10 @@ begin function
                             begin params 2
                               push const string "rad"
                               ,
-                              begin get property
+                              begin get this property by string
                                 push this
                                 push const string "rotation"
-                              end get property ret values 1
+                              end get this property by string ret values 1
                             end params ret values 2
                           end call method ret values 1
                         end set by name: [angle]
@@ -469,10 +469,10 @@ begin function
                 ,
                 push const string "enterFrame"
                 ,
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__updateNodePosition"
-                end get property ret values 1
+                end get this property by string ret values 1
               end params ret values 3
             end call method ret values 0
 
@@ -481,10 +481,10 @@ begin function
 
             begin code list
               begin return
-                begin get property
+                begin get this property by string
                   push this
                   push const string "physicsBody"
-                end get property ret values 1
+                end get this property by string ret values 1
               end return values 1
             end code list ret values 0
           end function
@@ -504,10 +504,10 @@ begin function
 
             begin if
               begin bool exp
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__physicsBody"
-                end get property ret values 1
+                end get this property by string ret values 1
               end bool exp
               begin then
 
@@ -521,10 +521,10 @@ begin function
                       ,
                       push const string "enterFrame"
                       ,
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "__updateNodePosition"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                     end params ret values 3
                   end call method ret values 0
 
@@ -536,10 +536,10 @@ begin function
                     begin params 2
                       push const string "destroyBody"
                       ,
-                      begin get property
+                      begin get this property by string
                         push this
                         push const string "__physicsBody"
-                      end get property ret values 1
+                      end get this property by string ret values 1
                     end params ret values 2
                   end call method ret values 0
 
@@ -572,10 +572,10 @@ begin function
 
             begin set local var
               begin get property
-                begin get property
+                begin get this property by string
                   push this
                   push const string "__physicsBody"
-                end get property ret values 1
+                end get this property by string ret values 1
                 push const string "transform"
               end get property ret values 1
             end set local var xf (2 0)
@@ -652,10 +652,10 @@ begin function
 [70] return this.__physicsBody
 
             begin return
-              begin get property
+              begin get this property by string
                 push this
                 push const string "__physicsBody"
-              end get property ret values 1
+              end get this property by string ret values 1
             end return values 1
           end function
         end set by name: [__get@physicsBody]
@@ -690,10 +690,10 @@ begin function
             begin if
               begin bool exp
                 begin logic not
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__physicsUpdateInProgress"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end logic not
               end bool exp
               begin then
@@ -704,17 +704,17 @@ begin function
                   begin set property
                     begin array 2
                       begin set auto index
-                        begin get property
+                        begin get this property by string
                           push this
                           push const string "x"
-                        end get property ret values 1
+                        end get this property by string ret values 1
                       end set auto index
                       ,
                       begin set auto index
-                        begin get property
+                        begin get this property by string
                           push this
                           push const string "y"
-                        end get property ret values 1
+                        end get this property by string ret values 1
                       end set auto index
                     end array
                     begin get property auto create
@@ -759,10 +759,10 @@ begin function
             begin if
               begin bool exp
                 begin logic not
-                  begin get property
+                  begin get this property by string
                     push this
                     push const string "__physicsUpdateInProgress"
-                  end get property ret values 1
+                  end get this property by string ret values 1
                 end logic not
               end bool exp
               begin then
@@ -773,17 +773,17 @@ begin function
                   begin set property
                     begin array 2
                       begin set auto index
-                        begin get property
+                        begin get this property by string
                           push this
                           push const string "x"
-                        end get property ret values 1
+                        end get this property by string ret values 1
                       end set auto index
                       ,
                       begin set auto index
-                        begin get property
+                        begin get this property by string
                           push this
                           push const string "y"
-                        end get property ret values 1
+                        end get this property by string ret values 1
                       end set auto index
                     end array
                     begin get property auto create
