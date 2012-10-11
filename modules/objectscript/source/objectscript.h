@@ -133,7 +133,7 @@ inline void operator delete(void *, void *){}
 
 #define OS_CALL_STACK_MAX_SIZE 200
 
-#define OS_VERSION OS_TEXT("0.98-rc")
+#define OS_VERSION OS_TEXT("0.98.1-rc")
 #define OS_COMPILED_HEADER OS_TEXT("OBJECTSCRIPT")
 #define OS_DEBUGINFO_HEADER OS_TEXT("OBJECTSCRIPT.DEBUGINFO")
 #define OS_SOURCECODE_EXT OS_TEXT(".os")
@@ -1319,6 +1319,7 @@ namespace ObjectScript
 				// static GCStringValue * alloc(OS*, GCStringValue * a, GCStringValue * b, GCStringValue * c);
 
 				bool isNumber(OS_NUMBER*) const;
+				OS_NUMBER toNumber() const;
 				// bool isNumber(OS_FLOAT*) const;
 
 				int cmp(GCStringValue*) const;
@@ -2443,6 +2444,19 @@ namespace ObjectScript
 				String syntax_in;
 				String syntax_break;
 				String syntax_continue;
+				String syntax_try;
+				String syntax_catch;
+				String syntax_finally;
+				String syntax_throw;
+				String syntax_new;
+				String syntax_while;
+				String syntax_do;
+				String syntax_const;
+				String syntax_public;
+				String syntax_protected;
+				String syntax_private;
+				String syntax_yield;
+				String syntax_static;
 				String syntax_debugger;
 				String syntax_debuglocals;
 
