@@ -2,22 +2,74 @@ var director = require("director")
 
 print "Hello World!" // please see all printed messages here: assets-ram/output.txt
 
+var function addStats(parent){
+	var color = [0.0, 0.0, 0.0, 1]
+	var font = "arial-en-ru-16.fnt"
+	var fps = Text("fps", font).attrs {
+		anchor = {x=1.05 y=1.05}
+		x = parent.width
+		y = parent.height - 50
+		color = color
+		// shadow = true
+	}.insertTo(parent)
+	
+	var gcAllocatedBytes = Text("Kb", font).attrs{
+		anchor = {x=1.05 y=1.05}
+		x = fps.x
+		y = fps.y - fps.fontHeight*1.05*1
+		color = color
+		// shadow = true
+	}.insertTo(parent)
+	
+	var gcUsedBytes = Text("Kb", font).attrs{
+		anchor = {x=1.05 y=1.05}
+		x = fps.x
+		y = fps.y - fps.fontHeight*1.05*3
+		color = color
+		// shadow = true
+	}.insertTo(parent)
+	
+	var gcCachedBytes = Text("Kb", font).attrs{
+		anchor = {x=1.05 y=1.05}
+		x = fps.x
+		y = fps.y - fps.fontHeight*1.05*2
+		color = color
+		// shadow = true
+	}.insertTo(parent)
+	
+	var gcNumObjects = Text("0", font).attrs{
+		anchor = {x=1.05 y=1.05}
+		x = fps.x
+		y = fps.y - fps.fontHeight*1.05*4
+		color = color
+		// shadow = true
+	}.insertTo(parent)
+	
+	parent.setTimeout(function(){
+		fps.string = sprintf("%.1f fps", 1 / director.deltaTime)
+		gcAllocatedBytes.string = math.round(GC.allocatedBytes / 1024).." Kb allocated"
+		gcUsedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
+		gcCachedBytes.string = math.round(GC.cachedBytes / 1024).." Kb cached"
+		gcNumObjects.string = GC.numObjects.." gc objects"
+	}, 0.3, true)
+}
+
 MyScene = extends Scene {
 	__construct = function(){
 		super() // call constructor of class we extend
 		
 		var bg = Image("bg.jpg") 	// create background image
-		bg.x = this.width / 2		// locate it at center of scene 
-		bg.y = this.height / 2
-		bg.scale = math.max(this.width / bg.width, this.height / bg.height)
-		this.insert(bg)				// insert the background image to the scene
+		bg.x = @width / 2		// locate it at center of scene 
+		bg.y = @height / 2
+		bg.scale = math.max(@width / bg.width, @height / bg.height)
+		@insert(bg)				// insert the background image to the scene
 
 		var message = Text("Angry Monsters StarterKit")	// create message
-		message.x = this.width	// locate the message at right bottom corner
-		message.y = this.height
+		message.x = @width	// locate the message at right bottom corner
+		message.y = @height
 		message.anchor = {x=1.05 y=1.05}
 		message.shadow = true	// we want shadow enabled		
-		this.insert(message)
+		@insert(message)
 
 		var animations = { // define animations for our monsters
 			"monster-01.png" = {
@@ -77,41 +129,41 @@ MyScene = extends Scene {
 			__construct = function(filename){ // Monster class constructor, it's called when you do Monster(...)
 				filename = filename || "monster-01.png"
 				super(filename) // call constructor of class we extend, so create image
-				this.animations = animations[filename] // save monster animations
-				this.setTimeout(this.trackMove, 0.1, true)  // call this.trackMove every 0.1 seconds until we clear this timeout
-				this.runAnimation("walkRight") // run "walkRight" animation by default
+				@animations = animations[filename] // save monster animations
+				@setTimeout(@trackMove, 0.1, true)  // call @trackMove every 0.1 seconds until we clear this timeout
+				@runAnimation("walkRight") // run "walkRight" animation by default
 			}
 			
 			trackMove = function(){ // determine the direction of moving to switch animation
-				if(!this.curAnim || this.fighting) return; // skip if no animation or monster is fighting
-				var dx, dy = this.x - this.prevX, this.y - this.prevY
-				this.prevX, this.prevY = this.x, this.y
+				if(!@curAnim || @fighting) return; // skip if no animation or monster is fighting
+				var dx, dy = @x - @prevX, @y - @prevY
+				@prevX, @prevY = @x, @y
 				var len = (dx*dx + dy*dy)**0.5 // calculate length of the direction
 				len > 0 || return;
 				dx, dy = dx / len, dy / len // normalize the direction
-				if(dy < -0.85 && "walkUp" in this.animations){ // monster goes up
-					this.runAnimation("walkUp")
-					this.flipX = false
-				}else if(dy > 0.85 && "walkDown" in this.animations){ // monster goes down
-					this.runAnimation("walkDown")
-					this.flipX = false
+				if(dy < -0.85 && "walkUp" in @animations){ // monster goes up
+					@runAnimation("walkUp")
+					@flipX = false
+				}else if(dy > 0.85 && "walkDown" in @animations){ // monster goes down
+					@runAnimation("walkDown")
+					@flipX = false
 				}else{ // monster goes left or right
-					this.runAnimation("walkRight");
-					this.flipX = dx < 0
+					@runAnimation("walkRight");
+					@flipX = dx < 0
 				}
 			}
 			
 			runAnimation = function(name, onComplete){ // start needed animation
-				if(this.curAnimName == name && !onComplete) return; // prevent restarting animation
-				this.curAnimName = name
-				this.stopAnimation(this.curAnim)
-				this.curAnim = this.animation(this.animations[name], onComplete)
+				if(@curAnimName == name && !onComplete) return; // prevent restarting animation
+				@curAnimName = name
+				@stopAnimation(@curAnim)
+				@curAnim = @animation(@animations[name], onComplete)
 			}
 			
 			move = function(x, y, onComplete){ // move monster to position x,y
-				var len = ((this.x - x)**2 + (this.y - y)**2)**0.5
-				this.stopTransition(this.moveTransition)
-				this.moveTransition = this.transition { // lets use transition to move monster
+				var len = ((@x - x)**2 + (@y - y)**2)**0.5
+				@stopTransition(@moveTransition)
+				@moveTransition = @transition { // lets use transition to move monster
 					x = x, y = y
 					duration = len * 10.0 / director.contentWidth
 					onComplete = onComplete // call this function on complete
@@ -119,46 +171,46 @@ MyScene = extends Scene {
 			}
 			
 			fight = function(other){ // try to fight with other monster
-				if(this.fighting || other.fighting) return; // skip if monster is already fighting
-				var side = this.x < other.x ? -1 : 1
-				var cx = (this.x + other.x) / 2
-				var cy = (this.y + other.y) / 2
+				if(@fighting || other.fighting) return; // skip if monster is already fighting
+				var side = @x < other.x ? -1 : 1
+				var cx = (@x + other.x) / 2
+				var cy = (@y + other.y) / 2
 				
-				this.fighting = other
-				this.move(cx + this.width/2*side, cy, this.startFightingAnimation) // move monster to fighting position
+				@fighting = other
+				@move(cx + @width/2*side, cy, @startFightingAnimation) // move monster to fighting position
 				
 				other.fighting = this
 				other.move(cx - other.width/2*side, cy, other.startFightingAnimation) // move other monster to fighting position
 			}
 			
 			startFightingAnimation = function(){ // start fighting
-				this.health > 0 || return; // skip if monster is dead
-				this.flipX = this.x > this.fighting.x // determine side of monster
-				this.runAnimation("fightRight", function(){ // run fighting animations
-					this.fighting.health = this.fighting.health - this.health * 0.3 // make damage to other monster
-					this.fighting.timeSpeed = math.max(0.7, this.fighting.timeSpeed * 0.8) // damaged monster is tired, so make him slow down
-					if(this.fighting.health <= 0){ // check if other monster is dead
-						this.fighting.die() // start die animations
-						this.fighting = null
+				@health > 0 || return; // skip if monster is dead
+				@flipX = @x > @fighting.x // determine side of monster
+				@runAnimation("fightRight", function(){ // run fighting animations
+					@fighting.health = @fighting.health - @health * 0.3 // make damage to other monster
+					// @fighting.timeSpeed = math.max(0.7, @fighting.timeSpeed * 0.8) // damaged monster is tired, so make him slow down
+					if(@fighting.health <= 0){ // check if other monster is dead
+						@fighting.die() // start die animations
+						@fighting = null
 						// go away a bit when the fight is finished
-						this.move(this.x + math.random(-1, 1) * this.width, this.y + math.random(-1, 1) * this.width)
+						@move(@x + math.random(-1, 1) * @width, @y + math.random(-1, 1) * @width)
 					}
 				})
 			}
 			
 			die = function(){ // start dying animations
-				this.clearTimeout(this.trackMove) // remove this.trackMove timeout functions
-				this.stopTransition(this.moveTransition) // stop moving animations
-				this.flipX = this.x > this.fighting.x // determine side
-				this.timeSpeed = 1 // reset time speed to 1
-				this.runAnimation("dieRight", function(){ // run dying animations
-					this.stopAnimation(this.curAnim)
-					this.curAnim = null
-					this.transition { // start fade out transition
+				@clearTimeout(@trackMove) // remove @trackMove timeout functions
+				@stopTransition(@moveTransition) // stop moving animations
+				@flipX = @x > @fighting.x // determine side
+				@timeSpeed = 1 // reset time speed to 1
+				@runAnimation("dieRight", function(){ // run dying animations
+					@stopAnimation(@curAnim)
+					@curAnim = null
+					@transition { // start fade out transition
 						opacity = 0
 						duration = 1
 						onComplete = function(){
-							this.remove() // remove monster on the fade out transition completed
+							@remove() // remove monster on the fade out transition completed
 						}
 					}
 				})
@@ -166,7 +218,7 @@ MyScene = extends Scene {
 			
 			__set@y = function(y){ // track changing y position
 				super(y) // call the same method of "super" class because we want to add behavior, not override
-				this.zOrder = y // set zOrder, so bottom monsters will be front of top monsters
+				@zOrder = y // set zOrder, so bottom monsters will be front of top monsters
 			}
 		}
 		
@@ -209,11 +261,11 @@ MyScene = extends Scene {
 			}
 		}
 		
-		this.addEventListener("touch", function(touch){
+		@addEventListener("touch", function(touch){
 			moveMonsters(touch.local.x, touch.local.y)
 		})
 		
-		this.setTimeout(function(){ // set new timeout function to check monsters crossed
+		@setTimeout(function(){ // set new timeout function to check monsters crossed
 			for(var i, monster in monsters){
 				if(monster.fighting) continue
 				for(var j = i+1; j < #monsters; j++){
@@ -225,6 +277,8 @@ MyScene = extends Scene {
 				}
 			}
 		}, 0.3, true) // call the timeout each 0.3 seconds forever
+		
+		addStats(this)
 	}
 }
 

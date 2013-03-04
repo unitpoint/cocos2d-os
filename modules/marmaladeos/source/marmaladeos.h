@@ -109,13 +109,11 @@ public:
 	
 	bool isFileExist(const OS_CHAR * filename);
 
-	String resolvePath(const String& p_filename, const String& cur_path);
+	// String resolvePath(const String& p_filename, const String& cur_path);
 	String getCompiledFilename(const String& resolved_filename);
 
+	void echo(const void * buf, int size);
 	void printf(const OS_CHAR * format, ...);
-
-	void onEnterGC();
-	void onExitGC();
 
 	void startFrame();
 	

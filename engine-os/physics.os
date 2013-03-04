@@ -44,54 +44,54 @@ var nodeSetY = Node.__set@y
 
 Node.merge {
 	addPhysicsBody = function(params){
-		this.removePhysicsBody()
-		this.__physicsBody = world.createBody({}.merge(params, {
-			x = this.x
-			y = this.y
-			angle = math.rad(this.rotation)
+		@removePhysicsBody()
+		@__physicsBody = world.createBody({}.merge(params, {
+			x = @x
+			y = @y
+			angle = math.rad(@rotation)
 		}))
-		this.addEventListener("enterFrame", this.__updateNodePosition)
-		return this.physicsBody
+		@addEventListener("enterFrame", @__updateNodePosition)
+		return @physicsBody
 	}
 	removePhysicsBody = function(){
-		if(this.__physicsBody){
-			this.removeEventListener("enterFrame", this.__updateNodePosition)
-			world.destroyBody(this.__physicsBody)
-			this.__physicsBody = null
+		if(@__physicsBody){
+			@removeEventListener("enterFrame", @__updateNodePosition)
+			world.destroyBody(@__physicsBody)
+			@__physicsBody = null
 		}
 	}
 	__updateNodePosition = function(){
-		var xf = this.__physicsBody.transform
-		this.__physicsUpdateInProgress = true
-		this.x, this.y, this.rotation = xf.x, xf.y, math.deg(xf.angle)
-		this.__physicsUpdateInProgress = false
+		var xf = @__physicsBody.transform
+		@__physicsUpdateInProgress = true
+		@x, @y, @rotation = xf.x, xf.y, math.deg(xf.angle)
+		@__physicsUpdateInProgress = false
 	}
 	__get@physicsBody = function(){
-		return this.__physicsBody
+		return @__physicsBody
 	}
 	__set@x = function(a){
 		nodeSetX.call(this, a)
-		if(!this.__physicsUpdateInProgress){
-			this.__physicsBody.position = [this.x, this.y]
+		if(!@__physicsUpdateInProgress){
+			@__physicsBody.position = [@x, @y]
 		}
 	}
 	__set@y = function(a){
 		nodeSetY.call(this, a)
-		if(!this.__physicsUpdateInProgress){
-			this.__physicsBody.position = [this.x, this.y]
+		if(!@__physicsUpdateInProgress){
+			@__physicsBody.position = [@x, @y]
 		}
 	}
 }
 
 function extractPoint(p){
-	if(arrayof p){
+	if(arrayOf(p)){
 		return p[0], p[1]
 	}
 	return p.x, p.y
 }
 
 function extractSize(p){
-	if(arrayof p){
+	if(arrayOf(p)){
 		return p[0], p[1]
 	}
 	return p.width, p.height

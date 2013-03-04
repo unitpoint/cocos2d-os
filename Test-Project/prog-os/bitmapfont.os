@@ -62,7 +62,7 @@ function parseConfig(filename){
 		if(!expectStr("count") || !expectStr("=")) return;
 		var count = readToken()
 		if(!count) return;
-		count = numberof count.str
+		count = numberOf(count.str)
 		var chars = {}
 		for(var i = 0; i < count; ++i){
 			if(!expectStr("char")) return;
@@ -76,7 +76,7 @@ function parseConfig(filename){
 		if(!expectStr("count") || !expectStr("=")) return;
 		var count = readToken()
 		if(!count) return;
-		count = numberof count.str
+		count = numberOf(count.str)
 		var kernings = []
 		for(var i = 0; i < count; ++i){
 			if(!expectStr("kerning")) return;

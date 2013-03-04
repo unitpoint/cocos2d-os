@@ -27,65 +27,65 @@ Matrix = {
 	
 	__construct = function(a b c d tx ty){
 		if(!a){
-			this.a = 1
-			this.b = 0
-			this.c = 0
-			this.d = 1
-			this.tx = 0
-			this.ty = 0
+			@a = 1
+			@b = 0
+			@c = 0
+			@d = 1
+			@tx = 0
+			@ty = 0
 		}else{
-			this.a = a
-			this.b = b
-			this.c = c
-			this.d = d
-			this.tx = tx
-			this.ty = ty
+			@a = a
+			@b = b
+			@c = c
+			@d = d
+			@tx = tx
+			@ty = ty
 		}
 	}
 	
 	set = function(a b c d tx ty){
 		if(!a){
-			this.a = 1
-			this.b = 0
-			this.c = 0
-			this.d = 1
-			this.tx = 0
-			this.ty = 0
+			@a = 1
+			@b = 0
+			@c = 0
+			@d = 1
+			@tx = 0
+			@ty = 0
 			return this
 		}
-		this.a = a
-		this.b = b
-		this.c = c
-		this.d = d
-		this.tx = tx
-		this.ty = ty
+		@a = a
+		@b = b
+		@c = c
+		@d = d
+		@tx = tx
+		@ty = ty
 		return this
 	}
 	
 	transform = function(point){
 		return {
-			x = this.a * point.x + this.c * point.y + this.tx
-			y = this.b * point.x + this.d * point.y + this.ty
+			x = @a * point.x + @c * point.y + @tx
+			y = @b * point.x + @d * point.y + @ty
 		}
 	}
 	
 	translate = function(tx ty){
-		return this.set(this.a, this.b, this.c, this.d, this.tx + this.a * tx + this.c * ty, this.ty + this.b * tx + this.d * ty)
+		return @set(@a, @b, @c, @d, @tx + @a * tx + @c * ty, @ty + @b * tx + @d * ty)
 	}
 
 	scale = function(sx sy){
-		return this.set(this.a * sx, this.b * sx, this.c * sy, this.d * sy, this.tx, this.ty)
+		return @set(@a * sx, @b * sx, @c * sy, @d * sy, @tx, @ty)
 	}
 	
 	rotate = function(angle){
 		angle = math.rad(angle)
 		var fSin = math.sin(angle);
 		var fCos = math.cos(angle);
-		return this.set(this.a * fCos + this.c * fSin,
-			this.b * fCos + this.d * fSin,
-			this.c * fCos - this.a * fSin,
-			this.d * fCos - this.b * fSin,
-			this.tx, this.ty)
+		return @set(@a * fCos + @c * fSin,
+			@b * fCos + @d * fSin,
+			@c * fCos - @a * fSin,
+			@d * fCos - @b * fSin,
+			@tx, @ty)
 	}
 	
 	skew = function(skewX skewY){
@@ -95,7 +95,7 @@ Matrix = {
 	
 	mult = function(t2){
 		var t1 = this
-		return this.set(
+		return @set(
 			t1.a * t2.a + t1.b * t2.c, t1.a * t2.b + t1.b * t2.d, //a,b
 			t1.c * t2.a + t1.d * t2.c, t1.c * t2.b + t1.d * t2.d, //c,d
 			t1.tx * t2.a + t1.ty * t2.c + t2.tx,				  //tx
@@ -103,71 +103,52 @@ Matrix = {
 	}
 
 	inverse = function(){
-		var determinant = 1 / (this.a * this.d - this.b * this.c)
-		return this.set(determinant * this.d, -determinant * this.b, -determinant * this.c, determinant * this.a,
-			determinant * (this.c * this.ty - this.d * this.tx), determinant * (this.b * this.tx - this.a * this.ty) )
+		var determinant = 1 / (@a * @d - @b * @c)
+		return @set(determinant * @d, -determinant * @b, -determinant * @c, determinant * @a,
+			determinant * (@c * @ty - @d * @tx), determinant * (@b * @tx - @a * @ty) )
 	}
 	
 	toGL = function(){
-		var m = []
+		return [
+			@a, @b, 0, 0,
+			@c, @d, 0, 0,
+			 0,  0, 1, 0,
+			@tx, @ty, 0, 1,
+		]
+		/* var m = []
 		m[2], m[3], m[6], m[7] = 0, 0, 0, 0
 		m[8], m[9], m[11], m[14] = 0, 0, 0, 0
 		m[10], m[15] = 1, 1
-		m[0] = this.a; m[4] = this.c; m[12] = this.tx;
-		m[1] = this.b; m[5] = this.d; m[13] = this.ty;
-		return m
+		m[0] = @a; m[4] = @c; m[12] = @tx;
+		m[1] = @b; m[5] = @d; m[13] = @ty;
+		return m */
 	}
 	
 	fromGL = function(m){
-		this.a = m[0]; this.c = m[4]; this.tx = m[12];
-		this.b = m[1]; this.d = m[5]; this.ty = m[13];
+		@a = m[0]; @c = m[4]; @tx = m[12];
+		@b = m[1]; @d = m[5]; @ty = m[13];
 		return this
 	}
 }
 
 Easy = {
-	linear = function(t){
-		return t
-	}
-
-	inQuad = function(t){
-		return t * t
-	}
-
-	inCubic = function(t){
-		return t ** 3
-	}
-
-	inQuart = function(t){
-		return t ** 4
-	}
-
-	inQuint = function(t){
-		return t ** 5
-	}
-
-	inSine = function(t){
-		return 1 - math.cos(t * math.PI / 2)
-	}
-
-	inExpo = function(t){
-		return 2 ** (10 * (t - 1))
-	}
-
-	inCirc = function(t){
-		return 1 - (1 - t ** 2) ** 0.5
-	}
+	linear = {|t| t}
+	inQuad = {|t| t * t}
+	inCubic = {|t| t ** 3}
+	inQuart = {|t| t ** 4}
+	inQuint = {|t| t ** 5}
+	inSine = {|t| 1 - math.cos(t * math.PI / 2)}
+	inExpo = {|t| 2 ** (10 * (t - 1))}
+	inCirc = {|t| 1 - (1 - t ** 2) ** 0.5}
 
 	s = 1.70158
 	
-	inBack = function(t){
+	inBack = {|t|
 		var s = Easy.s 
 		return t * t * ((s + 1) * t - s)
 	}
 
-	inBounce = function(t){
-		return 1 - outBounce(1 - t)
-	}
+	inBounce = {|t| 1 - outBounce(1 - t)}
 }
 
 var Easy = Easy
@@ -184,7 +165,7 @@ var function outBounce(t){
 		t = t - 0.818181818182f
 		return 7.5625f * t * t + 0.9375f
 	}
-	t = t - 0.954545454545f;
+	t = t - 0.954545454545f
 	return 7.5625f * t * t + 0.984375f
 }
 
@@ -193,25 +174,16 @@ var function easyInOutHelper(t, inFunc){
 	return t <= 0.5 ? inFunc(t * 2) / 2 : 1 - inFunc(2 - t * 2) / 2
 }
 
-for(var name, func in clone Easy){
-	if(functionof func && name.sub(0, 2) == "in"){
-		function(func){
-			function(func){
+for(var name, func in Easy.clone()){
+	if(functionOf(func) && name.sub(0, 2) == "in"){
+		{|func|
+			{|func|
 				// Easy[name] = func
 				name = name.sub(2)
-				Easy["out"..name] = function(t){
-					return 1 - func(1 - t)
-				}
-				Easy["inOut"..name] = function(t){
-					return easyInOutHelper(t, func)
-				}
-				Easy["outIn"..name] = function(t){
-					return 1 - easyInOutHelper(1 - t, func)
-				}
-			}(function(t){
-				return func(t < 0 ? 0 : t > 1 ? 1 : t)
-			})
+				Easy["out"..name] = {|t| 1 - func(1 - t)}
+				Easy["inOut"..name] = {|t| easyInOutHelper(t, func)}
+				Easy["outIn"..name] = {|t| 1 - easyInOutHelper(1 - t, func)}
+			}{|t| func(t < 0 ? 0 : t > 1 ? 1 : t)}
 		}(func)
 	}
 }
-

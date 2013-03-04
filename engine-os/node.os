@@ -2,15 +2,15 @@ require("utils")
 
 Point = {
 	__construct = function(x, y){
-		this.x = x
-		this.y = y
+		@x = x
+		@y = y
 	}
 }
 
 Size = {
 	__construct = function(width, height){
-		this.width = width
-		this.height = height
+		@width = width
+		@height = height
 	}
 }
 
@@ -30,52 +30,51 @@ FunctionNode = {
 		__zOrder = 0
 	}
 	
-	__get@parent = function(){return this.__parent}
-	__set@parent = function(a){
-		if(this.__parent !== a){ 
-			this.remove() 
+	__get@parent = {||@__parent}
+	__set@parent = {|a| 
+		if(@__parent !== a){ 
+			@remove() 
 			a && a.insert(this) 
 		}
 	}
 	
-	__get@zOrder = function(){return this.__zOrder}
-	__set@zOrder = function(a){
+	__get@zOrder = {||@__zOrder}
+	__set@zOrder = {|a| 
 		a = math.round(a)
-		if(this.__zOrder !== a){ 
-			this.__zOrder = a
-			if(this.__parent){
-				this.__parentChildren[this][0] = a
-				this.__parent.sortChildren(this.__parentChildren)
+		if(@__zOrder != a){ 
+			@__zOrder = a
+			if(@__parent){
+				@__parentChildren[this][0] = a
+				@__parent.sortChildren(@__parentChildren)
 			}
 		}
 	}
 	
-	attrs: function(parsms){
-		for(var field, value in objectof parsms){
+	attrs: function(params){
+		for(var field, value in objectOf(params)){
 			this[field] = value
 		}
 		return this
 	}
 	
 	sortChildren = function(children){
-		children.rsort(function(a b){
-			var z = a[0] - b[0]
-			return z != 0 ? z : a[1] - b[1]
-		})
+		children.sort {|b a|
+			var z = a[0] <=> b[0]
+			return z != 0 ? z : a[1] <=> b[1]
+		}
 	}
 	
 	insert = function(node, zOrder){
 		node.remove()
 		
 		if(zOrder){
-			zOrder = math.round(zOrder)
-			node.__zOrder = zOrder
+			node.__zOrder = zOrder = math.round(zOrder)
 		}else
 			zOrder = node.__zOrder
 		
-		var children = zOrder < 0 ? this.__childrenNeg : this.__childrenPos
+		var children = zOrder < 0 ? @__childrenNeg : @__childrenPos
 		children[node] = [zOrder, ++counter]
-		this.sortChildren(children)
+		@sortChildren(children)
 		node.__parent = this
 		node.__parentChildren = children
 		node.triggerEvent("onEnter", {sender: node})
@@ -97,28 +96,28 @@ FunctionNode = {
 	}
 	
 	removeAll = function(){
-		this.__childrenNeg, this.__childrenPos = {}, {}
+		@__childrenNeg, @__childrenPos = {}, {}
 	}
 	
 	contains = function(node){
-		return node in this.__childrenNeg || node in this.__childrenPos
+		return node in @__childrenNeg || node in @__childrenPos
 	}
 	
 	handleUpdate = function(params){
 		var deltaTime = params.deltaTime
-		params.deltaTime = deltaTime * this.timeSpeed
-		this.time = this.time + params.deltaTime
-		this.updateTimers(params)
-		for(var child in this.__childrenPos){
+		params.deltaTime = deltaTime * @timeSpeed
+		@time = @time + params.deltaTime
+		@updateTimers(params)
+		for(var child in @__childrenPos){
 			child.handleUpdate(params)
 		}
-		if("enterFrame" in this.__events){
+		if("enterFrame" in @__events){
 			// params.target = this
-			for(var func in this.__events["enterFrame"]){
+			for(var func in @__events.enterFrame){
 				func.call(this, params)
 			}
 		}
-		for(var child in this.__childrenNeg){
+		for(var child in @__childrenNeg){
 			child.handleUpdate(params)
 		}
 		params.deltaTime = deltaTime
@@ -129,65 +128,66 @@ FunctionNode = {
 	handleKeyEvent = function(){}
 	
 	addEventListener = function(eventName, func, zOrder){
-		functionof func || return;
-		this.__events[eventName][func] = zOrder || 0
-		this.__events[eventName].rsort()
+		functionOf(func) || return;
+		eventName in @__events || @__events[eventName] = {}
+		@__events[eventName][func] = zOrder || 0
+		@__events[eventName].sort{|b a| a <=> b}
 		return [eventName, func]
 	}
 	
 	removeEventListener = function(eventName, func){
-		if(arrayof eventName){
+		if(arrayOf(eventName)){
 			eventName, func = eventName[0], eventName[1]
 		}
-		if(eventName in this.__events){
-			delete this.__events[eventName][func]
+		if(eventName in @__events){
+			delete @__events[eventName][func]
 		}
 	}
 
 	triggerLocalEvent = function(eventName, params){
-		if(eventName in this.__events){
+		if(eventName in @__events){
 			// params.target = this
-			for(var func in this.__events[eventName]){
+			for(var func in @__events[eventName]){
 				func.call(this, params)
 			}
 		}
 	}
 	
 	triggerEvent = function(eventName, params){
-		for(var child in this.__childrenPos){
+		for(var child in @__childrenPos){
 			child.triggerEvent(eventName, params)
 		}
-		if(eventName in this.__events){
+		if(eventName in @__events){
 			// params.target = this
-			for(var func in this.__events[eventName]){
+			for(var func in @__events[eventName]){
 				func.call(this, params)
 			}
 		}
-		for(var child in this.__childrenNeg){
+		for(var child in @__childrenNeg){
 			child.triggerEvent(eventName, params)
 		}
 	}
 	
 	setTimeout = function(func, delay, count, priority){
 		count = count || 1
-		count > 0 && functionof func || return;
-		this.__timers[func] = {
-			nextTime = this.time + delay
+		count > 0 && functionOf(func) || return;
+		@__timers[func] = {
+			nextTime = @time + delay
 			delay = delay
 			count = count
 			priority = priority || 0
 		}
-		this.__timers.rsort "priority"
+		@__timers.sort{|b a| a.priority <=> b.priority}
 		return func
 	}
 
 	clearTimeout = function(t){
-		delete this.__timers[t]
+		delete @__timers[t]
 	}
 	
 	updateTimers = function(){
-		var time = this.time
-		for(var func, t in this.__timers){
+		var time = @time
+		for(var func, t in @__timers){
 			if(t.nextTime <= time){
 				// print "run timer "..t
 				t.nextTime = time + t.delay
@@ -195,7 +195,7 @@ FunctionNode = {
 					func.call(this)
 				}else{
 					if(t.count <= 1){
-						delete this.__timers[func]
+						delete @__timers[func]
 					}else{
 						t.count = t.count - 1
 					}
@@ -206,7 +206,7 @@ FunctionNode = {
 	}
 
 	transition = function(t){
-		return this.insert(Transition(t, this))
+		return @insert(Transition(t, this))
 	}
 	
 	stopTransition = function(t){
@@ -214,15 +214,15 @@ FunctionNode = {
 	}
 	
 	stopAllTransitions = function(){
-		this.removeAllInstancesOf(Transition)
+		@removeAllInstancesOf(Transition)
 	}
 	
 	removeAllInstancesOf = function(type){
-		for(var t in this.__childrenPos){
+		for(var t in @__childrenPos){
 			if(t is type)
 				t.remove()
 		}
-		for(var t in this.__childrenNeg){
+		for(var t in @__childrenNeg){
 			if(t is type)
 				t.remove()
 		}
@@ -256,113 +256,119 @@ Node = extends FunctionNode {
 		__transformGL = null // node to parent (GL)
 	}
 	
-	__get@x = function(){return this.__x}
-	__set@x = function(a){if(this.__x !== a){ this.__x = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@x = {||@__x}
+	__set@x = {|a| if(@__x != a){ @__x = a; @__transformDirty = @__inverseDirty = true }}
 	
-	__get@y = function(){return this.__y}
-	__set@y = function(a){if(this.__y !== a){ this.__y = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@y = {||@__y}
+	__set@y = {|a| if(@__y != a){ @__y = a; @__transformDirty = @__inverseDirty = true }}
 	
-	__get@position = function(){return Point(this.__x this.__y)}
-	__set@position = function(a){ this.x, this.y = a.x, a.y }
+	__get@position = {|| Point(@__x @__y)}
+	__set@position = {|a| @x, @y = a.x, a.y }
 	
-	__get@width = function(){return this.__width}
-	__set@width = function(a){if(this.__width !== a){ this.__width = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@width = {||@__width}
+	__set@width = {|a| if(@__width != a){ @__width = a; @__transformDirty = @__inverseDirty = true }}
 	
-	__get@height = function(){return this.__height}
-	__set@height = function(a){if(this.__height !== a){ this.__height = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@height = {||@__height}
+	__set@height = {|a| if(@__height != a){ @__height = a; @__transformDirty = @__inverseDirty = true }}
 	
-	__get@scaleX = function(){return this.__scaleX}
-	__set@scaleX = function(a){if(this.__scaleX !== a){ this.__scaleX = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@scaleX = {||@__scaleX}
+	__set@scaleX = {|a| if(@__scaleX != a){ @__scaleX = a; @__transformDirty = @__inverseDirty = true }}
 	
-	__get@scaleY = function(){return this.__scaleY}
-	__set@scaleY = function(a){if(this.__scaleY !== a){ this.__scaleY = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@scaleY = {||@__scaleY}
+	__set@scaleY = {|a| if(@__scaleY != a){ @__scaleY = a; @__transformDirty = @__inverseDirty = true }}
 	
-	__get@scale = function(){return this.__scaleX} // Point(this.__scaleX this.__scaleY)}
-	__set@scale = function(a){ 
-		if(numberof a){
-			this.scaleX, this.scaleY = a, a
+	__get@scale = {||@__scaleX} // Point(@__scaleX @__scaleY)}
+	__set@scale = {|a| 
+		if(numberOf(a)){
+			@scaleX, @scaleY = a, a
 		}else{
-			this.scaleX, this.scaleY = a.x, a.y 
+			@scaleX, @scaleY = a.x, a.y 
 		}
 	}
 	
-	__get@skewX = function(){return this.__skewX}
-	__set@skewX = function(a){if(this.__skewX !== a){ this.__skewX = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@skewX = {|| @__skewX }
+	__set@skewX = {|a| if(@__skewX != a){ @__skewX = a; @__transformDirty = @__inverseDirty = true }}
 	
-	__get@skewY = function(){return this.__skewY}
-	__set@skewY = function(a){if(this.__skewY !== a){ this.__skewY = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@skewY = {||@__skewY}
+	__set@skewY = {|a| if(@__skewY != a){ @__skewY = a; @__transformDirty = @__inverseDirty = true }}
 	
-	__get@skew = function(){return Point(this.__skewX this.__skewY)}
-	__set@skew = function(a){ this.skewX, this.skewY = a.x, a.y }
+	__get@skew = {||Point(@__skewX @__skewY)}
+	__set@skew = {|a| @skewX, @skewY = a.x, a.y }
 	
-	__get@anchorX = function(){return this.__anchorX}
-	__set@anchorX = function(a){if(this.__anchorX !== a){ this.__anchorX = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@anchorX = {||@__anchorX}
+	__set@anchorX = {|a| if(@__anchorX != a){ @__anchorX = a; @__transformDirty = @__inverseDirty = true }}
 	
-	__get@anchorY = function(){return this.__anchorY}
-	__set@anchorY = function(a){if(this.__anchorY !== a){ this.__anchorY = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@anchorY = {||@__anchorY}
+	__set@anchorY = {|a| if(@__anchorY != a){ @__anchorY = a; @__transformDirty = @__inverseDirty = true }}
 	
-	__get@anchor = function(){return Point(this.__anchorX this.__anchorY)}
-	__set@anchor = function(a){ this.anchorX, this.anchorY = a.x, a.y }
+	__get@anchor = {|| Point(@__anchorX @__anchorY)}
+	__set@anchor = {|a| 
+		if(arrayOf(a)){
+			@anchorX, @anchorY = a[0], a[1]
+		}else{
+			@anchorX, @anchorY = a.x, a.y 
+		}
+	}
 	
-	__get@rotation = function(){return this.__rotation}
-	__set@rotation = function(a){if(this.__rotation !== a){ this.__rotation = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@rotation = {||@__rotation}
+	__set@rotation = {|a| if(@__rotation != a){ @__rotation = a; @__transformDirty = @__inverseDirty = true }}
 	
-	__get@isRelativeAnchor = function(){return this.__isRelativeAnchor}
-	__set@isRelativeAnchor = function(a){if(this.__isRelativeAnchor !== a){ this.__isRelativeAnchor = a; this.__transformDirty, this.__inverseDirty = true, true }}
+	__get@isRelativeAnchor = {||@__isRelativeAnchor}
+	__set@isRelativeAnchor = {|a| if(@__isRelativeAnchor != a){ @__isRelativeAnchor = a; @__transformDirty = @__inverseDirty = true }}
 	
 	__construct = function(){
 		super()
-		this.width = director.contentWidth
-		this.height = director.contentHeight
-		// print "node "..this.width..", "..this.height
+		@width = director.contentWidth
+		@height = director.contentHeight
+		printf("node %s: %s, %s\n", @prototype.name, @width, @height)
 	}
 	
 	paint = function(){}
 	
 	nodeToParentTransform = function(){
-		if(this.__transformDirty){
+		if(@__transformDirty){
 			var t = Matrix()
 			var anchorX, anchorY
-			if(this.__anchorX !== 0 || this.__anchorY !== 0){
-				anchorX = this.__anchorX * this.__width
-				anchorY = this.__anchorY * this.__height
+			if(@__anchorX != 0 || @__anchorY != 0){
+				anchorX = @__anchorX * @__width
+				anchorY = @__anchorY * @__height
 			}
-			if(anchorX && !this.__isRelativeAnchor){
+			if(anchorX && !@__isRelativeAnchor){
 				t = t.translate(anchorX, anchorY)
 			}
-			if(this.__x !== 0 || this.__y !== 0){
-				t = t.translate(this.__x, this.__y)
+			if(@__x != 0 || @__y != 0){
+				t = t.translate(@__x, @__y)
 			}
-			if(this.__rotation !== 0){
-				t = t.rotate(this.__rotation)
+			if(@__rotation != 0){
+				t = t.rotate(@__rotation)
 			}
-			if(this.__skewX !== 0 || this.__skewY !== 0){
-				t = t.skew(this.__skewX, this.__skewY)
+			if(@__skewX != 0 || @__skewY != 0){
+				t = t.skew(@__skewX, @__skewY)
 			}
-			if(this.__scaleX !== 0 || this.__scaleY !== 0){
-				t = t.scale(this.__scaleX, this.__scaleY)
+			if(@__scaleX != 0 || @__scaleY != 0){
+				t = t.scale(@__scaleX, @__scaleY)
 			}
 			if(anchorX){
 				t = t.translate(-anchorX, -anchorY)
 			}
-			this.__transform = t
-			this.__transformGL = t.toGL()
-			this.__transformDirty = false
+			@__transform = t
+			@__transformGL = t.toGL()
+			@__transformDirty = false
 		}
-		return this.__transform
+		return @__transform
 	}
 	
 	parentToNodeTransform = function(){
-		if(this.__inverseDirty){
-			this.__inverseTransform = (clone this.nodeToParentTransform()).inverse()
-			this.__inverseDirty = false
+		if(@__inverseDirty){
+			@__inverseTransform = @nodeToParentTransform().clone().inverse()
+			@__inverseDirty = false
 		}
 	}
 	
 	nodeToWorldTransform = function(){
 		// t could be changed so clone it
-		var t = clone this.nodeToParentTransform()
-		for(var p = this.__parent; p;){
+		var t = @nodeToParentTransform().clone()
+		for(var p = @__parent; p;){
 			t = t.mult( p.nodeToParentTransform() )
 			p = p.__parent
 		}
@@ -371,45 +377,45 @@ Node = extends FunctionNode {
 	}
 	
 	worldToNodeTransform = function(){
-		return this.nodeToWorldTransform().inverse()
+		return @nodeToWorldTransform().inverse()
 	}
 	
 	pointToNodeSpace = function(point){
-		return this.worldToNodeTransform().transform(point)
+		return @worldToNodeTransform().transform(point)
 	}
 	
 	isLocalPoint = function(point){
-		return point.x >= 0 && point.x < this.__width 
-			&& point.y >= 0 && point.y < this.__height
+		return point.x >= 0 && point.x < @__width 
+			&& point.y >= 0 && point.y < @__height
 	}
 	
 	transform = function(){
-		this.nodeToParentTransform()
-		glMultMatrix(this.__transformGL)
+		@nodeToParentTransform()
+		glMultMatrix(@__transformGL)
 	}
 	
 	handlePaint = function(params){
-		this.visible || return;
+		@visible || return;
 		
 		var saveOpacity = params.opacity
-		params.opacity = params.opacity * this.opacity
+		params.opacity = params.opacity * @opacity
 		
 		glPushMatrix()
-		this.transform()
+		@transform()
 		
-		for(var child in this.__childrenNeg.reverseIter()){
+		for(var child in @__childrenNeg.reverseIter()){
 			child.handlePaint(params)
 		}
 		
-		this.paint(params)
-		if("paint" in this.__events){
+		@paint(params)
+		if("paint" in @__events){
 			// params.target = this
-			for(var func in this.__events["paint"]){
+			for(var func in @__events.paint){
 				func.call(this, params)
 			}
 		}
 		
-		for(var child in this.__childrenPos.reverseIter()){
+		for(var child in @__childrenPos.reverseIter()){
 			child.handlePaint(params)
 		}
 		
@@ -419,23 +425,23 @@ Node = extends FunctionNode {
 	}
 	
 	handleKeyEvent = function(event){
-		// this.triggerEvent("key", event)
+		// @triggerEvent("key", event)
 		if(event.captured !== this){
-			for(var child in this.__childrenPos){
+			for(var child in @__childrenPos){
 				child.handleKeyEvent(event) && return true;
 			}
 		}
-		if("key" in this.__events){
-			for(var func in this.__events["key"]){
+		if("key" in @__events){
+			for(var func in @__events.key){
 				func.call(this, event)
 			}
 		}
 		if(event.captured !== this){
-			for(var child in this.__childrenNeg){
+			for(var child in @__childrenNeg){
 				child.handleKeyEvent(event) && return true;
 			}
 		}
-		if(!event.captured && this.modal){
+		if(!event.captured && @modal){
 			event.captured = this
 			event.modal = true
 			return true
@@ -445,28 +451,30 @@ Node = extends FunctionNode {
 	
 	handleTouch = function(touch){
 		if(touch.captured !== this){
-			for(var child in this.__childrenPos){
+			for(var child in @__childrenPos){
 				child.handleTouch(touch) && return true;
 			}
 		}
-		if("nativeTouch" in this.__events){
+		if("nativeTouch" in @__events){
 			// touch.target = this
-			for(var func in this.__events["nativeTouch"]){
+			for(var func in @__events.nativeTouch){
 				func.call(this, touch)
 			}
 		}
 		var autoCapture
-		if("touch" in this.__events){
+		if("touch" in @__events){
 			if(touch.phase == "start"){
 				if(!touch.captured){
 					// touch.x, touch.y = touch.nativeX, touch.nativeY
-					var local = this.pointToNodeSpace(touch)
-					// echo("touch "touch", local"local", is local "this.isLocalPoint(local)"\n")
-					if(this.isLocalPoint(local)){
+					var local = @pointToNodeSpace(touch)
+					// echo("touch "touch", local"local", is local "@isLocalPoint(local)"\n")
+					if(@isLocalPoint(local)){
 						touch.local, autoCapture = local, true
+						// print "set autoCapture: "..autoCapture
 						// touch.target = this
-						for(var func in this.__events["touch"]){
+						for(var func in @__events.touch){
 							if(func.call(this, touch) === true){
+								print "captured by "..this
 								touch.captured = this
 								touch.capturedFunc = func
 								delete touch.local
@@ -474,18 +482,19 @@ Node = extends FunctionNode {
 							}
 						}
 						delete touch.local
+						// print "autoCapture active: "..autoCapture
 					}
 				}
 			}else if(touch.captured === this){
 				// touch.x, touch.y = touch.nativeX, touch.nativeY
-				touch.local = this.pointToNodeSpace(touch)
+				touch.local = @pointToNodeSpace(touch)
 				// touch.target = this
 				if(touch.capturedFunc){
-					if(touch.capturedFunc in this.__events["touch"]){
+					if(touch.capturedFunc in @__events.touch){
 						touch.capturedFunc.call(this, touch)
 					}
 				}else{
-					for(var func in this.__events["touch"]){
+					for(var func in @__events.touch){
 						func.call(this, touch)
 					}
 				}
@@ -494,15 +503,17 @@ Node = extends FunctionNode {
 			}
 		}
 		if(touch.captured !== this){
-			for(var child in this.__childrenNeg){
+			for(var child in @__childrenNeg){
 				child.handleTouch(touch) && return true;
 			}
 		}
+		// print "captured at end: "..touch.captured..", "..autoCapture
 		if(!touch.captured){
 			if(autoCapture){
 				touch.captured = this
+				// print "autoCapture: "..touch
 				return true
-			}else if(this.modal){
+			}else if(@modal){
 				touch.captured = this
 				touch.modal = true
 				return true
@@ -511,19 +522,19 @@ Node = extends FunctionNode {
 		return false
 	}
 	
-	setRect = function(x y width height){
-		this.x = x
-		this.y = y
-		this.width = width
-		this.height = height
+	setRect = function(x, y, width, height){
+		@x = x
+		@y = y
+		@width = width
+		@height = height
 	}
 	
 	drawBB = function(color, fill){
 		var points = [
 			[0, 0],
-			[this.width, 0],
-			[this.width, this.height],
-			[0, this.height],
+			[@width, 0],
+			[@width, @height],
+			[0, @height],
 		]
 		glColor(color)
 		ccDrawPoly(points, true, fill)
@@ -540,15 +551,15 @@ Transition = extends FunctionNode {
 
 	__construct = function(params, target){
 		super()
-		this.target = target
+		@target = target
 		if("onComplete" in params){
-			this.onComplete = functionof params.onComplete
+			@onComplete = functionOf(params.onComplete)
 			delete params.onComplete
 		}
-		var t = this.calculateTransition(this.list, params, 0, 1)
-		this.duration = t.endTime
-		// print "calculateTransition "..this.list
-		this.addEventListener("enterFrame", this.update, true)
+		var t = @calculateTransition(@list, params, 0, 1)
+		@duration = t.endTime
+		// print "calculateTransition "..@list
+		@addEventListener("enterFrame", @update, true)
 	}
 	
 	calculateTransition = function(list, params, startTime, speed){
@@ -571,11 +582,11 @@ Transition = extends FunctionNode {
 			duration = duration / speed
 			delay = delay / speed
 		}else{
-			duration, delay = 0, 0
+			duration = delay = 0
 		}
 		t.easy = null
 		if("easy" in params){
-			t.easy = functionof params.easy
+			t.easy = functionOf(params.easy)
 			delete params.easy
 		}
 		t.repeat = 1
@@ -584,7 +595,7 @@ Transition = extends FunctionNode {
 			delete params.repeat
 		}
 		t.infinite = t.repeat === true
-		t.repeat = math.max(0, numberof t.repeat)
+		t.repeat = math.max(0, numberOf(t.repeat))
 
 		t.alignRotation = false
 		if("alignRotation" in params){
@@ -596,13 +607,13 @@ Transition = extends FunctionNode {
 		t.startTime = startTime
 		t.startTransitionTime = startTime + delay
 		t.endTime = t.startTransitionTime + duration
-		list.push(t)
+		list[] = t
 		
 		t.startValues = null
 		t.endValues = {}
 		t.subTransitions = []
 		for(var name, value in params){
-			if(name === "sequence"){
+			if(name == "sequence"){
 				// delete params[name]
 				var sequenceStartTime = t.startTransitionTime
 				var closed = false
@@ -610,7 +621,7 @@ Transition = extends FunctionNode {
 					closed = value.closed
 					delete value.closed
 					if(closed){
-						value.push(clone value[0])
+						value[] = value[0].clone()
 					}
 				}
 				var alignRotation = t.alignRotation
@@ -619,16 +630,16 @@ Transition = extends FunctionNode {
 					delete value.alignRotation
 				}
 				for(var i, sub in value){
-					if(objectof sub){
+					if(objectOf(sub)){
 						sub.alignRotation = alignRotation
-						sub = this.calculateTransition(t.subTransitions, sub, sequenceStartTime, speed)
+						sub = @calculateTransition(t.subTransitions, sub, sequenceStartTime, speed)
 						sequenceStartTime = sub.endTime
 						t.endTime = math.max(t.endTime, sub.endTime)
 					}
 				}
 				continue
 			}
-			if(name === "spawn"){
+			if(name == "spawn"){
 				// delete params[name]
 				var alignRotation = t.alignRotation
 				if("alignRotation" in value){
@@ -636,9 +647,9 @@ Transition = extends FunctionNode {
 					delete value.alignRotation
 				}
 				for(var i, sub in value){
-					if(objectof sub){
+					if(objectOf(sub)){
 						sub.alignRotation = alignRotation
-						sub = this.calculateTransition(t.subTransitions, sub, t.startTransitionTime, speed)
+						sub = @calculateTransition(t.subTransitions, sub, t.startTransitionTime, speed)
 						t.endTime = math.max(t.endTime, sub.endTime)
 					}
 				}
@@ -664,23 +675,23 @@ Transition = extends FunctionNode {
 	}
 	
 	update = function(){
-		var time, duration = this.time, this.duration
+		var time, duration = @time, @duration
 		if(time >= duration){
-			// this.addEventListener("enterFrame", function(){
-				this.remove()
-				this.finished = true
-				this.onComplete && this.onComplete.call(this.target)
+			// @addEventListener("enterFrame", function(){
+				@remove()
+				@finished = true
+				@onComplete && @onComplete.call(@target)
 				// print("transition finished", time, duration)
 			// })
 			time = duration
 		}
-		this.applyTimeToList(time, this.list)
+		@applyTimeToList(time, @list)
 	}
 	
 	applyTimeToList = function(time, list){
 		var prev
 		for(var i, t in list){
-			this.applyTimeToItem(time, t, prev)
+			@applyTimeToItem(time, t, prev)
 			prev = t.endValues
 		}
 	}
@@ -693,11 +704,11 @@ Transition = extends FunctionNode {
 			return
 		}
 		// print("applyTimeToItem time OK", t.startTransitionTime, time, t.endTime)
-		var target = this.target
+		var target = @target
 		if(!t.startValues){
 			t.startValues = {}
 			for(var name, value in t.endValues){
-				if(numberof value && name in target && numberof target[name]){
+				if(numberOf(value) && name in target && numberOf(target[name])){
 					t.startValues[name] = name in prev ? prev[name] : target[name]
 				}else{
 					delete t.endValues[name]
@@ -709,9 +720,9 @@ Transition = extends FunctionNode {
 				var diff = end - start
 				if(math.abs(diff) > 180){
 					if(diff < 0){
-						diff = 360 + diff - math.floor(diff / 360) * 360
+						diff = 360 + diff % 360 // diff - math.floor(diff / 360) * 360
 					}else if(diff > 360){
-						diff = diff - math.floor(diff / 360) * 360
+						diff = diff % 360 // diff - math.floor(diff / 360) * 360
 					}
 					if(diff > 180){
 						diff = diff - 360
@@ -723,7 +734,7 @@ Transition = extends FunctionNode {
 		}
 		var tween
 		var duration = t.endTransitionTime - t.startTransitionTime
-		if(this.finished)
+		if(@finished)
 			time = time - t.startTransitionTime
 		else
 			time = math.fmod(time - t.startTransitionTime,  duration)
@@ -741,7 +752,7 @@ Transition = extends FunctionNode {
 			// print(name.." --> "..target[name], "start value "..t.startValues[name], "end "..endValue, "tween "..tween)
 		}
 		if(t.subTransitions)
-			this.applyTimeToList(time + t.startTransitionTime, t.subTransitions)
+			@applyTimeToList(time + t.startTransitionTime, t.subTransitions)
 	}
 }
 
@@ -751,7 +762,7 @@ ColorNode = extends Node {
 	}
 	
 	paint = function(){
-		this.drawBB(this.color, true)
+		@drawBB(@color, true)
 	}
 }
 

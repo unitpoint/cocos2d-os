@@ -189,7 +189,7 @@ struct CtypeValue<b2Vec2>
 
 			return b2Vec2(x, y);
 		}
-		os->triggerError(OS_E_ERROR, "point expected");
+		os->setException("point expected");
 		return b2Vec2(0, 0);
 	}
 
@@ -199,11 +199,11 @@ struct CtypeValue<b2Vec2>
 	
 		os->pushStackValue();
 		os->pushNumber(fromBox2dMetric(p.x));
-		os->setProperty("x", false, false);
+		os->setProperty("x", false);
 				
 		os->pushStackValue();
 		os->pushNumber(fromBox2dMetric(p.y));
-		os->setProperty("y", false, false);
+		os->setProperty("y", false);
 	}
 };
 
@@ -249,7 +249,7 @@ struct CtypeValue<b2Color>
 
 			return b2Color(r, g, b);
 		}
-		os->triggerError(OS_E_ERROR, "color expected");
+		os->setException("color expected");
 		return b2Color(1, 1, 1);
 	}
 
@@ -296,7 +296,7 @@ struct CtypeValue<b2Transform>
 
 			return b2Transform(b2Vec2(x, y), b2Rot(angle));
 		}
-		os->triggerError(OS_E_ERROR, "b2Transform expected");
+		os->setException("b2Transform expected");
 		return b2Transform(b2Vec2(0, 0), b2Rot(0));
 	}
 
@@ -306,15 +306,15 @@ struct CtypeValue<b2Transform>
 	
 		os->pushStackValue();
 		os->pushNumber(fromBox2dMetric(xf.p.x));
-		os->setProperty("x", false, false);
+		os->setProperty("x", false);
 				
 		os->pushStackValue();
 		os->pushNumber(fromBox2dMetric(xf.p.y));
-		os->setProperty("y", false, false);
+		os->setProperty("y", false);
 				
 		os->pushStackValue();
 		os->pushNumber(xf.q.GetAngle());
-		os->setProperty("angle", false, false);
+		os->setProperty("angle", false);
 	}
 };
 
@@ -349,29 +349,37 @@ struct CtypeValue<b2Profile>
 // =====================================================================
 
 template <> struct CtypeValue<b2Body*>: public CtypeUserClass<b2Body*>{}; \
-template <> void userObjectDestructor<b2Body>(b2Body * body)
+template <> struct UserDataDestructor<b2Body>
 {
+	static void dtor(ObjectScript::OS * os, void * data, void * user_param)
+	{
 #if 1
-	if(body){
-		body->GetWorld()->DestroyBody(body);
-	}
+		b2Body * body = (b2Body*)data;
+		if(body){
+			body->GetWorld()->DestroyBody(body);
+		}
 #endif
-}
+	}
+};
 
 template <> struct CtypeValue<b2Joint*>: public CtypeUserClass<b2Joint*>{}; \
-template <> void userObjectDestructor<b2Joint>(b2Joint * joint)
+template <> struct UserDataDestructor<b2Joint>
 {
+	static void dtor(ObjectScript::OS * os, void * data, void * user_param)
+	{
 #if 1
-	if(joint){
-		b2Body * body = joint->GetBodyA();
-		if(body || (body = joint->GetBodyB())){
-			body->GetWorld()->DestroyJoint(joint);
-		}else{
-			OS_ASSERT(false);
+		b2Joint * joint = (b2Joint*)data;
+		if(joint){
+			b2Body * body = joint->GetBodyA();
+			if(body || (body = joint->GetBodyB())){
+				body->GetWorld()->DestroyJoint(joint);
+			}else{
+				OS_ASSERT(false);
+			}
 		}
-	}
 #endif
-}
+	}
+};
 
 // =====================================================================
 
@@ -409,7 +417,7 @@ void pushVertices(OS * os, const b2Vec2* vertices, int count)
 template <class T> void clearUserdata(OS * os, T * val)
 {
 	os->pushValueById((int)val->GetUserData());
-	os->clearUserdata(getInstanceId<T>());
+	os->clearUserdata(CtypeId<T>::getInstanceId());
 	os->pop();
 }
 
@@ -421,14 +429,14 @@ template <class T> T * error(T * obj, OS * os, const char * message, int pop = 1
 		obj->~T();
 		os->free(obj);
 	}
-	os->triggerError(OS_E_ERROR, message);
+	os->setException(message);
 	os->pop(pop);
 	return NULL;
 }
 
 int error(OS * os, const char * message, int pop = 1)
 {
-	os->triggerError(OS_E_ERROR, message);
+	os->setException(message);
 	os->pop(pop);
 	return 0;
 }
@@ -476,7 +484,7 @@ public:
 	{
 		os->pushValueById(osId);
 		// os->pushUserPointer(getInstanceId<World>(), this);
-		OS_ASSERT(os->isUserdata(getInstanceId<World>(), -1));
+		OS_ASSERT(os->isUserdata(CtypeId<World>::getInstanceId(), -1));
 	}
 
 	bool getFunction(const char * name)
@@ -873,12 +881,12 @@ public:
 	{
 		b2Vec2 gravity = params > 0 ? CtypeValue<b2Vec2>::getArg(os, -params) : b2Vec2(0, 9.8f);
 		bool sleep = params > 1 ? os->toBool(-params+1) : true;
-		new (os->pushUserdata(getInstanceId<World>(), sizeof(World), destructor)) World(os, gravity, sleep);
+		new (os->pushUserdata(CtypeId<World>::getInstanceId(), sizeof(World), destructor)) World(os, gravity, sleep);
 		// os->retainValueById(os->getValueId());
 		os->pushStackValue();
-		os->getGlobal(getCtypeName<World>());
-		OS_ASSERT(os->isUserdata(getCtypeId<World>(), -1));
-		os->setPrototype(getInstanceId<World>());
+		os->getGlobal(CtypeName<World>::getName());
+		OS_ASSERT(os->isUserdata(CtypeId<World>::getId(), -1));
+		os->setPrototype(CtypeId<World>::getInstanceId());
 		return 1;
 	}
 
@@ -944,8 +952,8 @@ public:
 
 		// initClass<World>(os, funcs);
 		os->pushGlobals();
-		os->pushString(getCtypeName<World>());
-		os->pushUserdata(getCtypeId<World>(), 0);
+		os->pushString(CtypeName<World>::getName());
+		os->pushUserdata(CtypeId<World>::getId(), 0);
 		os->setFuncs(funcs);
 		os->setNulls(nulls);
 		os->setProperty();
@@ -965,32 +973,40 @@ template <> struct CtypeValue<b2World*>
 	static type def(ObjectScript::OS*){ return type(); }
 	static type getArg(ObjectScript::OS * os, int offs)
 	{
-		OSBox2d::World * world = (OSBox2d::World*)os->toUserdata(getInstanceId<OSBox2d::World>(), offs);
+		OSBox2d::World * world = (OSBox2d::World*)os->toUserdata(CtypeId<OSBox2d::World>::getInstanceId(), offs);
 		return world ? world : NULL;
 	}
 	static void push(ObjectScript::OS * os, const type val)
 	{
-		os->pushUserPointer(getInstanceId<ttype>(), val, userObjectDestructor<ttype>);
+		os->pushUserPointer(CtypeId<ttype>::getInstanceId(), val, UserDataDestructor<ttype>::dtor);
 		os->pushStackValue();
-		os->getGlobal(getCtypeName<ttype>());
-		if(!os->isUserdata(getCtypeId<ttype>(), -1)){
+		os->getGlobal(CtypeName<ttype>::getName());
+		if(!os->isUserdata(CtypeId<ttype>::getId(), -1)){
 			os->pop(2);
 		}else{
-			os->setPrototype(getInstanceId<ttype>());
+			os->setPrototype(CtypeId<ttype>::getInstanceId());
 		}
 	}
 };
 
-template <> void userObjectDestructor<b2World>(b2World * p_world)
+/*
+template <> struct UserDataDestructor<b2World>
 {
-	// OSBox2d::World * world = OSBox2d::World::toWorld(p_world);
-	// delete world;
-}
+	static void dtor(ObjectScript::OS * os, void * data, void * user_param)
+	{
+		// OSBox2d::World * world = OSBox2d::World::toWorld(p_world);
+		// delete world;
+	}
+};
+*/
 
-template <> void userObjectDestructor<OSBox2d::World>(OSBox2d::World * world)
+template <> struct UserDataDestructor<OSBox2d::World>
 {
-	// delete world;
-}
+	static void dtor(ObjectScript::OS * os, void * data, void * user_param)
+	{
+		// delete world;
+	}
+};
 
 }
 
@@ -1308,10 +1324,10 @@ struct Body
 					os->getProperty();
 					os->clone(offs);
 					os->pushStackValue();
-					os->deleteProperty("shapes", false, false);
+					os->deleteProperty("shapes", false);
 					os->pushStackValue();
 					os->pushStackValue(-3);
-					os->setProperty("shape", false, false);
+					os->setProperty("shape", false);
 					createFixture(self, os, -1);
 					os->pop(2);
 				}
@@ -1350,7 +1366,7 @@ struct Body
 			createFixture(self, os, -params);
 			return 0;
 		}
-		os->triggerError(OS_E_ERROR, "error arguments");
+		os->setException("error arguments");
 		return 0;
 	}
 

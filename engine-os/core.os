@@ -1,3 +1,10 @@
+typeof = typeOf
+numberof = numberOf
+stringof = stringOf
+arrayof = arrayOf
+objectof = objectOf
+userdataof = userdataOf
+
 function __get(name){
 	echo("global property \""name"\" is not declared\n")
 	echo "back trace\n"
@@ -5,47 +12,35 @@ function __get(name){
 	echo "\n"
 }
 
-function Object.__get(name, autoCreate){
-	if(autoCreate) return;
+function Object.__get(name){
 	echo("object property \""name"\" is not declared\n")
 	echo "back trace\n"
 	printBackTrace(1) // skip current function
 	echo("=======\ntarget "this"\n\n")
 }
 
-function Userdata.__set(name, value){
-	echo("userdata property \""name"\" is not declared, set value "value"\n")
-	echo "back trace\n"
-	printBackTrace(1) // skip current function
-	echo("=======\ntarget "this"\n\n")
+function assert(a, message){
+	a || throw(message || "assert failed")
 }
 
-function assert(a, message){
-	if(!a){
-		print(message || "assert failed")
-		printBackTrace(1)
-		terminate()
+function unhandledException(e){
+	if("trace" in e){
+		printf("Unhandled exception: '%s'\n", e.message);
+		for(var i, t in e.trace){
+			printf("#%d %s%s: %s, args: %s\n", i, t.file,
+				t.line > 0 ? "("..t.line..","..t.pos..")" : ""
+				t.object === _G ? t.name : t.object ? "{obj-"..t.object.id.."}."..t.name : t.name, t.arguments);
+		}
+	}else{
+		printf("Unhandled exception: '%s' in %s(%d,%d)\n", e.message, e.file, e.line, e.pos);
 	}
 }
 
-setErrorHandler(function(code message file line){
-	var type = "ERROR"
-	if(code == E_WARNING)
-		type = "WARNING"
-	else if(code == E_NOTICE)
-		type = "NOTICE"
-	echo("["type"] "message"\n")
-	echo "back trace\n"
-	printBackTrace(1) // skip current function
-})
-
 function printBackTrace(skipNumFuncs){
 	for(var i, t in debugBackTrace(skipNumFuncs + 1)){ // skip printBackTrace
-		echo("======= ["i"]\n")
-		// echo("  line: "t.line", pos: "t.pos", token: "t.token", file: "t.file"\n")
-		echo("  line: "t.line", pos: "t.pos", file: "t.file"\n")
-		echo("  function: "t.name", arguments: "t.arguments"\n")
-		// print concat("  object: "(t.object === _G && "<<GLOBALS>>" || t.object)"\n")
+		printf("#%d %s%s: %s, args: %s\n", i, t.file,
+			t.line > 0 ? "("..t.line..","..t.pos..")" : ""
+			t.object === _G ? t.name : t.object ? "{obj-"..t.object.id.."}."..t.name : t.name, t.arguments);
 	}
 }
 
@@ -56,14 +51,17 @@ function eval(str, env){
 var events = {}
 
 function addEventListener(eventName, func, zOrder){
-	functionof func || return;
+	functionOf(func) || return;
+	if(!(eventName in events)){
+		events[eventName] = {}
+	}
 	events[eventName][func] = zOrder || 0
-	events[eventName].rsort()
+	events[eventName].sort {|a b| b <=> a}
 	return [eventName func]
 }
 
 function removeEventListener(eventName, func){
-	if(arrayof eventName){
+	if(arrayOf(eventName)){
 		eventName, func = eventName[0], eventName[1]
 	}
 	if(eventName in events){
@@ -73,29 +71,33 @@ function removeEventListener(eventName, func){
 
 function triggerEvent(eventName, params){
 	// print "core.triggerEvent: "..events
-	for(var func, zOrder in events[eventName]){
-		func(params)
+	if(eventName in events){
+		for(var func, zOrder in events[eventName]){
+			func(params)
+		}
 	}
 }
 
 var timers = {}
 
-function isCallable(f){ return typeof f === "function" || typeof f === "object" || typeof f === "userdata" }
+function isCallable(f){ 
+	var type = typeOf(f)
+	return type === "function" || type === "object" || type === "userdata"
+}
 
 function setTimeout(func, delay, count, priority){
 	count = count || 1
-	count > 0 && functionof func || return;
-	var i = func // #timers
-	timers[i] = {
+	count > 0 && functionOf(func) || return;
+	timers[func] = {
 		nextTime = app.timeSec + delay
 		delay = delay
 		func = func
 		count = count
 		priority = priority || 0
 	}
-	// timers.sort(function(a b){ return b.priority - a.priority })
-	timers.rsort "priority"
-	return i
+	timers.sort {|a b| b.priority <=> a.priority }
+	// timers.rsort "priority"
+	return func
 }
 
 function clearTimeout(t){
@@ -104,77 +106,65 @@ function clearTimeout(t){
 
 HIGH_PRIORITY = 999999
 
-addEventListener("enterFrame" function(){
+addEventListener("enterFrame", {||
 	var time = app.timeSec
 	for(var i, t in timers){
 		if(t.nextTime <= time){
 			t.nextTime = time + t.delay
 			if(t.count === true){
-				t.func.call(null)
+				// t.func.call(null)
+				(t.func)()
 			}else{
 				if(t.count <= 1){
 					delete timers[i]
 				}else{
 					t.count = t.count - 1
 				}
-				t.func.call(null)
-			}
+				// t.func.call(null)
+				(t.func)()
 		}
 	}
-} HIGH_PRIORITY+1)
-
-function toNumber(a){
-	return numberof valueof a
-}
-
-function toString(a){
-	return stringof valueof a
-}
+	}
+}, HIGH_PRIORITY+1)
 
 function toArray(a){
-	var arr = arrayof a
-	arr && return arr;
-	var type = typeof a
-	if(type == "number" || type == "string" || type == "boolean" || type == "userdata"){
-		return [a]
-	}
+	arrayOf(a) && return arr;
+	var type = typeOf(a)
 	if(type == "object"){
-		arr = []
+		var arr = []
 		for(var i, v in a){
 			arr.push(v)
 		}
 		return arr
 	}
-	return null
+	if(type == "null"){
+		return null
+	}
+	return [a]
 }
 
 function toObject(a){
-	var object = objectof a
-	object && return object;
-	var type = typeof a
-	if(type == "number" || type == "string" || type == "boolean" || type == "userdata"){
-		return {a}
-	}
+	objectOf(a) && return object;
+	var type = typeOf(a)
 	if(type == "array"){
-		object = {}
+		var object = {}
 		for(var i, v in a){
 			object.push(v)
 		}
 		return object
 	}
-	return null
-}
-
-function deepClone(p){
-	p = clone p
-	for(var k, v in p){
-		p[k] = deepClone(v)
+	if(type == "null"){
+		return null
 	}
-	return p
+	return {a}
 }
 
-function math.clamp(a min max){
-	return a < min ? min : a > max ? max : a
+function Object.deepClone(){
+	var t = @clone()
+	for(var k, v in t){
+		t[k] = v.deepClone()
+	}
+	return t
 }
 
 function Object.flip(){
@@ -183,4 +173,8 @@ function Object.flip(){
 		r[v] = i
 	}
 	return r
+}
+
+function math.clamp(a, min, max){
+	return a < min ? min : a > max ? max : a
 }

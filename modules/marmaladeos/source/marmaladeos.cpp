@@ -74,6 +74,16 @@ bool MarmaladeOS::init(MemoryManager * mem)
 		return false;
 	}
 
+	getGlobal(core->strings->func_require);
+	getProperty(OS_TEXT("paths"));
+	OS_ASSERT(isArray());
+	for(const char ** paths = os_paths; paths[0]; paths++){
+		pushStackValue();
+		pushString(paths[0]);
+		addProperty(false);
+	}
+	pop();
+
 	initOpenGL(this);
 	initOpenGL2(this);
 	initOpenGLExt(this);
@@ -1058,6 +1068,7 @@ bool MarmaladeOS::isFileExist(const OS_CHAR * filename)
 	return s3eFileCheckExists(filename) ? true : false;
 }
 
+/*
 OS::String MarmaladeOS::resolvePath(const String& p_filename, const String& cur_path)
 {
 	String resolved_path = p_filename;
@@ -1081,15 +1092,24 @@ OS::String MarmaladeOS::resolvePath(const String& p_filename, const String& cur_
 	core->error(OS_E_WARNING, String::format(this, OS_TEXT("filename %s is not resolved"), p_filename.toChar()));
 	return String(this);
 }
+*/
 
 OS::String MarmaladeOS::getCompiledFilename(const String& resolved_filename)
 {
-	String filename = changeFilenameExt(getFilename(resolved_filename), OS_COMPILED_EXT);
+	String filename = changeFilenameExt(getFilename(resolved_filename), OS_EXT_COMPILED);
 	if(compiled_files_path[0]){
 		String cur_path(this, compiled_files_path);
 		return cur_path + OS_PATH_SEPARATOR + filename;
 	}
 	return filename;
+}
+
+void MarmaladeOS::echo(const void * buf, int size)
+{
+	FILE * f = fopen(output_filename, "a");
+	OS_ASSERT(f);
+	fwrite((const char*)buf, size, 1, f);
+	fclose(f);
 }
 
 void MarmaladeOS::printf(const OS_CHAR * format, ...)
@@ -1113,16 +1133,6 @@ static double clamp(double a, double min, double max)
 	if(a < min) return min;
 	if(a > max) return max;
 	return a;
-}
-
-void MarmaladeOS::onEnterGC()
-{
-	gc_start_time = s3eTimerGetMs();
-}
-
-void MarmaladeOS::onExitGC()
-{
-	gc_frame_time = (int)(s3eTimerGetMs() - gc_start_time);
 }
 
 int MarmaladeOS::run(const OS_CHAR * main_stript, const OS_CHAR * os_paths[], const OS_CHAR * compiled_files_path, const OS_CHAR * output_filename)

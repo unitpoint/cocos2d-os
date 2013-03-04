@@ -149,7 +149,7 @@ function get contentSize(){
 	}
 }
 function set contentSize(params){
-	if(objectof params){
+	if(objectOf(params)){
 		var screenWidth, screenHeight = app.screenWidth, app.screenHeight
 		contentWidth = "width" in params ? params.width : screenWidth
 		contentHeight = "height" in params ? params.height : screenHeight
@@ -367,12 +367,13 @@ function handleTouches(){
 				touch.x, touch.y = touch.y, contentWidth - touch.x
 			}
 			touch.nativeX, touch.nativeY = touch.x, touch.y
-			touchEvents.push touch
+			touchEvents[] = touch
 		}else if(touch.phase == "end" || touch.phase == "cancel" || time - touch.processed > 30){
 			// print "delete old touch "..app.touchEvents[id]
 			delete app.touchEvents[id]
 		}
 	}
+	// print "handleTouches: "..touchEvents
 	for(var id, touch in touchEvents){
 		if(touch.processed){
 			continue;
@@ -393,10 +394,10 @@ function handleTouches(){
 					// print "still captured " // ..touch
 					continue
 				}
-				// print concat("captured node "cur" didn't capture "touch" so run generic step")
+				echo("captured node "cur" didn't capture "touch" so run generic step\n")
 			}else{
 				touch.captured = null
-				// print "captured node is detached "..touch.." so run generic step"
+				print "captured node is detached "..touch.." so run generic step"
 			}
 		}
 		touch.modal = false
