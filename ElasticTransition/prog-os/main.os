@@ -13,7 +13,7 @@ MyScene = extends Scene {
 		this.insert(bg)				// insert the background image to the scene
 		
 		var spring = Image("spring.png")
-		spring.anchor = {x=0.05 y=0.5}
+		spring.anchor = {x=0.05, y=0.5}
 		spring.x, spring.y = this.width/2, this.height/2
 		spring.addEventListener("touch", function(touch){
 			if(touch.phase == "start"){
@@ -35,10 +35,10 @@ MyScene = extends Scene {
 				this.scaleX = this.scale0 * len / this.len0
 			}else{ // end or cancel
 				this.elasticTransition = this.transition {
-					scaleX = 1
-					rotation = math.round(this.rotation / 90) * 90 // snap to angle
-					duration = 0.5
-					easy = Easy.outBack
+					scaleX = 1,
+					rotation = math.round(this.rotation / 90) * 90, // snap to angle
+					duration = 0.5,
+					easy = Easy.outBack,
 				}
 			}
 		})
@@ -47,10 +47,10 @@ MyScene = extends Scene {
 		var message = Text("Elastic Transition")	// create message
 		message.x = this.width	// locate the message at right bottom corner
 		message.y = this.height
-		message.anchor = {x=1.05 y=1.05}
+		message.anchor = {x=1.05, y=1.05}
 		message.shadow = true	// we want shadow enabled		
 		this.insert(message)		
-	}
+	},
 }
 
 director.scene = MyScene()	// create and set our game scene

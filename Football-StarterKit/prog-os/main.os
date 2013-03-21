@@ -13,11 +13,11 @@ MyScene = extends Scene {
 		@insert(bg)				// insert the background image to the scene
 
 		Text("Football Starter Kit").attrs {	// create message
-			x = @width	// locate the message at right bottom corner
-			y = @height
-			anchor = {x=1.05 y=1.05}
-			shadow = true	// we want shadow enabled		
-			zOrder = 1		// use zOrder to put the message at front of balls
+			x = @width,	// locate the message at right bottom corner
+			y = @height,
+			anchor = {x=1.05, y=1.05},
+			shadow = true,	// we want shadow enabled		
+			zOrder = 1,		// use zOrder to put the message at front of balls
 		}.insertTo(this)
 		
 		// create ball class, extend Image
@@ -77,13 +77,13 @@ MyScene = extends Scene {
 			}
 		}
 		
-		var colors = [ [0.9 0.7 0.7], [0.7 0.9 0.7], [0.7 0.7 0.9] ]
+		var colors = [ [0.9, 0.7, 0.7], [0.7, 0.9, 0.7], [0.7, 0.7, 0.9] ]
 		// create our balls as instances of Ball class
 		for(var i = 0; i < 3; i++){
 			Ball().attrs {	// create instance of Ball class
-				x = @width * math.random(0.3, 0.7)
-				y = @height * math.random(0.3, 0.5)
-				color = colors[ i % #colors ]
+				x = @width * math.random(0.3, 0.7),
+				y = @height * math.random(0.3, 0.5),
+				color = colors[ i % #colors ],
 			}.insertTo(this)	// insert the ball to the scene
 		}
 	}

@@ -34,8 +34,8 @@ function destroyBody(params){
 }
 
 Node.__object.merge {
-	__physicsUpdateInProgress = null
-	__physicsBody = null
+	__physicsUpdateInProgress = null,
+	__physicsBody = null,
 }
 
 var nodeSetX = Node.__set@x
