@@ -6,9 +6,7 @@ require("image")
 require("text")
 require("utils")
 
-_E = extends _G {}
-_G.director = _E
-var director = _E
+var director = _G.director = _E = extends _G {}
 
 print "screen size "..app.screenSize
 
@@ -108,7 +106,7 @@ director.alphaBlending = true
 director.depthTest = true
 director.projection = PROJECTION_3D
 
-glClearColor(0 0 0 1)
+glClearColor(0, 0, 0, 1)
 
 animationInterval = 1 / 60
 
@@ -143,9 +141,9 @@ var displayContent = Group().insertTo(display).attrs { zOrder = DISPLAY_CONTENT_
 
 function get contentSize(){
 	return {
-		width = contentWidth
-		height = contentHeight
-		scale = scale
+		width = contentWidth,
+		height = contentHeight,
+		scale = scale,
 	}
 }
 function set contentSize(params){
@@ -156,84 +154,84 @@ function set contentSize(params){
 		scale = "scale" in params ? params.scale : "letterbox"
 		if(scale == "none"){
 			displayContent.attrs {
-				width = contentWidth
-				height = contentHeight
-				scale = 1
-				x = (screenWidth - contentWidth)/2
-				y = (screenHeight - contentHeight)/2
+				width = contentWidth,
+				height = contentHeight,
+				scale = 1,
+				x = (screenWidth - contentWidth)/2,
+				y = (screenHeight - contentHeight)/2,
 			}
 		}else if(scale == "zoomStretch"){
 			displayContent.attrs {
-				width = contentWidth
-				height = contentHeight
-				scaleX = screenWidth / contentWidth
-				scaleY = screenHeight / contentHeight
-				x = 0
-				y = 0
+				width = contentWidth,
+				height = contentHeight,
+				scaleX = screenWidth / contentWidth,
+				scaleY = screenHeight / contentHeight,
+				x = 0,
+				y = 0,
 			}
 		}else if(scale == "expand"){
 			var scale = math.min(screenWidth / contentWidth, screenHeight / contentHeight)
 			contentWidth = contentWidth * screenWidth / contentWidth / scale
 			contentHeight = contentHeight * screenHeight / contentHeight / scale
 			displayContent.attrs {
-				width = contentWidth
-				height = contentHeight
-				scale = scale
-				x = 0
-				y = 0
+				width = contentWidth,
+				height = contentHeight,
+				scale = scale,
+				x = 0,
+				y = 0,
 			}
 		}else{
 			var scale = math[scale == "zoomEven" ? "max" : "min"].call(math, screenWidth / contentWidth, screenHeight / contentHeight)
 			displayContent.attrs {
-				width = contentWidth
-				height = contentHeight
-				scale = scale
-				x = (screenWidth - contentWidth * scale)/2
-				y = (screenHeight - contentHeight * scale)/2
+				width = contentWidth,
+				height = contentHeight,
+				scale = scale,
+				x = (screenWidth - contentWidth * scale)/2,
+				y = (screenHeight - contentHeight * scale)/2,
 			}
 		}
 		displayBorder.removeAll()
 		if(displayContent.x > 0){
 			ColorNode().insertTo(displayBorder).attrs{ 
-				color = [0 0 0] 
-				anchor = [0 0]
-				x = 0, y = 0
-				width = displayContent.x
-				height = screenHeight
+				color = [0, 0, 0],
+				anchor = [0, 0],
+				x = 0, y = 0,
+				width = displayContent.x,
+				height = screenHeight,
 			}
 			ColorNode().insertTo(displayBorder).attrs{ 
-				color = [0 0 0] 
-				anchor = [0 0]
-				x = screenWidth - displayContent.x, y = 0
-				width = displayContent.x
-				height = screenHeight
+				color = [0, 0, 0],
+				anchor = [0, 0],
+				x = screenWidth - displayContent.x, y = 0,
+				width = displayContent.x,
+				height = screenHeight,
 			}
 		}
 		if(displayContent.y > 0){
 			ColorNode().insertTo(displayBorder).attrs{ 
-				color = [0 0 0] 
-				anchor = [0 0]
-				x = 0, y = 0
-				width = screenWidth
-				height = displayContent.y
+				color = [0, 0, 0], 
+				anchor = [0, 0],
+				x = 0, y = 0,
+				width = screenWidth,
+				height = displayContent.y,
 			}
 			ColorNode().insertTo(displayBorder).attrs{ 
-				color = [0 0 0] 
-				anchor = [0 0]
-				x = 0, y = screenHeight - displayContent.y
-				width = screenWidth
-				height = displayContent.y
+				color = [0, 0, 0], 
+				anchor = [0, 0],
+				x = 0, y = screenHeight - displayContent.y,
+				width = screenWidth,
+				height = displayContent.y,
 			}
 		}
 	}
 	print"content size: "..params
 	print {
-		x = displayContent.x
-		y = displayContent.y
-		width = displayContent.width
-		height = displayContent.height
-		scaleX = displayContent.scaleX
-		scaleY = displayContent.scaleY
+		x = displayContent.x,
+		y = displayContent.y,
+		width = displayContent.width,
+		height = displayContent.height,
+		scaleX = displayContent.scaleX,
+		scaleY = displayContent.scaleY,
 	}
 }
 
@@ -394,7 +392,7 @@ function handleTouches(){
 					// print "still captured " // ..touch
 					continue
 				}
-				echo("captured node "cur" didn't capture "touch" so run generic step\n")
+				// echo("captured node "cur" didn't capture "touch" so run generic step\n")
 			}else{
 				touch.captured = null
 				print "captured node is detached "..touch.." so run generic step"

@@ -1,5 +1,4 @@
-_E = extends _G {}
-_G.physics = _E
+_G.physics = _E = extends _G {}
 
 var world = b2World()
 function get world(){ return world }
@@ -46,41 +45,41 @@ Node.merge {
 	addPhysicsBody = function(params){
 		@removePhysicsBody()
 		@__physicsBody = world.createBody({}.merge(params, {
-			x = @x
-			y = @y
-			angle = math.rad(@rotation)
+			x = @x,
+			y = @y,
+			angle = math.rad(@rotation),
 		}))
 		@addEventListener("enterFrame", @__updateNodePosition)
 		return @physicsBody
-	}
+	},
 	removePhysicsBody = function(){
 		if(@__physicsBody){
 			@removeEventListener("enterFrame", @__updateNodePosition)
 			world.destroyBody(@__physicsBody)
 			@__physicsBody = null
 		}
-	}
+	},
 	__updateNodePosition = function(){
 		var xf = @__physicsBody.transform
 		@__physicsUpdateInProgress = true
 		@x, @y, @rotation = xf.x, xf.y, math.deg(xf.angle)
 		@__physicsUpdateInProgress = false
-	}
+	},
 	__get@physicsBody = function(){
 		return @__physicsBody
-	}
+	},
 	__set@x = function(a){
 		nodeSetX.call(this, a)
 		if(!@__physicsUpdateInProgress){
 			@__physicsBody.position = [@x, @y]
 		}
-	}
+	},
 	__set@y = function(a){
 		nodeSetY.call(this, a)
 		if(!@__physicsUpdateInProgress){
 			@__physicsBody.position = [@x, @y]
 		}
-	}
+	},
 }
 
 function extractPoint(p){

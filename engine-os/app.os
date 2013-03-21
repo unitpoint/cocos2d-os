@@ -5,7 +5,7 @@ require("constants")
 _E = _G.app // extends C++ namespace
 
 function get screenSize(){
-	return Size(@screenWidth @screenHeight)
+	return Size(@screenWidth, @screenHeight)
 }
 
 orientation = ORIENTATION_PORTRAIT
@@ -13,35 +13,35 @@ orientation = ORIENTATION_PORTRAIT
 touchEvents = {}
 keyEvents = {}
 
-function registerKeyEvent(key pressed){
+function registerKeyEvent(key, pressed){
 	if(key in keyEvents){
 		keyEvents[key].pressed = pressed
 		return
 	}
 	keyEvents[key] = {
-		key = key
-		pressed = pressed
-		processed = false
-		captured = null
-		capturedFunc = null
+		key = key,
+		pressed = pressed,
+		processed = false,
+		captured = null,
+		capturedFunc = null,
 	}
 }
 
 var autoTouchId = 0
-function registerTouchEvent(x y phase id){
+function registerTouchEvent(x, y, phase, id){
 	// printf("registerTouchEvent: %s %s %s %s\n", x, y, phase, id)
 	if(id == 0){
 		id = phase == "start" ? --autoTouchId : autoTouchId
 	}
 	if(phase == "start"){
 		touchEvents[id] = {
-			x = x
-			y = y
-			phase = phase
-			processed = false
-			id = id
-			captured = null
-			capturedFunc = null
+			x = x,
+			y = y,
+			phase = phase,
+			processed = false,
+			id = id,
+			captured = null,
+			capturedFunc = null,
 		}
 		// printf("start: %s\n", touchEvents)
 		return

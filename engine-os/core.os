@@ -1,3 +1,5 @@
+require "std"
+
 typeof = typeOf
 numberof = numberOf
 stringof = stringOf
@@ -6,46 +8,41 @@ objectof = objectOf
 userdataof = userdataOf
 
 function __get(name){
-	echo("global property \""name"\" is not declared\n")
-	echo "back trace\n"
+	print "global property \"${name}\" is not declared"
+	print "back trace"
 	printBackTrace(1)
-	echo "\n"
+	print ""
 }
 
 function Object.__get(name){
-	echo("object property \""name"\" is not declared\n")
-	echo "back trace\n"
+	print "object property \"${name}\" is not declared"
+	print "back trace"
 	printBackTrace(1) // skip current function
-	echo("=======\ntarget "this"\n\n")
-}
-
-function assert(a, message){
-	a || throw(message || "assert failed")
+	print "======="
+	print "target: ${this}"
+	print ""
 }
 
 function unhandledException(e){
-	if("trace" in e){
-		printf("Unhandled exception: '%s'\n", e.message);
-		for(var i, t in e.trace){
-			printf("#%d %s%s: %s, args: %s\n", i, t.file,
-				t.line > 0 ? "("..t.line..","..t.pos..")" : ""
-				t.object === _G ? t.name : t.object ? "{obj-"..t.object.id.."}."..t.name : t.name, t.arguments);
-		}
+	if(e is CompilerException){
+		echo "\nUnhandled exception: '${e.message}' in ${e.file}(${e.line},${e.pos}), token: ${e.token}\n${e.lineString.trim()}\n\n"
 	}else{
-		printf("Unhandled exception: '%s' in %s(%d,%d)\n", e.message, e.file, e.line, e.pos);
+		echo "\nUnhandled exception: '${e.message}'\n\n"
+	}
+	if('trace' in e)
+	for(var i, t in e.trace){
+		printf("#${i} ${t.file}%s: %s, args: ${t.arguments}\n",
+			t.line > 0 ? "(${t.line},${t.pos})" : "",
+			t.object && t.object !== _G ? "<${typeOf(t.object)}#${t.object.id}>.${t.name}" : t.name)
 	}
 }
 
 function printBackTrace(skipNumFuncs){
 	for(var i, t in debugBackTrace(skipNumFuncs + 1)){ // skip printBackTrace
-		printf("#%d %s%s: %s, args: %s\n", i, t.file,
-			t.line > 0 ? "("..t.line..","..t.pos..")" : ""
-			t.object === _G ? t.name : t.object ? "{obj-"..t.object.id.."}."..t.name : t.name, t.arguments);
+		printf("#${i} ${t.file}%s: %s, args: ${t.arguments}\n",
+			t.line > 0 ? "(${t.line},${t.pos})" : "",
+			t.object && t.object !== _G ? "<${typeOf(t.object)}#${t.object.id}>.${t.name}" : t.name)
 	}
-}
-
-function eval(str, env){
-	return compileText(str).applyEnv(env || _G, null, ...)
 }
 
 var events = {}
@@ -56,8 +53,8 @@ function addEventListener(eventName, func, zOrder){
 		events[eventName] = {}
 	}
 	events[eventName][func] = zOrder || 0
-	events[eventName].sort {|a b| b <=> a}
-	return [eventName func]
+	events[eventName].sort {|a, b| b <=> a}
+	return [eventName, func]
 }
 
 function removeEventListener(eventName, func){
@@ -82,20 +79,20 @@ var timers = {}
 
 function isCallable(f){ 
 	var type = typeOf(f)
-	return type === "function" || type === "object" || type === "userdata"
+	return type == "function" || type == "object" || type == "userdata"
 }
 
 function setTimeout(func, delay, count, priority){
 	count = count || 1
 	count > 0 && functionOf(func) || return;
 	timers[func] = {
-		nextTime = app.timeSec + delay
-		delay = delay
-		func = func
-		count = count
-		priority = priority || 0
+		nextTime = app.timeSec + delay,
+		delay = delay,
+		func = func,
+		count = count,
+		priority = priority || 0,
 	}
-	timers.sort {|a b| b.priority <=> a.priority }
+	timers.sort {|a, b| b.priority <=> a.priority }
 	// timers.rsort "priority"
 	return func
 }
@@ -126,38 +123,6 @@ addEventListener("enterFrame", {||
 	}
 	}
 }, HIGH_PRIORITY+1)
-
-function toArray(a){
-	arrayOf(a) && return arr;
-	var type = typeOf(a)
-	if(type == "object"){
-		var arr = []
-		for(var i, v in a){
-			arr.push(v)
-		}
-		return arr
-	}
-	if(type == "null"){
-		return null
-	}
-	return [a]
-}
-
-function toObject(a){
-	objectOf(a) && return object;
-	var type = typeOf(a)
-	if(type == "array"){
-		var object = {}
-		for(var i, v in a){
-			object.push(v)
-		}
-		return object
-	}
-	if(type == "null"){
-		return null
-	}
-	return {a}
-}
 
 function Object.deepClone(){
 	var t = @clone()

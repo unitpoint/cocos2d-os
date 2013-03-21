@@ -1,5 +1,5 @@
 
-function ccDrawPoly(points closePolygon fill)
+function ccDrawPoly(points, closePolygon, fill)
 {
     glDisable(GL_TEXTURE_2D);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -19,13 +19,7 @@ function ccDrawPoly(points closePolygon fill)
 }
 
 Matrix = {
-	/* __object = {
-		a = 1 b = 0
-		c = 0 d = 1
-		tx = 0 ty = 0
-	} */
-	
-	__construct = function(a b c d tx ty){
+	__construct = function(a, b, c, d, tx, ty){
 		if(!a){
 			@a = 1
 			@b = 0
@@ -41,9 +35,9 @@ Matrix = {
 			@tx = tx
 			@ty = ty
 		}
-	}
+	},
 	
-	set = function(a b c d tx ty){
+	set = function(a, b, c, d, tx, ty){
 		if(!a){
 			@a = 1
 			@b = 0
@@ -60,22 +54,22 @@ Matrix = {
 		@tx = tx
 		@ty = ty
 		return this
-	}
+	},
 	
 	transform = function(point){
 		return {
-			x = @a * point.x + @c * point.y + @tx
-			y = @b * point.x + @d * point.y + @ty
+			x = @a * point.x + @c * point.y + @tx,
+			y = @b * point.x + @d * point.y + @ty,
 		}
-	}
+	},
 	
-	translate = function(tx ty){
+	translate = function(tx, ty){
 		return @set(@a, @b, @c, @d, @tx + @a * tx + @c * ty, @ty + @b * tx + @d * ty)
-	}
+	},
 
-	scale = function(sx sy){
+	scale = function(sx, sy){
 		return @set(@a * sx, @b * sx, @c * sy, @d * sy, @tx, @ty)
-	}
+	},
 	
 	rotate = function(angle){
 		angle = math.rad(angle)
@@ -86,12 +80,12 @@ Matrix = {
 			@c * fCos - @a * fSin,
 			@d * fCos - @b * fSin,
 			@tx, @ty)
-	}
+	},
 	
-	skew = function(skewX skewY){
+	skew = function(skewX, skewY){
 		var skewMatrix = Matrix(1.0, math.tan(math.rad(skewY)), math.tan(math.rad(skewX)), 1.0, 0.0, 0.0)
 		return skewMatrix.mult(this)
-	}
+	},
 	
 	mult = function(t2){
 		var t1 = this
@@ -100,13 +94,13 @@ Matrix = {
 			t1.c * t2.a + t1.d * t2.c, t1.c * t2.b + t1.d * t2.d, //c,d
 			t1.tx * t2.a + t1.ty * t2.c + t2.tx,				  //tx
 			t1.tx * t2.b + t1.ty * t2.d + t2.ty)				  //ty
-	}
+	},
 
 	inverse = function(){
 		var determinant = 1 / (@a * @d - @b * @c)
 		return @set(determinant * @d, -determinant * @b, -determinant * @c, determinant * @a,
 			determinant * (@c * @ty - @d * @tx), determinant * (@b * @tx - @a * @ty) )
-	}
+	},
 	
 	toGL = function(){
 		return [
@@ -122,33 +116,33 @@ Matrix = {
 		m[0] = @a; m[4] = @c; m[12] = @tx;
 		m[1] = @b; m[5] = @d; m[13] = @ty;
 		return m */
-	}
+	},
 	
 	fromGL = function(m){
 		@a = m[0]; @c = m[4]; @tx = m[12];
 		@b = m[1]; @d = m[5]; @ty = m[13];
 		return this
-	}
+	},
 }
 
 Easy = {
-	linear = {|t| t}
-	inQuad = {|t| t * t}
-	inCubic = {|t| t ** 3}
-	inQuart = {|t| t ** 4}
-	inQuint = {|t| t ** 5}
-	inSine = {|t| 1 - math.cos(t * math.PI / 2)}
-	inExpo = {|t| 2 ** (10 * (t - 1))}
-	inCirc = {|t| 1 - (1 - t ** 2) ** 0.5}
+	linear = {|t| t},
+	inQuad = {|t| t * t},
+	inCubic = {|t| t ** 3},
+	inQuart = {|t| t ** 4},
+	inQuint = {|t| t ** 5},
+	inSine = {|t| 1 - math.cos(t * math.PI / 2)},
+	inExpo = {|t| 2 ** (10 * (t - 1))},
+	inCirc = {|t| 1 - (1 - t ** 2) ** 0.5},
 
-	s = 1.70158
+	s = 1.70158,
 	
 	inBack = {|t|
 		var s = Easy.s 
 		return t * t * ((s + 1) * t - s)
-	}
+	},
 
-	inBounce = {|t| 1 - outBounce(1 - t)}
+	inBounce = {|t| 1 - outBounce(1 - t)},
 }
 
 var Easy = Easy

@@ -4,41 +4,41 @@ Point = {
 	__construct = function(x, y){
 		@x = x
 		@y = y
-	}
+	},
 }
 
 Size = {
 	__construct = function(width, height){
 		@width = width
 		@height = height
-	}
+	},
 }
 
 var counter = 0
 
 FunctionNode = {
 	__object = {
-		time = 0
-		timeSpeed = 1
+		time = 0,
+		timeSpeed = 1,
 		
-		__events = {}
-		__childrenNeg = {}
-		__childrenPos = {}
-		__timers = {}
-		__parent = null
-		__parentChildren = null
-		__zOrder = 0
-	}
+		__events = {},
+		__childrenNeg = {},
+		__childrenPos = {},
+		__timers = {},
+		__parent = null,
+		__parentChildren = null,
+		__zOrder = 0,
+	},
 	
-	__get@parent = {||@__parent}
+	__get@parent = {||@__parent},
 	__set@parent = {|a| 
 		if(@__parent !== a){ 
 			@remove() 
 			a && a.insert(this) 
 		}
-	}
+	},
 	
-	__get@zOrder = {||@__zOrder}
+	__get@zOrder = {||@__zOrder},
 	__set@zOrder = {|a| 
 		a = math.round(a)
 		if(@__zOrder != a){ 
@@ -48,27 +48,27 @@ FunctionNode = {
 				@__parent.sortChildren(@__parentChildren)
 			}
 		}
-	}
+	},
 	
 	attrs: function(params){
 		for(var field, value in objectOf(params)){
 			this[field] = value
 		}
 		return this
-	}
+	},
 	
 	sortChildren = function(children){
-		children.sort {|b a|
+		children.sort {|b, a|
 			var z = a[0] <=> b[0]
 			return z != 0 ? z : a[1] <=> b[1]
 		}
-	}
+	},
 	
 	insert = function(node, zOrder){
 		node.remove()
 		
 		if(zOrder){
-			node.__zOrder = zOrder = math.round(zOrder)
+			node.__zOrder = zOrder = zOrder
 		}else
 			zOrder = node.__zOrder
 		
@@ -79,11 +79,11 @@ FunctionNode = {
 		node.__parentChildren = children
 		node.triggerEvent("onEnter", {sender: node})
 		return node
-	}
+	},
 	
 	insertTo = function(newParent, zOrder){
 		return newParent.insert(this, zOrder)
-	}
+	},
 	
 	remove = function(node){
 		node = node || this
@@ -93,15 +93,15 @@ FunctionNode = {
 			node.__parent = null
 			node.__parentChildren = null
 		}
-	}
+	},
 	
 	removeAll = function(){
 		@__childrenNeg, @__childrenPos = {}, {}
-	}
+	},
 	
 	contains = function(node){
 		return node in @__childrenNeg || node in @__childrenPos
-	}
+	},
 	
 	handleUpdate = function(params){
 		var deltaTime = params.deltaTime
@@ -121,19 +121,19 @@ FunctionNode = {
 			child.handleUpdate(params)
 		}
 		params.deltaTime = deltaTime
-	}
+	},
 	
-	handlePaint = function(){}
-	handleTouch = function(){}
-	handleKeyEvent = function(){}
+	handlePaint = function(){},
+	handleTouch = function(){},
+	handleKeyEvent = function(){},
 	
 	addEventListener = function(eventName, func, zOrder){
 		functionOf(func) || return;
 		eventName in @__events || @__events[eventName] = {}
 		@__events[eventName][func] = zOrder || 0
-		@__events[eventName].sort{|b a| a <=> b}
+		@__events[eventName].sort{|b, a| a <=> b}
 		return [eventName, func]
-	}
+	},
 	
 	removeEventListener = function(eventName, func){
 		if(arrayOf(eventName)){
@@ -142,7 +142,7 @@ FunctionNode = {
 		if(eventName in @__events){
 			delete @__events[eventName][func]
 		}
-	}
+	},
 
 	triggerLocalEvent = function(eventName, params){
 		if(eventName in @__events){
@@ -151,7 +151,7 @@ FunctionNode = {
 				func.call(this, params)
 			}
 		}
-	}
+	},
 	
 	triggerEvent = function(eventName, params){
 		for(var child in @__childrenPos){
@@ -166,24 +166,24 @@ FunctionNode = {
 		for(var child in @__childrenNeg){
 			child.triggerEvent(eventName, params)
 		}
-	}
+	},
 	
 	setTimeout = function(func, delay, count, priority){
 		count = count || 1
 		count > 0 && functionOf(func) || return;
 		@__timers[func] = {
-			nextTime = @time + delay
-			delay = delay
-			count = count
-			priority = priority || 0
+			nextTime = @time + delay,
+			delay = delay,
+			count = count,
+			priority = priority || 0,
 		}
-		@__timers.sort{|b a| a.priority <=> b.priority}
+		@__timers.sort{|b, a| a.priority <=> b.priority}
 		return func
-	}
+	},
 
 	clearTimeout = function(t){
 		delete @__timers[t]
-	}
+	},
 	
 	updateTimers = function(){
 		var time = @time
@@ -203,19 +203,19 @@ FunctionNode = {
 				}
 			}
 		}
-	}
+	},
 
 	transition = function(t){
 		return @insert(Transition(t, this))
-	}
+	},
 	
 	stopTransition = function(t){
 		t && t.remove()
-	}
+	},
 	
 	stopAllTransitions = function(){
 		@removeAllInstancesOf(Transition)
-	}
+	},
 	
 	removeAllInstancesOf = function(type){
 		for(var t in @__childrenPos){
@@ -226,104 +226,104 @@ FunctionNode = {
 			if(t is type)
 				t.remove()
 		}
-	}
+	},
 }
 
 Node = extends FunctionNode {
 	__object = {
-		visible = true
-		modal = false
-		opacity = 1
-		color = null
+		visible = true,
+		modal = false,
+		opacity = 1,
+		color = null,
 		
-		__isRelativeAnchor = true
-		__x = 0
-		__y = 0
-		__width = 0
-		__height = 0
-		__scaleX = 1
-		__scaleY = 1
-		__skewX = 0
-		__skewY = 0
-		__anchorX = 0.5
-		__anchorY = 0.5
-		__rotation = 0
+		__isRelativeAnchor = true,
+		__x = 0,
+		__y = 0,
+		__width = 0,
+		__height = 0,
+		__scaleX = 1,
+		__scaleY = 1,
+		__skewX = 0,
+		__skewY = 0,
+		__anchorX = 0.5,
+		__anchorY = 0.5,
+		__rotation = 0,
 		
-		__transformDirty = true
-		__transform = null // node to parent
-		__inverseDirty = true
-		__inverseTransform = null // parent to node
-		__transformGL = null // node to parent (GL)
-	}
+		__transformDirty = true,
+		__transform = null, // node to parent
+		__inverseDirty = true,
+		__inverseTransform = null, // parent to node
+		__transformGL = null, // node to parent (GL)
+	},
 	
-	__get@x = {||@__x}
-	__set@x = {|a| if(@__x != a){ @__x = a; @__transformDirty = @__inverseDirty = true }}
+	__get@x = {||@__x},
+	__set@x = {|a| if(@__x != a){ @__x = a; @__transformDirty = @__inverseDirty = true }},
 	
-	__get@y = {||@__y}
-	__set@y = {|a| if(@__y != a){ @__y = a; @__transformDirty = @__inverseDirty = true }}
+	__get@y = {||@__y},
+	__set@y = {|a| if(@__y != a){ @__y = a; @__transformDirty = @__inverseDirty = true }},
 	
-	__get@position = {|| Point(@__x @__y)}
-	__set@position = {|a| @x, @y = a.x, a.y }
+	__get@position = {|| Point(@__x, @__y)},
+	__set@position = {|a| @x, @y = a.x, a.y },
 	
-	__get@width = {||@__width}
-	__set@width = {|a| if(@__width != a){ @__width = a; @__transformDirty = @__inverseDirty = true }}
+	__get@width = {||@__width},
+	__set@width = {|a| if(@__width != a){ @__width = a; @__transformDirty = @__inverseDirty = true }},
 	
-	__get@height = {||@__height}
-	__set@height = {|a| if(@__height != a){ @__height = a; @__transformDirty = @__inverseDirty = true }}
+	__get@height = {||@__height},
+	__set@height = {|a| if(@__height != a){ @__height = a; @__transformDirty = @__inverseDirty = true }},
 	
-	__get@scaleX = {||@__scaleX}
-	__set@scaleX = {|a| if(@__scaleX != a){ @__scaleX = a; @__transformDirty = @__inverseDirty = true }}
+	__get@scaleX = {||@__scaleX},
+	__set@scaleX = {|a| if(@__scaleX != a){ @__scaleX = a; @__transformDirty = @__inverseDirty = true }},
 	
-	__get@scaleY = {||@__scaleY}
-	__set@scaleY = {|a| if(@__scaleY != a){ @__scaleY = a; @__transformDirty = @__inverseDirty = true }}
+	__get@scaleY = {||@__scaleY},
+	__set@scaleY = {|a| if(@__scaleY != a){ @__scaleY = a; @__transformDirty = @__inverseDirty = true }},
 	
-	__get@scale = {||@__scaleX} // Point(@__scaleX @__scaleY)}
+	__get@scale = {||@__scaleX}, // Point(@__scaleX, @__scaleY)},
 	__set@scale = {|a| 
 		if(numberOf(a)){
 			@scaleX, @scaleY = a, a
 		}else{
 			@scaleX, @scaleY = a.x, a.y 
 		}
-	}
+	},
 	
-	__get@skewX = {|| @__skewX }
-	__set@skewX = {|a| if(@__skewX != a){ @__skewX = a; @__transformDirty = @__inverseDirty = true }}
+	__get@skewX = {|| @__skewX },
+	__set@skewX = {|a| if(@__skewX != a){ @__skewX = a; @__transformDirty = @__inverseDirty = true }},
 	
-	__get@skewY = {||@__skewY}
-	__set@skewY = {|a| if(@__skewY != a){ @__skewY = a; @__transformDirty = @__inverseDirty = true }}
+	__get@skewY = {||@__skewY},
+	__set@skewY = {|a| if(@__skewY != a){ @__skewY = a; @__transformDirty = @__inverseDirty = true }},
 	
-	__get@skew = {||Point(@__skewX @__skewY)}
-	__set@skew = {|a| @skewX, @skewY = a.x, a.y }
+	__get@skew = {||Point(@__skewX, @__skewY)},
+	__set@skew = {|a| @skewX, @skewY = a.x, a.y },
 	
-	__get@anchorX = {||@__anchorX}
-	__set@anchorX = {|a| if(@__anchorX != a){ @__anchorX = a; @__transformDirty = @__inverseDirty = true }}
+	__get@anchorX = {||@__anchorX},
+	__set@anchorX = {|a| if(@__anchorX != a){ @__anchorX = a; @__transformDirty = @__inverseDirty = true }},
 	
-	__get@anchorY = {||@__anchorY}
-	__set@anchorY = {|a| if(@__anchorY != a){ @__anchorY = a; @__transformDirty = @__inverseDirty = true }}
+	__get@anchorY = {||@__anchorY},
+	__set@anchorY = {|a| if(@__anchorY != a){ @__anchorY = a; @__transformDirty = @__inverseDirty = true }},
 	
-	__get@anchor = {|| Point(@__anchorX @__anchorY)}
+	__get@anchor = {|| Point(@__anchorX, @__anchorY)},
 	__set@anchor = {|a| 
 		if(arrayOf(a)){
 			@anchorX, @anchorY = a[0], a[1]
 		}else{
 			@anchorX, @anchorY = a.x, a.y 
 		}
-	}
+	},
 	
-	__get@rotation = {||@__rotation}
-	__set@rotation = {|a| if(@__rotation != a){ @__rotation = a; @__transformDirty = @__inverseDirty = true }}
+	__get@rotation = {||@__rotation},
+	__set@rotation = {|a| if(@__rotation != a){ @__rotation = a; @__transformDirty = @__inverseDirty = true }},
 	
-	__get@isRelativeAnchor = {||@__isRelativeAnchor}
-	__set@isRelativeAnchor = {|a| if(@__isRelativeAnchor != a){ @__isRelativeAnchor = a; @__transformDirty = @__inverseDirty = true }}
+	__get@isRelativeAnchor = {||@__isRelativeAnchor},
+	__set@isRelativeAnchor = {|a| if(@__isRelativeAnchor != a){ @__isRelativeAnchor = a; @__transformDirty = @__inverseDirty = true }},
 	
 	__construct = function(){
 		super()
 		@width = director.contentWidth
 		@height = director.contentHeight
-		printf("node %s: %s, %s\n", @prototype.name, @width, @height)
-	}
+		// printf("node %s: %s, %s\n", @prototype.name, @width, @height)
+	},
 	
-	paint = function(){}
+	paint = function(){},
 	
 	nodeToParentTransform = function(){
 		if(@__transformDirty){
@@ -356,14 +356,14 @@ Node = extends FunctionNode {
 			@__transformDirty = false
 		}
 		return @__transform
-	}
+	},
 	
 	parentToNodeTransform = function(){
 		if(@__inverseDirty){
 			@__inverseTransform = @nodeToParentTransform().clone().inverse()
 			@__inverseDirty = false
 		}
-	}
+	},
 	
 	nodeToWorldTransform = function(){
 		// t could be changed so clone it
@@ -374,25 +374,25 @@ Node = extends FunctionNode {
 		}
 		// print "nodeToWorldTransform"..t
 		return t
-	}
+	},
 	
 	worldToNodeTransform = function(){
 		return @nodeToWorldTransform().inverse()
-	}
+	},
 	
 	pointToNodeSpace = function(point){
 		return @worldToNodeTransform().transform(point)
-	}
+	},
 	
 	isLocalPoint = function(point){
 		return point.x >= 0 && point.x < @__width 
 			&& point.y >= 0 && point.y < @__height
-	}
+	},
 	
 	transform = function(){
 		@nodeToParentTransform()
 		glMultMatrix(@__transformGL)
-	}
+	},
 	
 	handlePaint = function(params){
 		@visible || return;
@@ -422,7 +422,7 @@ Node = extends FunctionNode {
 		glPopMatrix()
 		
 		params.opacity = saveOpacity
-	}
+	},
 	
 	handleKeyEvent = function(event){
 		// @triggerEvent("key", event)
@@ -447,7 +447,7 @@ Node = extends FunctionNode {
 			return true
 		}
 		return false
-	}
+	},
 	
 	handleTouch = function(touch){
 		if(touch.captured !== this){
@@ -520,14 +520,14 @@ Node = extends FunctionNode {
 			}
 		}
 		return false
-	}
+	},
 	
 	setRect = function(x, y, width, height){
 		@x = x
 		@y = y
 		@width = width
 		@height = height
-	}
+	},
 	
 	drawBB = function(color, fill){
 		var points = [
@@ -538,16 +538,16 @@ Node = extends FunctionNode {
 		]
 		glColor(color)
 		ccDrawPoly(points, true, fill)
-	}
+	},
 }
 
 Transition = extends FunctionNode {
 	__object = {
-		duration = 0
-		list = []
-		finished = false
-		onComplete = null
-	}
+		duration = 0,
+		list = [],
+		finished = false,
+		onComplete = null,
+	},
 
 	__construct = function(params, target){
 		super()
@@ -560,7 +560,7 @@ Transition = extends FunctionNode {
 		@duration = t.endTime
 		// print "calculateTransition "..@list
 		@addEventListener("enterFrame", @update, true)
-	}
+	},
 	
 	calculateTransition = function(list, params, startTime, speed){
 		var t = {}
@@ -672,7 +672,7 @@ Transition = extends FunctionNode {
 			t.subTransitions = null
 		}
 		return t
-	}
+	},
 	
 	update = function(){
 		var time, duration = @time, @duration
@@ -686,7 +686,7 @@ Transition = extends FunctionNode {
 			time = duration
 		}
 		@applyTimeToList(time, @list)
-	}
+	},
 	
 	applyTimeToList = function(time, list){
 		var prev
@@ -694,7 +694,7 @@ Transition = extends FunctionNode {
 			@applyTimeToItem(time, t, prev)
 			prev = t.endValues
 		}
-	}
+	},
 	
 	applyTimeToItem = function(time, t, prev){
 		if(time < t.startTransitionTime){
@@ -753,25 +753,25 @@ Transition = extends FunctionNode {
 		}
 		if(t.subTransitions)
 			@applyTimeToList(time + t.startTransitionTime, t.subTransitions)
-	}
+	},
 }
 
 ColorNode = extends Node {
 	__object = {
-		color: [0.5 0.7 0.5 1]
-	}
+		color: [0.5, 0.7, 0.5, 1],
+	},
 	
 	paint = function(){
 		@drawBB(@color, true)
-	}
+	},
 }
 
 Group = extends Node {
 	__object = {
-		__isRelativeAnchor = false
-		__anchorX = 0
-		__anchorY = 0
-	}
+		__isRelativeAnchor = false,
+		__anchorX = 0,
+		__anchorY = 0,
+	},
 }
 
 Scene = extends Group {

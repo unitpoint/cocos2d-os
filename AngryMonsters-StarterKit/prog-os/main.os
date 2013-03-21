@@ -6,43 +6,43 @@ var function addStats(parent){
 	var color = [0.0, 0.0, 0.0, 1]
 	var font = "arial-en-ru-16.fnt"
 	var fps = Text("fps", font).attrs {
-		anchor = {x=1.05 y=1.05}
-		x = parent.width
-		y = parent.height - 50
-		color = color
-		// shadow = true
+		anchor = {x=1.05, y=1.05},
+		x = parent.width,
+		y = parent.height - 50,
+		color = color,
+		// shadow = true,
 	}.insertTo(parent)
 	
 	var gcAllocatedBytes = Text("Kb", font).attrs{
-		anchor = {x=1.05 y=1.05}
-		x = fps.x
-		y = fps.y - fps.fontHeight*1.05*1
-		color = color
-		// shadow = true
+		anchor = {x=1.05, y=1.05},
+		x = fps.x,
+		y = fps.y - fps.fontHeight*1.05*1,
+		color = color,
+		// shadow = true,
 	}.insertTo(parent)
 	
 	var gcUsedBytes = Text("Kb", font).attrs{
-		anchor = {x=1.05 y=1.05}
-		x = fps.x
-		y = fps.y - fps.fontHeight*1.05*3
-		color = color
-		// shadow = true
+		anchor = {x=1.05, y=1.05},
+		x = fps.x,
+		y = fps.y - fps.fontHeight*1.05*3,
+		color = color,
+		// shadow = true,
 	}.insertTo(parent)
 	
 	var gcCachedBytes = Text("Kb", font).attrs{
-		anchor = {x=1.05 y=1.05}
-		x = fps.x
-		y = fps.y - fps.fontHeight*1.05*2
-		color = color
-		// shadow = true
+		anchor = {x=1.05, y=1.05},
+		x = fps.x,
+		y = fps.y - fps.fontHeight*1.05*2,
+		color = color,
+		// shadow = true,
 	}.insertTo(parent)
 	
 	var gcNumObjects = Text("0", font).attrs{
-		anchor = {x=1.05 y=1.05}
-		x = fps.x
-		y = fps.y - fps.fontHeight*1.05*4
-		color = color
-		// shadow = true
+		anchor = {x=1.05, y=1.05},
+		x = fps.x,
+		y = fps.y - fps.fontHeight*1.05*4,
+		color = color,
+		// shadow = true,
 	}.insertTo(parent)
 	
 	parent.setTimeout(function(){
@@ -67,45 +67,45 @@ MyScene = extends Scene {
 		var message = Text("Angry Monsters StarterKit")	// create message
 		message.x = @width	// locate the message at right bottom corner
 		message.y = @height
-		message.anchor = {x=1.05 y=1.05}
+		message.anchor = {x=1.05, y=1.05}
 		message.shadow = true	// we want shadow enabled		
 		@insert(message)
 
 		var animations = { // define animations for our monsters
 			"monster-01.png" = {
 				generalParams = {
-					cols = 9
-					rows = 10
-					delay = 0.08
+					cols = 9,
+					rows = 10,
+					delay = 0.08,
 					rect = {
-						center = {x=0.48, y=0.45}
-						width = 0.5
-						height = 0.74
-					}
-				}
-				walkRight 	= { start = 0, frames = 17 }
-				walkUp 		= { start = 17, frames = 13 }
-				walkDown 	= { start = 30, frames = 12 }
-				fightRight 	= { start = 42, frames = 12 }
-				dieRight 	= { start = 67, frames = 17 }
-			}
+						center = {x=0.48, y=0.45},
+						width = 0.5,
+						height = 0.74,
+					},
+				},
+				walkRight 	= { start = 0, frames = 17 },
+				walkUp 		= { start = 17, frames = 13 },
+				walkDown 	= { start = 30, frames = 12 },
+				fightRight 	= { start = 42, frames = 12 },
+				dieRight 	= { start = 67, frames = 17 },
+			},
 			"monster-03.png" = {
 				generalParams = {
-					cols = 7
-					rows = 12
-					delay = 0.08
+					cols = 7,
+					rows = 12,
+					delay = 0.08,
 					rect = {
-						center = {x=0.46 y=0.48}
-						width = 0.7 
-						height = 0.8
-					}
-				}
-				walkUp 		= { start = 17, frames = 13 }
-				walkRight 	= { start = 0, frames = 17 }
-				walkDown 	= { start = 30, frames = 12 }
-				fightRight 	= { start = 42, frames = 11 }
-				dieRight 	= { start = 70, frames = 11}
-			}
+						center = {x=0.46, y=0.48},
+						width = 0.7 ,
+						height = 0.8,
+					},
+				},
+				walkUp 		= { start = 17, frames = 13 },
+				walkRight 	= { start = 0, frames = 17 },
+				walkDown 	= { start = 30, frames = 12 },
+				fightRight 	= { start = 42, frames = 11 },
+				dieRight 	= { start = 70, frames = 11},
+			},
 		}
 		for(var filename, anim in animations){ // prepare animations fo usage
 			var generalParams = anim.generalParams
@@ -117,14 +117,14 @@ MyScene = extends Scene {
 		
 		var Monster = extends Sprite { // lets create Monster class so we can create a lot of monsters if necessary
 			__object = { // all instances of this class will have following properies by default
-				curAnimName = "" // playing animation name
-				curAnim = null // playing animation object
-				moveTransition = null // move transition object
-				prevX = 0 // prev x && prev y to track monster speed
-				prevY = 0
-				health = 100 // monster health
-				fighting = null // monster fighting with
-			}
+				curAnimName = "", // playing animation name
+				curAnim = null, // playing animation object
+				moveTransition = null, // move transition object
+				prevX = 0, // prev x && prev y to track monster speed
+				prevY = 0,
+				health = 100, // monster health
+				fighting = null ,// monster fighting with
+			},
 			
 			__construct = function(filename){ // Monster class constructor, it's called when you do Monster(...)
 				filename = filename || "monster-01.png"
@@ -132,7 +132,7 @@ MyScene = extends Scene {
 				@animations = animations[filename] // save monster animations
 				@setTimeout(@trackMove, 0.1, true)  // call @trackMove every 0.1 seconds until we clear this timeout
 				@runAnimation("walkRight") // run "walkRight" animation by default
-			}
+			},
 			
 			trackMove = function(){ // determine the direction of moving to switch animation
 				if(!@curAnim || @fighting) return; // skip if no animation or monster is fighting
@@ -151,24 +151,24 @@ MyScene = extends Scene {
 					@runAnimation("walkRight");
 					@flipX = dx < 0
 				}
-			}
+			},
 			
 			runAnimation = function(name, onComplete){ // start needed animation
 				if(@curAnimName == name && !onComplete) return; // prevent restarting animation
 				@curAnimName = name
 				@stopAnimation(@curAnim)
 				@curAnim = @animation(@animations[name], onComplete)
-			}
+			},
 			
 			move = function(x, y, onComplete){ // move monster to position x,y
 				var len = ((@x - x)**2 + (@y - y)**2)**0.5
 				@stopTransition(@moveTransition)
 				@moveTransition = @transition { // lets use transition to move monster
-					x = x, y = y
-					duration = len * 10.0 / director.contentWidth
-					onComplete = onComplete // call this function on complete
+					x = x, y = y,
+					duration = len * 10.0 / director.contentWidth,
+					onComplete = onComplete, // call this function on complete
 				}
-			}
+			},
 			
 			fight = function(other){ // try to fight with other monster
 				if(@fighting || other.fighting) return; // skip if monster is already fighting
@@ -181,7 +181,7 @@ MyScene = extends Scene {
 				
 				other.fighting = this
 				other.move(cx - other.width/2*side, cy, other.startFightingAnimation) // move other monster to fighting position
-			}
+			},
 			
 			startFightingAnimation = function(){ // start fighting
 				@health > 0 || return; // skip if monster is dead
@@ -196,7 +196,7 @@ MyScene = extends Scene {
 						@move(@x + math.random(-1, 1) * @width, @y + math.random(-1, 1) * @width)
 					}
 				})
-			}
+			},
 			
 			die = function(){ // start dying animations
 				@clearTimeout(@trackMove) // remove @trackMove timeout functions
@@ -207,14 +207,14 @@ MyScene = extends Scene {
 					@stopAnimation(@curAnim)
 					@curAnim = null
 					@transition { // start fade out transition
-						opacity = 0
-						duration = 1
+						opacity = 0,
+						duration = 1,
 						onComplete = function(){
 							@remove() // remove monster on the fade out transition completed
-						}
+						},
 					}
 				})
-			}
+			},
 			
 			__set@y = function(y){ // track changing y position
 				super(y) // call the same method of "super" class because we want to add behavior, not override
