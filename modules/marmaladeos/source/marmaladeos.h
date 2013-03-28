@@ -82,6 +82,8 @@ public:
 	void initTextureClass();
 	void initLabelBMFontClass();
 
+	OS_EFileUseType checkFileUsage(const String& sourcecode_filename, const String& compiled_filename);
+
 	static float clampUnit(float f);
 
 	bool getColor(int offs, float color[4]);

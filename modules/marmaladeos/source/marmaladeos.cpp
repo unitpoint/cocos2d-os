@@ -74,6 +74,9 @@ bool MarmaladeOS::init(MemoryManager * mem)
 		return false;
 	}
 
+	core->gc_start_used_bytes = 0; // 1024*512;
+	core->gc_start_values_mult = 1.0f;
+
 	getGlobal(core->strings->func_require);
 	getProperty(OS_TEXT("paths"));
 	OS_ASSERT(isArray());
@@ -669,6 +672,26 @@ MarmaladeOS::LabelBMFont::~LabelBMFont()
 	label->release();
 }
 
+#ifdef _MSC_VER
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
+OS_EFileUseType MarmaladeOS::checkFileUsage(const String& sourcecode_filename, const String& compiled_filename)
+{
+#ifdef _MSC_VER
+	struct stat sourcecode_st, compiled_st;
+	stat(sourcecode_filename, &sourcecode_st);
+	stat(compiled_filename, &compiled_st);
+	if(sourcecode_st.st_mtime >= compiled_st.st_mtime){
+		return COMPILE_SOURCECODE_FILE;
+	}
+	return LOAD_COMPILED_FILE;
+#else
+	return LOAD_COMPILED_FILE;
+#endif
+}
+
 void MarmaladeOS::LabelBMFont::setColor(float color[4])
 {
 	OS_MEMCPY(this->color, color, sizeof(color));
@@ -1035,34 +1058,6 @@ int32 MarmaladeOS::charEventHandler(void* system_data, void* user_data)
 	return 0;
 }
 
-/*
-void * openFile(const OS_CHAR * filename, const OS_CHAR * mode)
-{
-	return s3eFileOpen(filename, mode);
-}
-
-int readFile(void * buf, int size, void * f)
-{
-	return s3eFileRead(buf, size, 1, (s3eFile*)f);
-}
-
-int writeFile(const void * buf, int size, void * f)
-{
-	return s3eFileWrite(buf, size, 1, (s3eFile*)f);
-}
-
-int seekFile(void * f, int offset, int whence)
-{
-	s3eFileSeek((s3eFile*)f, offset, (s3eFileSeekOrigin)whence);
-	return s3eFileTell((s3eFile*)f);
-}
-
-void closeFile(void * f)
-{
-	s3eFileClose((s3eFile*)f);
-}
-*/
-
 bool MarmaladeOS::isFileExist(const OS_CHAR * filename)
 {
 	return s3eFileCheckExists(filename) ? true : false;
@@ -1176,6 +1171,7 @@ int MarmaladeOS::run(MarmaladeOS * p_os, const OS_CHAR * main_stript)
 		}
 	}
 	int code = os->getTerminatedCode();
+	os->handleException();
 	os->release();
 	return code;
 }

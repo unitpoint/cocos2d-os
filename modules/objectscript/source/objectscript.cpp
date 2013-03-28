@@ -67,8 +67,8 @@ using namespace ObjectScript;
 #define OS_FROM_OPCODE_TYPE(i)	((i)<<0)
 #define OS_TO_OPCODE_TYPE(i)	((i)>>0)
 
-#define getarg(i,pos,size)		(((i)>>pos) & OS_MASK1(size, 0))
-#define setarg(i,v,pos,size)	((i) = (((i)&OS_MASK0(size,pos)) | (((Instruction)(v))<<pos) & OS_MASK1(size, pos)))
+#define getarg(i,pos,size)		(int)(((i)>>pos) & OS_MASK1(size, 0))
+#define setarg(i,v,pos,size)	((i) = (int)(((i)&OS_MASK0(size,pos)) | (((Instruction)(v))<<pos) & OS_MASK1(size, pos)))
 
 #define OS_GETARG_A(i)		getarg(i, OS_POS_A, OS_SIZE_A)
 #define OS_SETARG_A(i,v)	setarg(i, v, OS_POS_A, OS_SIZE_A)
@@ -365,7 +365,7 @@ static inline long double toLittleEndianByteOrder(long double val)
 		return val;
 	}
 	long double r;
-	for(int i = 0; i < sizeof(long double); i++){
+	for(int i = 0; i < (int)sizeof(long double); i++){
 		((OS_BYTE*)&r)[i] = ((OS_BYTE*)&val)[sizeof(long double)-1-i];
 	}
 	return r;
@@ -1841,7 +1841,7 @@ bool OS::Core::Tokenizer::parseLines(OS_ESourceCodeType source_code_type, bool c
 							string_type = NOT_STRING;
 							bool start = str == line_start;
 							str += multi_string_id_len;
-							if(start && buf.buffer.count >= sizeof(OS_CHAR)){
+							if(start && buf.buffer.count >= (int)sizeof(OS_CHAR)){
 								OS_CHAR * end = (OS_CHAR*)buf.buffer.buf + (buf.buffer.count/sizeof(OS_CHAR));
 								if(end[-1] == OS_TEXT('\n')){
 									buf.buffer.count -= sizeof(OS_CHAR);
@@ -3664,7 +3664,7 @@ bool OS::Core::Compiler::compile()
 		return true;
 	}else{
 		Buffer dump(allocator);
-		dump += OS_TEXT("error");
+		dump += OS_TEXT("compiler error");
 		switch(error){
 		default:
 			dump += OS_TEXT(" unknown");
@@ -3680,10 +3680,6 @@ bool OS::Core::Compiler::compile()
 
 		case ERROR_LOCAL_VAL_NOT_DECLARED:
 			dump += OS_TEXT(" LOCAL_VAL_NOT_DECLARED");
-			break;
-
-		case ERROR_VAR_ALREADY_EXIST:
-			dump += OS_TEXT(" VAR_ALREADY_EXIST");
 			break;
 
 		case ERROR_VAR_NAME:
@@ -5240,7 +5236,8 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::postCompileNewVM(Scope * sc
 		exp->slots.c = exp1->slots.a;
 		scope->popTempVar(2);
 		// TODO: is it really needed to check slot here?
-		if(exp1->type == EXP_TYPE_MOVE){ // CONST IS ALLOWED HERE!!!  && exp1->slots.b >= scope->function->num_locals){
+		// don't optimize assignment of local var
+		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.a >= scope->function->num_locals){ // && (exp1->slots.b < 0 || exp1->slots.b >= scope->function->num_locals)){
 			exp->slots.c = exp1->slots.b;
 			exp1->type = EXP_TYPE_NOP;
 		}
@@ -5266,7 +5263,8 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::postCompileNewVM(Scope * sc
 		exp->slots.c = exp1->slots.a;
 		scope->popTempVar(2);
 		// TODO: is it really needed to check slot here?
-		if(exp1->type == EXP_TYPE_MOVE){ // CONST IS ALLOWED HERE!!!  && exp1->slots.b >= scope->function->num_locals){
+		// don't optimize assignment of local var
+		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.a >= scope->function->num_locals){ // && (exp1->slots.b < 0 || exp1->slots.b >= scope->function->num_locals)){
 			exp->slots.c = exp1->slots.b;
 			exp1->type = EXP_TYPE_NOP;
 		}
@@ -5283,12 +5281,13 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::postCompileNewVM(Scope * sc
 		exp->slots.c = exp2->slots.a;
 		scope->popTempVar(2);
 		// TODO: is it really needed to check slot here?
-		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.b >= 0){ // CONST IS NOT ALLOWED HERE!!! scope->function->num_locals){
+		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.a >= scope->function->num_locals && exp1->slots.b >= 0){ // CONST IS NOT ALLOWED HERE!!!
 			exp->slots.b = exp1->slots.b;
 			exp1->type = EXP_TYPE_NOP;
 		}
 		// TODO: is it really needed to check slot here?
-		if(exp2->type == EXP_TYPE_MOVE){ // CONST IS ALLOWED HERE!!! && exp2->slots.b >= scope->function->num_locals){
+		// don't optimize assignment of local var
+		if(exp2->type == EXP_TYPE_MOVE && exp2->slots.a >= scope->function->num_locals){ // && (exp2->slots.b < 0 || exp2->slots.b >= scope->function->num_locals)){
 			exp->slots.c = exp2->slots.b;
 			exp2->type = EXP_TYPE_NOP;
 		}
@@ -5575,7 +5574,8 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::postCompileNewVM(Scope * sc
 		exp->slots.b = stack_pos;
 		exp1 = exp->list[0];
 		// TODO: is it really needed to check slot here?
-		if(exp1->type == EXP_TYPE_MOVE){ // CONST IS ALLOWED HERE!!! && exp1->slots.b >= scope->function->num_locals){
+		// don't optimize assignment of local var
+		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.a >= scope->function->num_locals){ // && (exp1->slots.b < 0 || exp1->slots.b >= scope->function->num_locals)){
 			exp->slots.b = exp1->slots.b;
 			exp1->type = EXP_TYPE_NOP;
 		}		
@@ -5620,12 +5620,14 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::postCompileNewVM(Scope * sc
 		exp->slots.c = stack_pos+1;
 		scope->popTempVar();
 		// TODO: is it really needed to check slot here?
-		if(exp1->type == EXP_TYPE_MOVE){ // CONST IS ALLOWED HERE!!! && exp1->slots.b >= scope->function->num_locals){
+		// don't optimize assignment of local var
+		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.a >= scope->function->num_locals){ // && (exp1->slots.b < 0 || exp1->slots.b >= scope->function->num_locals)){
 			exp->slots.b = exp1->slots.b;
 			exp1->type = EXP_TYPE_NOP;
 		}
 		// TODO: is it really needed to check slot here?
-		if(exp2->type == EXP_TYPE_MOVE){ // CONST IS ALLOWED HERE!!! && exp2->slots.b >= scope->function->num_locals){
+		// don't optimize assignment of local var
+		if(exp2->type == EXP_TYPE_MOVE && exp1->slots.a >= scope->function->num_locals){ // && (exp2->slots.b < 0 || exp2->slots.b >= scope->function->num_locals)){
 			exp->slots.c = exp2->slots.b;
 			exp2->type = EXP_TYPE_NOP;
 		}
@@ -5691,6 +5693,8 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::postCompileNewVM(Scope * sc
 			exp1 = exp1->list.lastElement();
 		}
 		// TODO: is it really needed to check slot here?
+		// don't optimize assignment of local var
+		// if(exp1->type == EXP_TYPE_MOVE && (exp1->slots.b < 0 || exp1->slots.b >= scope->function->num_locals)){
 		/* if(exp1->type == EXP_TYPE_MOVE){ // CONST IS ALLOWED HERE!!! && exp1->slots.b >= scope->function->num_locals){ // stack_cur_size is already decremented
 			exp->slots.b = exp1->slots.b;
 			exp1->type = EXP_TYPE_NOP;
@@ -5721,19 +5725,22 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::postCompileNewVM(Scope * sc
 		scope->function->stack_cur_size = stack_pos;
 		exp1 = exp->list[0];
 		// TODO: is it really needed to check slot here?
-		if(exp1->type == EXP_TYPE_MOVE){ // CONST IS ALLOWED HERE!!! && exp1->slots.b >= scope->function->num_locals){
+		// don't optimize assignment of local var
+		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.a >= scope->function->num_locals){ // && (exp1->slots.b < 0 || exp1->slots.b >= scope->function->num_locals)){
 			exp->slots.c = exp1->slots.b;
 			exp1->type = EXP_TYPE_NOP;
 		}
 		exp1 = exp->list[1];
 		// TODO: is it really needed to check slot here?
-		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.b >= 0){ // CONST IS NOT ALLOWED HERE!!! scope->function->num_locals){
+		// don't optimize assignment of local var
+		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.a >= scope->function->num_locals){ // && (exp1->slots.b < 0 || exp1->slots.b >= scope->function->num_locals)){
 			exp->slots.a = exp1->slots.b;
 			exp1->type = EXP_TYPE_NOP;
 		}
 		exp1 = exp->list[2];
 		// TODO: is it really needed to check slot here?
-		if(exp1->type == EXP_TYPE_MOVE){ // CONST IS ALLOWED HERE!!!  && exp1->slots.b >= scope->function->num_locals){
+		// don't optimize assignment of local var
+		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.a >= scope->function->num_locals){ // && (exp1->slots.b < 0 || exp1->slots.b >= scope->function->num_locals)){
 			exp->slots.b = exp1->slots.b;
 			exp1->type = EXP_TYPE_NOP;
 		}
@@ -5808,12 +5815,13 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::postCompileNewVM(Scope * sc
 		exp->slots.c = stack_pos + 1; // exp2->slots.a;
 		scope->popTempVar();
 		// TODO: is it really needed to check slot here?
-		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.b >= 0){ // CONST IS NOT ALLOWED HERE!!! scope->function->num_locals){
+		if(exp1->type == EXP_TYPE_MOVE && exp1->slots.a >= scope->function->num_locals && exp1->slots.b >= 0){ // CONST IS NOT ALLOWED HERE!!!
 			exp->slots.b = exp1->slots.b;
 			exp1->type = EXP_TYPE_NOP;
 		}
 		// TODO: is it really needed to check slot here?
-		if(exp2->type == EXP_TYPE_MOVE){ // CONST IS ALLOWED HERE!!! && exp2->slots.b >= scope->function->num_locals){
+		// don't optimize assignment of local var
+		if(exp2->type == EXP_TYPE_MOVE && exp2->slots.a >= scope->function->num_locals){ // && (exp2->slots.b < 0 || exp2->slots.b >= scope->function->num_locals)){
 			exp->slots.c = exp2->slots.b;
 			exp2->type = EXP_TYPE_NOP;
 		}
@@ -6150,10 +6158,10 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectObjectOrFunctionExpre
 				break;
 
 			case Tokenizer::NUMBER:
-				if(name_token->getFloat() != (OS_FLOAT)(OS_INT)name_token->getFloat()){
+				/* if(name_token->getFloat() != (OS_FLOAT)(OS_INT)name_token->getFloat()){
 					// use it as EXP_TYPE_OBJECT_SET_BY_NAME
 					break;
-				}
+				} */
 				exp_type = EXP_TYPE_OBJECT_SET_BY_INDEX;
 				break;
 
@@ -6383,6 +6391,11 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectExtendsExpression(Sco
 		exp->ret_values = 1;
 		return exp;
 	}
+#if 1
+	setError(ERROR_SYNTAX, exp->token);
+	allocator->deleteObj(exp);
+	return NULL;
+#else // TODO: delete it???
 	Expression * exp2 = expectSingleExpression(scope, p);
 	if(!exp2){
 		allocator->deleteObj(exp);
@@ -6393,6 +6406,7 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectExtendsExpression(Sco
 	exp = new (malloc(sizeof(Expression) OS_DBG_FILEPOS)) Expression(EXP_TYPE_EXTENDS, save_token, exp, exp2 OS_DBG_FILEPOS);
 	exp->ret_values = 1;
 	return exp;
+#endif
 }
 
 OS::Core::Compiler::Expression * OS::Core::Compiler::finishQuestionOperator(Scope * scope, TokenData * token, Expression * exp, Expression * exp2)
@@ -8220,6 +8234,38 @@ OS::Core::Compiler::Expression * OS::Core::Compiler::expectSingleExpression(Scop
 			return NULL;
 		}
 		OS_ASSERT(exp->ret_values == 1);
+		switch(exp->type){
+		case EXP_TYPE_CONST_NUMBER:
+		case EXP_TYPE_CONST_NULL:
+		case EXP_TYPE_CONST_TRUE:
+		case EXP_TYPE_CONST_FALSE:
+			switch(token_type){
+			case Tokenizer::OPERATOR_ADD:
+				exp->type = EXP_TYPE_CONST_NUMBER;
+				exp->token->setFloat(exp->toNumber());
+				return finishValueExpressionNoAutoCall(scope, exp, p);
+
+			case Tokenizer::OPERATOR_SUB:
+				exp->type = EXP_TYPE_CONST_NUMBER;
+				exp->token->setFloat(-exp->toNumber());
+				return finishValueExpressionNoAutoCall(scope, exp, p);
+
+			// case Tokenizer::OPERATOR_LENGTH:
+			case Tokenizer::OPERATOR_BIT_NOT:
+				exp->type = EXP_TYPE_CONST_NUMBER;
+				exp->token->setFloat((OS_FLOAT)~exp->toInt());
+				return finishValueExpressionNoAutoCall(scope, exp, p);
+
+			case Tokenizer::OPERATOR_LOGIC_NOT:
+				{
+					bool b = !exp->toInt();
+					exp->type = b ? EXP_TYPE_CONST_TRUE : EXP_TYPE_CONST_FALSE;
+					exp->token->setFloat((OS_FLOAT)b);
+					return finishValueExpressionNoAutoCall(scope, exp, p);
+				}
+			}
+			break;
+		}
 		exp = new (malloc(sizeof(Expression) OS_DBG_FILEPOS)) Expression(getUnaryExpressionType(token_type), exp->token, exp OS_DBG_FILEPOS);
 		exp->ret_values = 1;
 		return finishValueExpressionNoAutoCall(scope, exp, p);
@@ -16060,6 +16106,33 @@ bool OS::is(int value_offs, int prototype_offs)
 	return core->isValueInstanceOf(core->getStackValue(value_offs), core->getStackValue(prototype_offs));
 }
 
+bool OS::Core::isValueInValue(const Value& _name, const Value& _obj)
+{
+	Core::GCValue * self = _obj.getGCValue();
+	if(self){
+		if(self->type == OS_VALUE_TYPE_ARRAY){
+			Value name = _name;
+			OS_ASSERT(dynamic_cast<Core::GCArrayValue*>(self));
+			Core::GCArrayValue * arr = (Core::GCArrayValue*)self;
+			int count = arr->values.count;
+			for(int i = 0; i < count; i++){
+				pushOpResultValue(OP_COMPARE, name, arr->values[i]);
+				if(allocator->popNumber() == 0){
+					return true;
+				}
+			}
+			return false;
+		}
+		return hasProperty(self, _name, true, true);
+	}
+	return false;
+}
+
+bool OS::in(int name_offs, int obj_offs)
+{
+	return core->isValueInValue(core->getStackValue(name_offs), core->getStackValue(obj_offs));
+}
+
 void OS::setProperty(bool setter_enabled)
 {
 	if(core->stack_values.count >= 3){
@@ -18788,6 +18861,11 @@ void OS::initCoreFunctions()
 				}
 				os->pushString(OS_TEXT("\n"));
 				os->call(os->getStackSize() - count);
+			}else{
+				os->getGlobal(os->core->strings->func_echo);
+				os->pushGlobals();
+				os->pushString(OS_TEXT("\n"));
+				os->call(1);
 			}
 			return 0;
 		}
@@ -18942,30 +19020,7 @@ void OS::initCoreFunctions()
 		static int in(OS * os, int params, int, int, void*)
 		{
 			if(params != 2) return 0;
-			Core::Value obj = os->core->getStackValue(-params+1);
-			Core::GCValue * self = obj.getGCValue();
-			if(self){
-				if(self->type == OS_VALUE_TYPE_ARRAY){
-					OS_ASSERT(dynamic_cast<Core::GCArrayValue*>(self));
-					Core::GCArrayValue * arr = (Core::GCArrayValue*)self;
-					int count = arr->values.count;
-					for(int i = 0; i < count; i++){
-						os->pushStackValue(-params);
-						os->core->pushValue(arr->values[i]);
-						os->runOp(OP_COMPARE);
-						if(os->popNumber() == 0){
-							os->pushBool(true);
-							return 1;
-						}
-					}
-					os->pushBool(false);
-					return 1;
-				}
-				bool has_property = os->core->hasProperty(self, os->core->getStackValue(-params), true, true);
-				os->pushBool(has_property);
-				return 1;
-			}
-			os->pushBool(false);
+			os->pushBool(os->in());
 			return 1;
 		}
 
@@ -20146,8 +20201,832 @@ void OS::initBufferClass()
 		while(input < end && (*input & 0xc0) == 0x80) input++;	\
 	}
 
+static int machine_little_endian;
+
+/* Mapping of byte from char (8bit) to long for machine endian */
+static int byte_map[1];
+
+/* Mappings of bytes from int (machine dependant) to int for machine endian */
+static int int_map[sizeof(int)];
+
+/* Mappings of bytes from shorts (16bit) for all endian environments */
+static int machine_endian_short_map[2];
+static int big_endian_short_map[2];
+static int little_endian_short_map[2];
+
+/* Mappings of bytes from longs (32bit) for all endian environments */
+static int machine_endian_long_map[4];
+static int big_endian_long_map[4];
+static int little_endian_long_map[4];
+
 void OS::initStringClass()
 {
+	struct PackLib
+	{
+		static void packLong(long val, int size, int *map, char *output)
+		{
+			char *v = (char*)&val;
+			for (int i = 0; i < size; i++) {
+				*output++ = v[map[i]];
+			}
+		}
+
+		/* pack() idea stolen from Perl (implemented formats behave the same as there)
+		 * Implemented formats are A, a, h, H, c, C, s, S, i, I, l, L, n, N, f, d, x, X, @.
+		 */
+		static int pack(OS * os, int params, int, int, void*)
+		{
+			int offs = os->getAbsoluteOffs(-(++params));
+			
+			OS::String format_str = os->toString(offs);
+			const OS_CHAR * format = format_str.toChar();
+			int formatlen = format_str.getLen();
+
+			/* We have a maximum of <formatlen> format codes to deal with */
+			char * formatcodes = (char*)os->malloc(formatlen * sizeof(*formatcodes) OS_DBG_FILEPOS);
+			int * formatargs = (int*)os->malloc(formatlen * sizeof(*formatargs) OS_DBG_FILEPOS);
+			int i, currentarg = 1;
+
+			/* Preprocess format into formatcodes and formatargs */
+			int formatcount = 0;
+			for (i = 0; i < formatlen; formatcount++) {
+				char code = format[i++];
+				int arg = 1;
+
+				/* Handle format arguments if any */
+				if (i < formatlen) {
+					char c = format[i];
+					if (c == '*') {
+						arg = -1;
+						i++;
+					}else if (c >= '0' && c <= '9') {
+						// arg = atoi(&format[i]);
+						arg = 0;
+						while (format[i] >= '0' && format[i] <= '9' && i < formatlen) {
+							arg = arg*10 + (format[i] - '0');
+							i++;
+						}
+					}
+				}
+
+				/* Handle special arg '*' for all codes and check argv overflows */
+				switch (code) {
+					/* Never uses any args */
+					case 'x': 
+					case 'X':	
+					case '@':
+						if (arg < 0) {
+							os->setException(OS::String::format(os, "type %c: '*' error", code));
+							os->free(formatcodes);
+							os->free(formatargs);
+							return 0;
+							// arg = 1;
+						}
+						break;
+
+					/* Always uses one arg */
+					case 'a': 
+					case 'A': 
+					case 'h': 
+					case 'H':
+						if (currentarg >= params) {
+							os->setException(OS::String::format(os, "type %c: not enough arguments", code));
+							os->free(formatcodes);
+							os->free(formatargs);
+							return 0;
+						}
+
+						if (arg < 0) {
+							OS::String str = os->toString(offs + currentarg);
+							os->core->stack_values[offs + currentarg] = Core::Value(str);
+							arg = str.getLen();
+						}
+
+						currentarg++;
+						break;
+
+					/* Use as many args as specified */
+					case 'c': 
+					case 'C': 
+					case 's': 
+					case 'S': 
+					case 'i': 
+					case 'I':
+					case 'l': 
+					case 'L': 
+					case 'n': 
+					case 'N': 
+					case 'v': 
+					case 'V':
+					case 'f': 
+					case 'd': 
+						if (arg < 0) {
+							arg = params - currentarg;
+						}
+
+						currentarg += arg;
+
+						if (currentarg > params) {
+							os->setException(OS::String::format(os, "type %c: too few arguments", code));
+							os->free(formatcodes);
+							os->free(formatargs);
+							return 0;
+						}
+						break;
+
+					default:
+						os->setException(OS::String::format(os, "type %c: unknown format code", code));
+						os->free(formatcodes);
+						os->free(formatargs);
+						return 0;
+				}
+
+				formatcodes[formatcount] = code;
+				formatargs[formatcount] = arg;
+			}
+
+			if (currentarg < params) {
+				os->setException(OS::String::format(os, "%d arguments unused", params - currentarg));
+				os->free(formatcodes);
+				os->free(formatargs);
+				return 0;
+			}
+
+			/* Calculate output length and upper bound while processing*/
+#define OS_INC_OUTPUTPOS(a,b) \
+	if ((a) < 0 || ((INT_MAX - outputpos)/((int)b)) < (a)) { \
+		os->setException(OS::String::format(os, "Type %c: integer overflow in format string", code)); \
+		os->free(formatcodes); \
+		os->free(formatargs); \
+		return 0; \
+	} \
+	outputpos += (a)*(b);
+
+			int outputpos = 0, outputsize = 0;
+			for (i = 0; i < formatcount; i++) {
+				char code = formatcodes[i];
+				int arg = formatargs[i];
+
+				switch (code) {
+					case 'h': 
+					case 'H': 
+						OS_INC_OUTPUTPOS((arg + (arg % 2)) / 2, 1)	/* 4 bit per arg */
+						break;
+
+					case 'a': 
+					case 'A':
+					case 'c': 
+					case 'C':
+					case 'x':
+						OS_INC_OUTPUTPOS(arg, 1)		/* 8 bit per arg */
+						break;
+
+					case 's': 
+					case 'S': 
+					case 'n': 
+					case 'v':
+						OS_INC_OUTPUTPOS(arg, 2)		/* 16 bit per arg */
+						break;
+
+					case 'i': 
+					case 'I':
+						OS_INC_OUTPUTPOS(arg, sizeof(int))
+						break;
+
+					case 'l': 
+					case 'L': 
+					case 'N': 
+					case 'V':
+						OS_INC_OUTPUTPOS(arg, 4)		/* 32 bit per arg */
+						break;
+
+					case 'f':
+						OS_INC_OUTPUTPOS(arg, sizeof(float))
+						break;
+
+					case 'd':
+						OS_INC_OUTPUTPOS(arg, sizeof(double))
+						break;
+
+					case 'X':
+						outputpos -= arg;
+
+						if (outputpos < 0) {
+							os->setException(OS::String::format(os, "type %c: outside of string", code));
+							os->free(formatcodes);
+							os->free(formatargs);
+							return 0;
+							// outputpos = 0;
+						}
+						break;
+
+					case '@':
+						outputpos = arg;
+						break;
+				}
+
+				if (outputsize < outputpos) {
+					outputsize = outputpos;
+				}
+			}
+
+			Core::Buffer buf(os);
+			buf.reserveCapacity(outputsize + 1);
+			char * output = (char*)buf.buffer.buf;
+			outputpos = 0;
+			currentarg = 1;
+
+			/* Do actual packing */
+			for (i = 0; i < formatcount; i++) {
+				char code = formatcodes[i];
+				int arg = formatargs[i];
+				switch (code) {
+					case 'a': 
+					case 'A': {
+						memset(&output[outputpos], (code == 'a') ? '\0' : ' ', arg);
+						OS::String val = os->toString(offs + currentarg++);
+						const char * str = val.toChar();
+						int len = val.getLen();
+						memcpy(&output[outputpos], str, len < arg ? len : arg);
+						outputpos += arg;
+						break;
+					}
+
+					case 'h': 
+					case 'H': {
+						int nibbleshift = (code == 'h') ? 0 : 4;
+						int first = 1;
+						
+						OS::String val = os->toString(offs + currentarg++);
+						const char * v = val.toChar();
+						int len = val.getLen();
+							
+						outputpos--;
+						if(arg > len) {
+							os->setException(OS::String::format(os, "type %c: not enough characters in string", code));
+							os->free(formatcodes);
+							os->free(formatargs);
+							return 0;
+							// arg = len;
+						}
+
+						while (arg-- > 0) {
+							char n = *v++;
+
+							if (n >= '0' && n <= '9') {
+								n -= '0';
+							} else if (n >= 'A' && n <= 'F') {
+								n -= ('A' - 10);
+							} else if (n >= 'a' && n <= 'f') {
+								n -= ('a' - 10);
+							} else {
+								os->setException(OS::String::format(os, "type %c: illegal hex digit %c", code, n));
+								os->free(formatcodes);
+								os->free(formatargs);
+								return 0;
+								// n = 0;
+							}
+
+							if (first--) {
+								output[++outputpos] = 0;
+							} else {
+							  first = 1;
+							}
+
+							output[outputpos] |= (n << nibbleshift);
+							nibbleshift = (nibbleshift + 4) & 7;
+						}
+
+						outputpos++;
+						break;
+					}
+
+					case 'c': 
+					case 'C':
+						while (arg-- > 0) {
+							packLong((long)os->toNumber(offs + currentarg++), 1, byte_map, &output[outputpos]);
+							outputpos++;
+						}
+						break;
+
+					case 's': 
+					case 'S': 
+					case 'n': 
+					case 'v': {
+						int *map = machine_endian_short_map;
+						if (code == 'n') {
+							map = big_endian_short_map;
+						} else if (code == 'v') {
+							map = little_endian_short_map;
+						}
+						while (arg-- > 0) {
+							packLong((long)os->toNumber(offs + currentarg++), 2, map, &output[outputpos]);
+							outputpos += 2;
+						}
+						break;
+					}
+
+					case 'i': 
+					case 'I': 
+						while (arg-- > 0) {
+							packLong((long)os->toNumber(offs + currentarg++), sizeof(int), int_map, &output[outputpos]);
+							outputpos += sizeof(int);
+						}
+						break;
+
+					case 'l': 
+					case 'L': 
+					case 'N': 
+					case 'V': {
+						int *map = machine_endian_long_map;
+						if (code == 'N') {
+							map = big_endian_long_map;
+						} else if (code == 'V') {
+							map = little_endian_long_map;
+						}
+						while (arg-- > 0) {
+							packLong((long)os->toNumber(offs + currentarg++), 4, map, &output[outputpos]);
+							outputpos += 4;
+						}
+						break;
+					}
+
+					case 'f': {
+						while (arg-- > 0) {
+							float v = os->toFloat(offs + currentarg++);
+							memcpy(&output[outputpos], &v, sizeof(v));
+							outputpos += sizeof(v);
+						}
+						break;
+					}
+
+					case 'd': {
+						while (arg-- > 0) {
+							double v = os->toDouble(offs + currentarg++);
+							memcpy(&output[outputpos], &v, sizeof(v));
+							outputpos += sizeof(v);
+						}
+						break;
+					}
+
+					case 'x':
+						memset(&output[outputpos], '\0', arg);
+						outputpos += arg;
+						break;
+
+					case 'X':
+						outputpos -= arg;
+						if (outputpos < 0) {
+							outputpos = 0;
+						}
+						break;
+
+					case '@':
+						if (arg > outputpos) {
+							memset(&output[outputpos], '\0', arg - outputpos);
+						}
+						outputpos = arg;
+						break;
+				}
+			}
+			os->free(formatcodes);
+			os->free(formatargs);
+			output[outputpos] = '\0';
+			buf.buffer.count = outputpos;
+			os->pushString(buf);
+			return 1;
+		}
+
+		static long unpackLong(const char *data, int size, int issigned, int *map)
+		{
+			long result = issigned ? -1 : 0;
+			char *cresult = (char *) &result;
+			for (int i = 0; i < size; i++) {
+				cresult[map[i]] = *data++;
+			}
+			return result;
+		}
+
+		/* unpack() is based on Perl's unpack(), but is modified a bit from there.
+		 * Numeric pack types will return numbers, a and A will return strings,
+		 * f and d will return doubles.
+		 * Implemented formats are A, a, h, H, c, C, s, S, i, I, l, L, n, N, f, d, x, X, @.
+		 */
+		static int unpack(OS * os, int params, int, int, void*)
+		{
+			if(params < 1){
+				return 0;
+			}
+
+			OS::String format_str = os->toString(-params+0);
+			const char * format = format_str.toChar();
+			int formatlen = format_str.getLen();
+			
+			OS::String input_str = os->toString(-params-1);
+			const char * input = input_str.toChar();
+			int inputlen = input_str.getLen();
+			int inputpos = 0, ret_values = 0;
+
+			while (formatlen-- > 0) {
+				char type = *(format++);
+				char c;
+				int arg = 1, argb;
+				int size=0;
+
+				/* Handle format arguments if any */
+				if (formatlen > 0) {
+					c = *format;
+
+					if (c >= '0' && c <= '9') {
+						arg = 0; // atoi(format);
+						while (formatlen > 0 && *format >= '0' && *format <= '9') {
+							arg = arg*10 + (*format - '0');
+							format++;
+							formatlen--;
+						}
+					} else if (c == '*') {
+						arg = -1;
+						format++;
+						formatlen--;
+					}
+				}
+
+				/* Get of new value in array */
+				argb = arg;
+				switch (type) {
+					/* Never use any input */
+					case 'X': 
+						size = -1;
+						break;
+
+					case '@':
+						size = 0;
+						break;
+
+					case 'a': 
+					case 'A':
+						size = arg;
+						arg = 1;
+						break;
+
+					case 'h': 
+					case 'H': 
+						size = (arg > 0) ? (arg + (arg % 2)) / 2 : arg;
+						arg = 1;
+						break;
+
+					/* Use 1 byte of input */
+					case 'c': 
+					case 'C':
+					case 'x':
+						size = 1;
+						break;
+
+					/* Use 2 bytes of input */
+					case 's': 
+					case 'S': 
+					case 'n': 
+					case 'v':
+						size = 2;
+						break;
+
+					/* Use sizeof(int) bytes of input */
+					case 'i': 
+					case 'I':
+						size = sizeof(int);
+						break;
+
+					/* Use 4 bytes of input */
+					case 'l': 
+					case 'L': 
+					case 'N': 
+					case 'V':
+						size = 4;
+						break;
+
+					/* Use sizeof(float) bytes of input */
+					case 'f':
+						size = sizeof(float);
+						break;
+
+					/* Use sizeof(double) bytes of input */
+					case 'd':
+						size = sizeof(double);
+						break;
+
+					default:
+						os->setException(OS::String::format(os, "invalid format type %c", type));
+						return 0;
+				}
+
+				/* Do actual unpacking */
+				for (int i = 0; i != arg; i++ ) {
+					/* Space for name + number, safe as namelen is ensured <= 200 */
+					/* char n[256];
+					if (arg != 1 || namelen == 0) {
+						// Need to add element number to name
+						snprintf(n, sizeof(n), "%.*s%d", namelen, name, i + 1);
+					} else {
+						// Truncate name to next format code or end of string
+						snprintf(n, sizeof(n), "%.*s", namelen, name);
+					} */
+
+					if (size != 0 && size != -1 && INT_MAX - size + 1 < inputpos) {
+						os->setException(OS::String::format(os, "type %c: integer overflow", type));
+						return 0;
+						// inputpos = 0;
+					}
+
+					if ((inputpos + size) <= inputlen) {
+						switch ((int) type) {
+							case 'a': 
+							case 'A': {
+								char pad = (type == 'a') ? '\0' : ' ';
+								int len = inputlen - inputpos;	/* Remaining string */
+
+								/* If size was given take minimum of len and size */
+								if ((size >= 0) && (len > size)) {
+									len = size;
+								}
+
+								size = len;
+
+								/* Remove padding chars from unpacked data */
+								while (--len >= 0) {
+									if (input[inputpos + len] != pad)
+										break;
+								}
+								ret_values++;
+								os->pushString(&input[inputpos], len + 1);
+								// add_assoc_stringl(return_value, n, &input[inputpos], len + 1, 1);
+								break;
+							}
+					
+							case 'h': 
+							case 'H': {
+								int len = (inputlen - inputpos) * 2;	/* Remaining */
+								int nibbleshift = (type == 'h') ? 0 : 4;
+								int first = 1;
+								char *buf;
+								int ipos, opos;
+
+								/* If size was given take minimum of len and size */
+								if (size >= 0 && len > (size * 2)) {
+									len = size * 2;
+								} 
+
+								if (argb > 0) {	
+									len -= argb % 2;
+								}
+
+								buf = (char*)os->malloc(len + 1 OS_DBG_FILEPOS);
+								for (ipos = opos = 0; opos < len; opos++) {
+									char cc = (input[inputpos + ipos] >> nibbleshift) & 0xf;
+
+									if (cc < 10) {
+										cc += '0';
+									} else {
+										cc += 'a' - 10;
+									}
+
+									buf[opos] = cc;
+									nibbleshift = (nibbleshift + 4) & 7;
+
+									if (first-- == 0) {
+										ipos++;
+										first = 1;
+									}
+								}
+
+								buf[len] = '\0';
+								ret_values++;
+								os->pushString(buf, len);
+								// add_assoc_stringl(return_value, n, buf, len, 1);
+								os->free(buf);
+								break;
+							}
+
+							case 'c': 
+							case 'C': {
+								int issigned = (type == 'c') ? (input[inputpos] & 0x80) : 0;
+								long v = unpackLong(&input[inputpos], 1, issigned, byte_map);
+								ret_values++;
+								os->pushNumber(v);
+								// add_assoc_long(return_value, n, v);
+								break;
+							}
+
+							case 's': 
+							case 'S': 
+							case 'n': 
+							case 'v': {
+								long v;
+								int issigned = 0;
+								int *map = machine_endian_short_map;
+
+								if (type == 's') {
+									issigned = input[inputpos + (machine_little_endian ? 1 : 0)] & 0x80;
+								} else if (type == 'n') {
+									map = big_endian_short_map;
+								} else if (type == 'v') {
+									map = little_endian_short_map;
+								}
+
+								v = unpackLong(&input[inputpos], 2, issigned, map);
+								ret_values++;
+								os->pushNumber(v);
+								// add_assoc_long(return_value, n, v);
+								break;
+							}
+
+							case 'i': 
+							case 'I': {
+								long v;
+								int issigned = 0;
+
+								if (type == 'i') {
+									issigned = input[inputpos + (machine_little_endian ? (sizeof(int) - 1) : 0)] & 0x80;
+								}
+
+								v = unpackLong(&input[inputpos], sizeof(int), issigned, int_map);
+								ret_values++;
+								os->pushNumber(v);
+								// add_assoc_long(return_value, n, v);
+								break;
+							}
+
+							case 'l': 
+							case 'L': 
+							case 'N': 
+							case 'V': {
+								int issigned = 0;
+								int *map = machine_endian_long_map;
+								long v = 0;
+
+								if (type == 'l' || type == 'L') {
+									issigned = input[inputpos + (machine_little_endian ? 3 : 0)] & 0x80;
+								} else if (type == 'N') {
+									issigned = input[inputpos] & 0x80;
+									map = big_endian_long_map;
+								} else if (type == 'V') {
+									issigned = input[inputpos + 3] & 0x80;
+									map = little_endian_long_map;
+								}
+
+								if (sizeof(long) > 4 && issigned) {
+									v = ~INT_MAX;
+								}
+
+								v |= unpackLong(&input[inputpos], 4, issigned, map);
+								if (sizeof(long) > 4) {
+ 									if (type == 'l') {
+										v = (signed int) v; 
+									} else {
+										v = (unsigned int) v;
+									}
+								}
+								ret_values++;
+								os->pushNumber(v);
+								// add_assoc_long(return_value, n, v);
+								break;
+							}
+
+							case 'f': {
+								float v;
+								memcpy(&v, &input[inputpos], sizeof(float));
+								ret_values++;
+								os->pushNumber(v);
+								// add_assoc_double(return_value, n, (double)v);
+								break;
+							}
+
+							case 'd': {
+								double v;
+								memcpy(&v, &input[inputpos], sizeof(double));
+								ret_values++;
+								os->pushNumber(v);
+								// add_assoc_double(return_value, n, v);
+								break;
+							}
+
+							case 'x':
+								/* Do nothing with input, just skip it */
+								break;
+
+							case 'X':
+								if (inputpos < size) {
+									inputpos = -size;
+									i = arg - 1;		/* Break out of for loop */
+
+									if (arg >= 0) {
+										os->setException(OS::String::format(os, "type %c: outside of string", type));
+										return 0;
+									}
+								}
+								break;
+
+							case '@':
+								if (arg <= inputlen) {
+									inputpos = arg;
+								} else {
+									os->setException(OS::String::format(os, "type %c: outside of string", type));
+									return 0;
+								}
+
+								i = arg - 1;	/* Done, break out of for loop */
+								break;
+						}
+
+						inputpos += size;
+						if (inputpos < 0) {
+							if (size != -1) { /* only print warning if not working with * */
+								os->setException(OS::String::format(os, "type %c: outside of string", type));
+								return 0;
+							}
+							inputpos = 0;
+						}
+					} else if (arg < 0) {
+						/* Reached end of input for '*' repeater */
+						break;
+					} else {
+						os->setException(OS::String::format(os, "type %c: not enough input, need %d, have %d", type, size, inputlen - inputpos));
+						return 0;
+					}
+				}
+
+				// formatlen--;	/* Skip '/' separator, does no harm if inputlen == 0 */
+				// format++;
+			}
+			return ret_values;
+		}
+
+		static void init()
+		{
+			int machine_endian_check = 1;
+			machine_little_endian = ((char *)&machine_endian_check)[0];
+			if (machine_little_endian) {
+				OS_ASSERT(IS_LITTLE_ENDIAN);
+				/* Where to get lo to hi bytes from */
+				byte_map[0] = 0;
+				for (int i = 0; i < (int)sizeof(int); i++) {
+					int_map[i] = i;
+				}
+
+				machine_endian_short_map[0] = 0;
+				machine_endian_short_map[1] = 1;
+				big_endian_short_map[0] = 1;
+				big_endian_short_map[1] = 0;
+				little_endian_short_map[0] = 0;
+				little_endian_short_map[1] = 1;
+
+				machine_endian_long_map[0] = 0;
+				machine_endian_long_map[1] = 1;
+				machine_endian_long_map[2] = 2;
+				machine_endian_long_map[3] = 3;
+				big_endian_long_map[0] = 3;
+				big_endian_long_map[1] = 2;
+				big_endian_long_map[2] = 1;
+				big_endian_long_map[3] = 0;
+				little_endian_long_map[0] = 0;
+				little_endian_long_map[1] = 1;
+				little_endian_long_map[2] = 2;
+				little_endian_long_map[3] = 3;
+			}else{
+				OS_ASSERT(!IS_LITTLE_ENDIAN);
+				// zval val;
+				// int size = sizeof(Z_LVAL(val));
+				// Z_LVAL(val)=0; /*silence a warning*/
+				int size = sizeof(long);
+
+				/* Where to get hi to lo bytes from */
+				byte_map[0] = size - 1;
+				for (int i = 0; i < (int)sizeof(int); i++) {
+					int_map[i] = size - (sizeof(int) - i);
+				}
+
+				machine_endian_short_map[0] = size - 2;
+				machine_endian_short_map[1] = size - 1;
+				big_endian_short_map[0] = size - 2;
+				big_endian_short_map[1] = size - 1;
+				little_endian_short_map[0] = size - 1;
+				little_endian_short_map[1] = size - 2;
+
+				machine_endian_long_map[0] = size - 4;
+				machine_endian_long_map[1] = size - 3;
+				machine_endian_long_map[2] = size - 2;
+				machine_endian_long_map[3] = size - 1;
+				big_endian_long_map[0] = size - 4;
+				big_endian_long_map[1] = size - 3;
+				big_endian_long_map[2] = size - 2;
+				big_endian_long_map[3] = size - 1;
+				little_endian_long_map[0] = size - 1;
+				little_endian_long_map[1] = size - 2;
+				little_endian_long_map[2] = size - 3;
+				little_endian_long_map[3] = size - 4;
+			}
+		}
+	};
+
 	struct String
 	{
 		static int length(OS * os, int params, int, int, void*)
@@ -20509,6 +21388,9 @@ void OS::initStringClass()
 			return 1;
 		}
 	};
+
+	PackLib::init();
+
 	FuncDef list[] = {
 		{core->strings->__cmp, String::cmp},
 		{core->strings->__len, String::length},
@@ -20527,6 +21409,8 @@ void OS::initStringClass()
 		{OS_TEXT("lowerAnsi"), String::lower},
 		// TODO: need to implement lowerUtf8
 		{OS_TEXT("split"), String::split},
+		{OS_TEXT("pack"), PackLib::pack},
+		{OS_TEXT("unpack"), PackLib::unpack},
 		{}
 	};
 	core->pushValue(core->prototypes[Core::PROTOTYPE_STRING]);
