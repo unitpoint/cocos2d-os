@@ -1,9 +1,9 @@
 var core = require("core")
 var app = require("app")
 require("constants")
-require("node")
-require("image")
-require("text")
+// require("node")
+// require("image")
+// require("text")
 require("utils")
 
 var director = _G.director = _E = extends _G {}
@@ -224,7 +224,7 @@ function set contentSize(params){
 			}
 		}
 	}
-	print"content size: "..params
+	print "content size: "..params
 	print {
 		x = displayContent.x,
 		y = displayContent.y,

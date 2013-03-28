@@ -42,3 +42,31 @@ function toObject(a){
 	return {a}
 }
 
+function File.readContents(filename)
+{
+	var f = File(filename, "rb")
+	var content = f.read()
+	f.close()
+	return content
+}
+
+function File.writeContents(filename, content)
+{
+	var f = File(filename, "wb")
+	f.write(content)
+	f.close()
+}
+
+Buffer.__lshift = Buffer.append	// make alias << operator to appent method
+
+function String.__get(i){		// declare [] read operator with one single argument
+	return @sub(i, 1)
+}
+
+function String.__mul(i){		// declare * operator
+	var buf = Buffer()
+	for(; i >= 1; i--){
+		buf << this
+	}
+	return toString(buf)
+}

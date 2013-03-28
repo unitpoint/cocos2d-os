@@ -1,12 +1,13 @@
 require "std"
 
-typeof = typeOf
-numberof = numberOf
-stringof = stringOf
-arrayof = arrayOf
-objectof = objectOf
-userdataof = userdataOf
+// typeof = typeOf
+// numberof = numberOf
+// stringof = stringOf
+// arrayof = arrayOf
+// objectof = objectOf
+// userdataof = userdataOf
 
+/*
 function __get(name){
 	print "global property \"${name}\" is not declared"
 	print "back trace"
@@ -21,6 +22,19 @@ function Object.__get(name){
 	print "======="
 	print "target: ${this}"
 	print ""
+}
+*/
+
+var modulesChecked = {}
+function __get(name){
+	if(!(name in modulesChecked)){
+		modulesChecked[name] = true
+		require(name)
+		if(name in this){
+			return this[name]
+		}
+	}
+	throw("unknown class or global property "..name)
 }
 
 function unhandledException(e){

@@ -1,4 +1,4 @@
-_G.physics = _E = extends _G {}
+var physics = _G.physics = _E = extends _G {}
 
 var world = b2World()
 function get world(){ return world }

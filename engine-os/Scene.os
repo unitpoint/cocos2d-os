@@ -1,0 +1,4 @@
+
+Scene = extends Group {
+
+}
