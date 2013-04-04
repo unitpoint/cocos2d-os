@@ -15,58 +15,6 @@ var function fillRect(image, offsX, offsY, areaWidth, areaHeight, paintParams){
 	image.width, image.height = width, height
 }
 
-var function addStats(parent){
-	var color = [1.0, 1.0, 1.0, 1]
-	var font = "arial-en-ru-16.fnt"
-	var fps = Text("fps", font).attrs {
-		anchor = {x=1.05, y=1.05},
-		x = parent.width,
-		y = parent.height - 20,
-		color = color,
-		// shadow = true,
-	}.insertTo(parent)
-	
-	var gcAllocatedBytes = Text("Kb", font).attrs{
-		anchor = {x=1.05, y=1.05},
-		x = fps.x,
-		y = fps.y - fps.fontHeight*1.05*1,
-		color = color,
-		// shadow = true,
-	}.insertTo(parent)
-	
-	var gcUsedBytes = Text("Kb", font).attrs{
-		anchor = {x=1.05, y=1.05},
-		x = fps.x,
-		y = fps.y - fps.fontHeight*1.05*3,
-		color = color,
-		// shadow = true,
-	}.insertTo(parent)
-	
-	var gcCachedBytes = Text("Kb", font).attrs{
-		anchor = {x=1.05, y=1.05},
-		x = fps.x,
-		y = fps.y - fps.fontHeight*1.05*2,
-		color = color,
-		// shadow = true,
-	}.insertTo(parent)
-	
-	var gcNumObjects = Text("0", font).attrs{
-		anchor = {x=1.05, y=1.05},
-		x = fps.x,
-		y = fps.y - fps.fontHeight*1.05*4,
-		color = color,
-		// shadow = true,
-	}.insertTo(parent)
-	
-	parent.setTimeout(function(){
-		fps.string = sprintf("%.1f fps", 1 / director.deltaTime)
-		gcAllocatedBytes.string = math.round(GC.allocatedBytes / 1024).." Kb allocated"
-		gcUsedBytes.string = math.round((GC.allocatedBytes - GC.cachedBytes) / 1024).." Kb used"
-		gcCachedBytes.string = math.round(GC.cachedBytes / 1024).." Kb cached"
-		gcNumObjects.string = GC.numObjects.." gc objects"
-	}, 0.3, true)
-}
-
 var levelMap = {
 	sky = "sky",
 	layers = {
@@ -96,7 +44,7 @@ var levelMap = {
 }
 
 LayerImage = extends Image {
-	__construct = function(params){
+	__construct = function(game, params){
 		super(params.image)
 		delete params.image
 		@attrs params
@@ -104,8 +52,8 @@ LayerImage = extends Image {
 }
 
 House = extends LayerImage {
-	__construct = function(params){
-		super(params)
+	__construct = function(game, params){
+		super(game, params)
 	}
 }
 
@@ -169,67 +117,66 @@ Sky = extends Group {
 	},
 }
 
+var randomGenSeed = 0
+var function randomGen(){
+	randomGenSeed = randomGenSeed ^ (randomGenSeed<<6) + (randomGenSeed>>2) + 0b1010101010
+	return (randomGenSeed & 0xffff) / 0xffff
+}
+
+var LAYER = ['SKY', 'MOON', 'MAP', 'WINDOWS', 'MONSTERS', 'LIGHT_AREA'].flip()
+
 Game = extends Scene {
 	__construct = function(){
 		super()
 		
 		var layers = @layers = {}
 		
-		@sky = Sky(this, levelMap.sky).insertTo(this)
+		@sky = Sky(this, levelMap.sky).insertTo(this).attrs { zOrder = LAYER.SKY }
 		
 		@moon = Image("moon").insertTo(this).attrs {
 			x = 100,
 			y = 70,
+			zOrder = LAYER.MOON,
 		}
 		
-		var height = @height
-		var houseWindowsLayer = Group().attrs {
+		@houseWindowsLayer = Group().insertTo(this).attrs {
 			anchor = [0, 0],
-			height = height,
+			height = @height,
 			x = 0,
 			y = 0, // (layer.y || 1) * height,
 			paralaxScale = levelMap.layers.houses.paralaxScale || 1,
+			zOrder = LAYER.WINDOWS,
 		}
 		for(var name, layer in levelMap.layers){
 			var layerGroup = layers[name] = Group().insertTo(this).attrs {
 				anchor = [0, 0],
-				height = height,
+				height = @height,
 				x = 0,
 				y = 0, // (layer.y || 1) * height,
 				paralaxScale = layer.paralaxScale || 1,
+				zOrder = LAYER.MAP,
 			}
 			for(var _, item in layer.items){
 				var classname = item.class; delete item.class
-				item.y = (item.y || layer.y || 1) * height
+				item.y = (item.y || layer.y || 1) * @height
 				item.anchor = item.anchor || [0.5, 1]
-				if(item.windows){
-					var windows = item.windows; delete item.windows
-					for(var _, window in windows){
-						var item = item.clone()
-						item.image = window.image
-						item.x = item.x + window.x
-						item.y = item.y + window.y
-						LayerImage(item).insertTo(houseWindowsLayer)
-					}
-					continue
-				}
-				_E[classname](item).insertTo(layerGroup)
+				_E[classname](this, item).insertTo(layerGroup)
 			}
 		}
 		
 		@monster = Monster("zombie-01").insertTo(this).attrs {
 			anchor = [0.5, 1],
 			x = @width / 2,
-			y = height * 0.9,
+			y = @height * 0.9,
+			zOrder = LAYER.MONSTERS,
 		}
 		
 		@lightarea = Image("lightarea-02").insertTo(this).attrs {
 			x = @monster.x,
-			y = height * 0.6, // @monster.y + @monster.height * (0.5 - @monster.anchor.y),
+			y = @height * 0.6, // @monster.y + @monster.height * (0.5 - @monster.anchor.y),
 			scale = 1.5 * 4,
+			zOrder = LAYER.LIGHT_AREA,
 		}
-		
-		@layers[] = houseWindowsLayer.insertTo(this)
 		
 		var x = 0
 		@addEventListener('enterFrame', function(params){
@@ -246,5 +193,9 @@ Game = extends Scene {
 		for(var _, layer in @layers){
 			layer.x = x * layer.paralaxScale
 		}
+	},
+	
+	paint = function(params){
+		
 	},
 }

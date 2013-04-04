@@ -53,7 +53,7 @@ FunctionNode = {
 		node.remove()
 		
 		if(zOrder){
-			node.__zOrder = zOrder = zOrder
+			node.__zOrder = zOrder = math.round(zOrder)
 		}else
 			zOrder = node.__zOrder
 		
@@ -191,6 +191,7 @@ FunctionNode = {
 	},
 
 	transition = function(t){
+		// objectOf(t) || throw "object argument required"
 		return @insert(Transition(t, this))
 	},
 	

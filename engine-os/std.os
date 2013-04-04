@@ -70,3 +70,27 @@ function String.__mul(i){		// declare * operator
 	}
 	return toString(buf)
 }
+
+function Object.flip(){
+	var r = {}
+	for(var k, v in this){
+		r[k] = v
+	}
+	return r
+}
+
+function Object.reverse(){
+	var r = {}
+	for(var k, v in @reverseIter()){
+		r[k] = v
+	}
+	return r
+}
+
+function Array.reverse(){
+	var r = []
+	for(var k, v in @reverseIter()){
+		r[] = v
+	}
+	return r
+}

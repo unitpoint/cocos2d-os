@@ -224,8 +224,8 @@ function set contentSize(params){
 			}
 		}
 	}
-	print "content size: "..params
-	print {
+	print "content size params: "..params
+	print "display: "..{
 		x = displayContent.x,
 		y = displayContent.y,
 		width = displayContent.width,
