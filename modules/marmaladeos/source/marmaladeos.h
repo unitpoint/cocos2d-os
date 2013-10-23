@@ -91,6 +91,10 @@ public:
 	void drawLabelBMFont(int params);
 	void drawImage(int params);
 
+	void drawImage(cocos2d::CCTexture2D * texture, float width, float height, 
+		float frameX, float frameY, float frameWidth, float frameHeight, 
+		bool flipX, bool flipY, float color[4], float opacity = 1.0f);
+
 	enum ETouchPhase
 	{
 		TOUCH_PHASE_START,
@@ -117,7 +121,8 @@ public:
 	void echo(const void * buf, int size);
 	void printf(const OS_CHAR * format, ...);
 
-	void startFrame();
+	// void startFrame();
+	float update();
 	
 	static int run(MarmaladeOS*, const OS_CHAR * main_stript);
 	static int run(const OS_CHAR * main_stript, const OS_CHAR * os_paths[], const OS_CHAR * compiled_files_path, const OS_CHAR * output_filename = "output.txt");

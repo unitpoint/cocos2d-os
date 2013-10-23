@@ -74,8 +74,8 @@ bool MarmaladeOS::init(MemoryManager * mem)
 		return false;
 	}
 
-	core->gc_start_used_bytes = 0; // 1024*512;
-	core->gc_start_values_mult = 1.0f;
+	// core->gc_start_used_bytes = 0; // 1024*512;
+	// core->gc_start_values_mult = 1.0f;
 
 	getGlobal(core->strings->func_require);
 	getProperty(OS_TEXT("paths"));
@@ -424,16 +424,110 @@ void MarmaladeOS::drawLabelBMFont(int params)
 	}
 }
 
+#define kQuadSize sizeof(quad.bl)
+#define SET_CC_VERTEX3(v, ax, ay, az) do{ (v).x = (ax); (v).y = (ay); (v).z = (az); }while(false)
+
+void MarmaladeOS::drawImage(cocos2d::CCTexture2D * texture, float width, float height, 
+	float frameX, float frameY, float frameWidth, float frameHeight, 
+	bool flipX, bool flipY, float color[4], float opacity)
+{
+	cocos2d::ccBlendFunc blendFunc;
+	if(texture->getHasPremultipliedAlpha()){
+		blendFunc.src = CC_BLEND_SRC;
+		blendFunc.dst = CC_BLEND_DST;
+		for(int i = 0; i < 4; i++){
+			color[i] *= opacity;
+		}
+	}else{
+		blendFunc.src = GL_SRC_ALPHA;
+		blendFunc.dst = GL_ONE_MINUS_SRC_ALPHA;
+	}
+
+	float atlasWidth = (float)texture->getPixelsWide();
+	float atlasHeight = (float)texture->getPixelsHigh();
+
+	float left = frameX / atlasWidth;
+	float right	= left + frameWidth / atlasWidth;
+	float top = frameY / atlasHeight;
+	float bottom = top + frameHeight / atlasHeight;
+
+	float temp;
+	if(flipX){
+		temp = left;
+		left = right;
+		right = temp;
+	}
+	if(flipY){
+		temp = top;
+		top = bottom;
+		bottom = temp;
+	}
+
+	cocos2d::ccV3F_C4B_T2F_Quad quad;
+
+	SET_CC_VERTEX3(quad.tl.vertices, 0, 0, 0);
+	SET_CC_VERTEX3(quad.tr.vertices, width, 0, 0);
+	SET_CC_VERTEX3(quad.bl.vertices, 0, height, 0);
+	SET_CC_VERTEX3(quad.br.vertices, width, height, 0);
+
+	quad.bl.texCoords.u = left;
+	quad.bl.texCoords.v = bottom;
+	quad.br.texCoords.u = right;
+	quad.br.texCoords.v = bottom;
+	quad.tl.texCoords.u = left;
+	quad.tl.texCoords.v = top;
+	quad.tr.texCoords.u = right;
+	quad.tr.texCoords.v = top;
+
+	cocos2d::ccColor4B tmpColor = { 
+		(GLubyte)(255 * color[0]),
+		(GLubyte)(255 * color[1]),
+		(GLubyte)(255 * color[2]),
+		(GLubyte)(255 * color[3])
+	};
+	quad.bl.colors = tmpColor;
+	quad.br.colors = tmpColor;
+	quad.tl.colors = tmpColor;
+	quad.tr.colors = tmpColor;
+
+	bool newBlend = blendFunc.src != CC_BLEND_SRC || blendFunc.dst != CC_BLEND_DST;
+	if(newBlend){
+		glBlendFunc(blendFunc.src, blendFunc.dst);
+	}
+	glBindTexture(GL_TEXTURE_2D, texture->getName());
+
+	long offset = (long)&quad;
+
+	// vertex
+	int diff = offsetof(cocos2d::ccV3F_C4B_T2F, vertices);
+	glVertexPointer(3, GL_FLOAT, kQuadSize, (void*)(offset + diff));
+
+	// color
+	diff = offsetof(cocos2d::ccV3F_C4B_T2F, colors);
+	glColorPointer(4, GL_UNSIGNED_BYTE, kQuadSize, (void*)(offset + diff));
+	
+	// tex coords
+	diff = offsetof(cocos2d::ccV3F_C4B_T2F, texCoords);
+	glTexCoordPointer(2, GL_FLOAT, kQuadSize, (void*)(offset + diff));
+	
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	
+	if(newBlend){
+		glBlendFunc(CC_BLEND_SRC, CC_BLEND_DST);
+	}
+}
+
 void MarmaladeOS::drawImage(int params)
 {
 	if(!isObject(-params)) return;
 
 	float opacity;
 	if(params >= 2){
-		opacity = !isNumber(-params+1) ? 1.0f : clampUnit(toFloat(-params+1));
+		isNumber(-params+1, &opacity) || (opacity = clampUnit(toFloat(-params+1)));
 	}else{
 		getProperty(-params, "opacity");
-		opacity = !isNumber() ? (pop(), 1.0f) : clampUnit(popFloat());
+		opacity = isNumber(-1, &opacity) ? clampUnit(opacity) : 1.0f;
+		pop();
 	}
 
 	params = getAbsoluteOffs(-params);
@@ -505,10 +599,10 @@ void MarmaladeOS::drawImage(int params)
 
 	cocos2d::ccV3F_C4B_T2F_Quad quad;
 
-	quad.tl.vertices = cocos2d::vertex3(0, 0, 0);
-	quad.tr.vertices = cocos2d::vertex3(width, 0, 0);
-	quad.bl.vertices = cocos2d::vertex3(0, height, 0);
-	quad.br.vertices = cocos2d::vertex3(width, height, 0);
+	SET_CC_VERTEX3(quad.tl.vertices, 0, 0, 0);
+	SET_CC_VERTEX3(quad.tr.vertices, width, 0, 0);
+	SET_CC_VERTEX3(quad.bl.vertices, 0, height, 0);
+	SET_CC_VERTEX3(quad.br.vertices, width, height, 0);
 
 	quad.bl.texCoords.u = left;
 	quad.bl.texCoords.v = bottom;
@@ -529,8 +623,6 @@ void MarmaladeOS::drawImage(int params)
 	quad.br.colors = tmpColor;
 	quad.tl.colors = tmpColor;
 	quad.tr.colors = tmpColor;
-
-	#define kQuadSize sizeof(quad.bl)
 
 	bool newBlend = blendFunc.src != CC_BLEND_SRC || blendFunc.dst != CC_BLEND_DST;
 	if(newBlend){
@@ -1117,10 +1209,16 @@ void MarmaladeOS::printf(const OS_CHAR * format, ...)
 	fclose(f);
 }
 
-void MarmaladeOS::startFrame()
+float MarmaladeOS::update()
 {
- 	// release cocos2d-x objects
- 	cocos2d::CCPoolManager::getInstance()->pop();		
+	getGlobal("triggerEvent");
+	pushGlobals(); // this
+	pushString("enterFrame");
+	call(1);
+
+	getGlobal("director");
+	getProperty("animationInterval");
+	return popNumber();
 }
 
 static double clamp(double a, double min, double max)
@@ -1143,8 +1241,9 @@ int MarmaladeOS::run(MarmaladeOS * p_os, const OS_CHAR * main_stript)
 	for(;;){ 
 		uint64 start_time_ms = s3eTimerGetMs();
 		
-		os->startFrame();
-			
+ 		// release cocos2d-x objects
+ 		cocos2d::CCPoolManager::getInstance()->pop();
+
 		s3eDeviceYield(0);
 		s3eKeyboardUpdate();
 		s3ePointerUpdate();
@@ -1155,20 +1254,9 @@ int MarmaladeOS::run(MarmaladeOS * p_os, const OS_CHAR * main_stript)
 			break;
 		}
 
-		os->getGlobal("triggerEvent");
-		os->pushGlobals(); // this
-		os->pushString("enterFrame");
-		os->call(1);
-
-		os->getGlobal("director");
-		os->getProperty("animationInterval");
-		int animation_ms = (int)(1000.0f * clamp(os->popNumber(), 0.005, 0.2));
+		int animation_ms = (int)(1000.0f * clamp(os->update(), 0.005, 0.2));
 		int frame_ms = (int)(s3eTimerGetMs() - start_time_ms);
-		if(animation_ms > frame_ms){
-			s3eDeviceYield(animation_ms - frame_ms);
-		}else{
-			s3eDeviceYield(1);
-		}
+		s3eDeviceYield(animation_ms > frame_ms ? animation_ms - frame_ms : 1);
 	}
 	int code = os->getTerminatedCode();
 	os->handleException();

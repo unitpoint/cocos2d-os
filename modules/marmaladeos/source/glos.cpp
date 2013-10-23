@@ -2592,24 +2592,65 @@ void initOpenGL2(MarmaladeOS * os)
 	os->pop();
 }
 
+static int glos_obj_id = 0;
+static void * vertex_pointer = NULL;
+static int vertex_pointer_size = 0; 
+static int vertex_pointer_tick = 0;
+
+static void * allocVertexPointer(OS * os, int size)
+{
+	if(vertex_pointer_size < size){
+		os->free(vertex_pointer);
+		vertex_pointer = os->malloc(size OS_DBG_FILEPOS);
+		vertex_pointer_size = size;
+		// vertex_pointer_tick = 0;
+	}
+	vertex_pointer_tick = 0;
+	return vertex_pointer;
+}
+
+static void freeVertexPointer(OS * os)
+{
+	if(vertex_pointer){
+		os->free(vertex_pointer);
+		vertex_pointer = NULL;
+		vertex_pointer_size = 0; 
+		vertex_pointer_tick = 0;
+	}
+}
+
+static void vertexPointerDtor(OS * os, void * data, void * user_param)
+{
+	freeVertexPointer(os);
+}
+
 void initOpenGLExt(MarmaladeOS * os)
 {
+	os->pushUserPool();
+	os->pushUserdata(0, vertexPointerDtor);
+	os->setProperty(OS_TEXT("glosModule"));
+
 	struct OpenGL
 	{
 		static int glSwapBuffers(OS * os, int params, int, int, void*)
 		{
 			IwGLSwapBuffers();
+			if(vertex_pointer && ++vertex_pointer_tick > 10){
+				freeVertexPointer(os);
+			}
 			return 0;
 		}
 
 		static int glVertexPointer(OS * os, int params, int, int, void*)
 		{
-			if(params >= 4 && os->isArray(-params+3) && (GLenum)os->toNumber(-params+1) == GL_FLOAT){
+			if(params >= 4 && os->isArray(-params+3)){
+				GLenum point_type = (GLenum)os->toNumber(-params+1);
+				OS_ASSERT(point_type == GL_FLOAT);
 				params = os->getAbsoluteOffs(-params);
 				int count = os->getLen(params+3) & ~1;
 				if(count < 1) return 0;
 				int size = os->toInt(params+0);
-				float * points = (float*)os->pushUserdata(sizeof(float)*count*size);
+				float * points = (float*)allocVertexPointer(os, sizeof(float)*count*size);
 				for(int i = 0; i < count; i++){
 					os->pushStackValue(params+3);
 					os->pushNumber(i);
@@ -2640,7 +2681,7 @@ void initOpenGLExt(MarmaladeOS * os)
 					}
 				}
 				::glVertexPointer((GLint)os->toNumber(params+0), GL_FLOAT, (GLsizei)os->toNumber(params+2), points);
-				return 1;
+				// return 1;
 			}
 			return 0;
 		}

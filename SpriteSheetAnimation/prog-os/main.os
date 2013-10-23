@@ -15,25 +15,25 @@ MyScene = extends Scene {
 		var message = Text("Sprite Sheet Animation")	// create message
 		message.x = this.width	// locate the message at right bottom corner
 		message.y = this.height
-		message.anchor = {x=1.05 y=1.05}
+		message.anchor = {x=1.05, y=1.05}
 		message.shadow = true	// we want shadow enabled		
 		this.insert(message)
 
 		var Monster = extends Image { // lets create Monster class so we can create a lot instances (monsters) if necessary
 			__object = { // all instances of this class will have following properies by default
-				curAnimName = "" // playing animation name
-				curAnim = null	// playing animation object
-				moveTransition = null // move transition object
-				prevX = 0 // prev x && prev y to track monster speed
-				prevY = 0
-			}
+				curAnimName = "", // playing animation name
+				curAnim = null,	// playing animation object
+				moveTransition = null, // move transition object
+				prevX = 0, // prev x && prev y to track monster speed
+				prevY = 0,
+			},
 			
 			__construct = function(filename, animations){
 				super(filename) // call constructor of class we extend, so create image
 				this.animations = animations
 				this.setTimeout(this.trackMove, 0.1, true) // call this.trackMove every 0.1 seconds until we clear this timeout
 				this.runAnimation("walkRight") // run "walkRight" animation by default
-			}
+			},
 			
 			trackMove = function(){ // determine the direction of moving to switch animation
 				var dx, dy = this.x - this.prevX, this.y - this.prevY
@@ -51,36 +51,36 @@ MyScene = extends Scene {
 					this.runAnimation("walkRight");
 					this.flipX = dx < 0
 				}
-			}
+			},
 			
 			runAnimation = function(name){ // start animation
 				if(this.curAnimName == name) return;
 				this.curAnimName = name
 				this.stopAnimation(this.curAnim)
 				this.curAnim = this.animation(this.animations[name])
-			}
+			},
 			
 			move = function(x, y){ // move monster to position x,y
 				var len = ((this.x - x)**2 + (this.y - y)**2)**0.5
 				this.stopTransition(this.moveTransition)
 				this.moveTransition = this.transition { // lets use transition to move monster
-					x = x, y = y
-					duration = len * 10.0 / director.contentWidth
+					x = x, y = y,
+					duration = len * 10.0 / director.contentWidth,
 				}
-			}
+			},
 			
 			__set@y = function(y){ // track changing y position
 				super(y) // call the same method of "super" class because we want to add behavior, not override
 				this.zOrder = y // set zOrder, so bottom monsters will be front of top monsters
-			}
+			},
 		}
 		
 		var monster = Monster("monster-01.png", { // create our monster
-			walkRight 	= { start = 0, frames = 17, delay = 0.08, cols = 9, rows = 10 }
-			walkUp 		= { start = 17, frames = 13, delay = 0.08, cols = 9, rows = 10 }
-			walkDown 	= { start = 30, frames = 12, delay = 0.08, cols = 9, rows = 10 }
-			fightRight 	= { start = 42, frames = 12, delay = 0.08, cols = 9, rows = 10 }
-			dieRight 	= { start = 67, frames = 17, delay = 0.08, cols = 9, rows = 10 }
+			walkRight 	= { start = 0, frames = 17, delay = 0.08, cols = 9, rows = 10 },
+			walkUp 		= { start = 17, frames = 13, delay = 0.08, cols = 9, rows = 10 },
+			walkDown 	= { start = 30, frames = 12, delay = 0.08, cols = 9, rows = 10 },
+			fightRight 	= { start = 42, frames = 12, delay = 0.08, cols = 9, rows = 10 },
+			dieRight 	= { start = 67, frames = 17, delay = 0.08, cols = 9, rows = 10 },
 		})
 		monster.x = this.width * math.random(0.2, 0.8)
 		monster.y = this.height * math.random(0.2, 0.8)

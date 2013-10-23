@@ -123,7 +123,7 @@ var function randomGen(){
 	return (randomGenSeed & 0xffff) / 0xffff
 }
 
-var LAYER = ['SKY', 'MOON', 'MAP', 'WINDOWS', 'MONSTERS', 'LIGHT_AREA'].flip()
+var LAYER = 'SKY MOON MAP WINDOWS MONSTERS LIGHT_AREA'.split(' ').flip()
 
 Game = extends Scene {
 	__construct = function(){

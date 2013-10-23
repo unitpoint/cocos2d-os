@@ -1,6 +1,8 @@
 includepaths
 {
     "source"
+	"source/ext-libnoise"
+	"source/ext-datetime"
 }
 
 files
@@ -8,4 +10,6 @@ files
     ("source")
     objectscript.cpp
     objectscript.h
+    os-heap.cpp
+    os-heap.h
 }

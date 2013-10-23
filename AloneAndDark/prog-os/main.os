@@ -7,4 +7,5 @@ director.contentSize = {
 	scale = "expand",
 }
 director.scene = Splash()
+// director.scene = Mandelbrot()
 

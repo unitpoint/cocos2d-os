@@ -239,7 +239,7 @@ MyScene = extends Scene {
 			monster.opacity = 0 // set initial opacity to zero because of we want run fade in transition
 			monster.transition { opacity = 1, duration = 1 } // start the fade in transition
 			scene.insert(monster) // insert monster to scene
-			monsters.push(monster) // save our monster to the alive monsters array
+			monsters[] = monster // save our monster to the alive monsters array
 			monster.addEventListener("onExit", function(){ // capture onExit event (when monster will be dead)
 				for(var i, m in monsters){
 					if(m === this){ // find monster inside of to the alive monsters array
@@ -251,7 +251,7 @@ MyScene = extends Scene {
 			})
 		}
 		
-		for(var i = 0; i < 20; i++){ // create initial monsters
+		for(var i = 0; i < 30; i++){ // create initial monsters
 			createMonster()
 		}
 		
