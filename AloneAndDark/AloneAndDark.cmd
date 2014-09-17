@@ -1,1 +1,0 @@
-start .\build_AloneAndDark_vc11\AloneAndDark_vc11.sln

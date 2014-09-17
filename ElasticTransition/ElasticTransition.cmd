@@ -1,1 +1,0 @@
-start .\build_ElasticTransition_vc10\ElasticTransition_vc10.sln

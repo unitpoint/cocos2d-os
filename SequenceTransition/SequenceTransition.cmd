@@ -1,1 +1,0 @@
-start .\build_SequenceTransition_vc10\SequenceTransition_vc10.sln

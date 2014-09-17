@@ -1,1 +1,0 @@
-start .\build_test_vc10\Test_vc10.sln

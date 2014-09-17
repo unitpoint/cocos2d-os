@@ -1,1 +1,0 @@
-start .\build_PhysicsFootball_vc10\PhysicsFootball_vc10.sln

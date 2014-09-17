@@ -1,4 +1,0 @@
-
-Scene = extends Group {
-
-}
