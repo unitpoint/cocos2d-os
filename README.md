@@ -1,1 +1,1 @@
-This repository is deprecated. Please see ![OS2D engine for 2d mobile games](https://github.com/unitpoint/os2d)
+This repository is deprecated. Please see [OS2D engine for 2d mobile games](https://github.com/unitpoint/os2d)
